@@ -15,27 +15,22 @@ class Income(Base):
     name = sa.Column(sa.String(255))
     currency = sa.Column(sa.Enum(Currencies))
     replenishment_account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
-    amount = sa.Column(sa.Float(asdecimal=True))
+    amount = sa.Column(sa.DECIMAL())
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
 
 
 class Account(Base):
-    TYPES = [
-        ('Wallet', 'WA'),
-        ('Bank account', 'BA')
-    ]
-
     __tablename__ = 'account'
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
     type = sa.Column(sa.Enum(AccountTypes))
-    balance = sa.Column(sa.Float(asdecimal=True))
+    balance = sa.Column(sa.DECIMAL())
     currency = sa.Column(sa.Enum(Currencies))
 
-    incomes = relationship('Income', backref='account')
-    spendings = relationship('Spending', backref='account')
-    goal_spendings = relationship('GoalSpending', backref='account')
+    incomes = relationship('Income', backref='replenishment_account')
+    spendings = relationship('Spending', backref='receipt_account')
+    goal_spendings = relationship('GoalSpending', backref='receipt_account')
 
 
 class Spending(Base):
@@ -45,7 +40,7 @@ class Spending(Base):
     name = sa.Column(sa.String(255))
     category_id = sa.Column(sa.Integer, sa.ForeignKey('spending_category.id'))
     receipt_account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
-    amount = sa.Column(sa.Float(asdecimal=True))
+    amount = sa.Column(sa.DECIMAL())
     currency = sa.Column(sa.Enum(Currencies))
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
 
@@ -55,7 +50,7 @@ class SpendingCategory(Base):
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
-    spending_limit = sa.Column(sa.Float(asdecimal=True))
+    spending_limit = sa.Column(sa.DECIMAL())
     limit_duration = sa.Column(sa.Integer)
 
     spendings = relationship('Spending', backref='category')
@@ -65,9 +60,9 @@ class GoalSpending(Base):
     __tablename__ = 'goal_spending'
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
-    account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
+    receipt_account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
     goal_id = sa.Column(sa.Integer, sa.ForeignKey('goal.id'))
-    amount = sa.Column(sa.Float(asdecimal=True))
+    amount = sa.Column(sa.DECIMAL())
     currency = sa.Column(sa.Enum(Currencies))
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
 
@@ -77,8 +72,8 @@ class Goal(Base):
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
-    target_amount = sa.Column(sa.Float(asdecimal=True))
-    balance = sa.Column(sa.Float(asdecimal=True))
+    target_amount = sa.Column(sa.DECIMAL())
+    balance = sa.Column(sa.DECIMAL())
     currency = sa.Column(sa.Enum(Currencies))
 
     goal_spendings = relationship('GoalSpending', backref='goal')

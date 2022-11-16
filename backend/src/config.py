@@ -15,22 +15,22 @@ def get_db_url() -> str:
 DATABASE_URL = get_db_url()
 
 
-class Currencies(Enum):
+class Currencies(str, Enum):
     """
     Enum type of currencies supported in app.
     IMPORTANT! If you change this, necessarily make new migration with 'alembic revision'
     """
 
-    US = 1
-    RUB = 2
-    CNY = 3
+    US = 'US'
+    RUB = 'RUB'
+    CNY = 'CNY'
 
 
-class AccountTypes(Enum):
+class AccountTypes(str, Enum):
     """
     Enum type of account types supported in app.
     IMPORTANT! If you change this, necessarily make new migration with 'alembic revision'
     """
 
-    WALLET = 1
-    BANK_ACCOUNT = 2
+    WALLET = 'WALLET'
+    BANK_ACCOUNT = 'BANK_ACCOUNT'

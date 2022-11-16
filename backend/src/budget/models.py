@@ -1,16 +1,11 @@
 import datetime
+from decimal import Decimal
 
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import ChoiceType
 
+from ..config import Currencies, AccountTypes
 from ..database import Base
-
-CURRENCIES = [
-    ('US', 'American dollar'),
-    ('RU', 'Russian ruble'),
-    ('CNY', 'Renminbi')
-]
 
 
 class Income(Base):
@@ -18,7 +13,7 @@ class Income(Base):
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
-    currency = sa.Column(ChoiceType(CURRENCIES))
+    currency = sa.Column(sa.Enum(Currencies))
     replenishment_account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
     amount = sa.Column(sa.Float(asdecimal=True))
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
@@ -26,17 +21,17 @@ class Income(Base):
 
 class Account(Base):
     TYPES = [
-        ('BA', 'Bank account'),
-        ('WA', 'Wallet')
+        ('Wallet', 'WA'),
+        ('Bank account', 'BA')
     ]
 
     __tablename__ = 'account'
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
-    type = sa.Column(ChoiceType(TYPES))
+    type = sa.Column(sa.Enum(AccountTypes))
     balance = sa.Column(sa.Float(asdecimal=True))
-    currency = sa.Column(ChoiceType(CURRENCIES))
+    currency = sa.Column(sa.Enum(Currencies))
 
     incomes = relationship('Income', backref='account')
     spendings = relationship('Spending', backref='account')
@@ -51,7 +46,7 @@ class Spending(Base):
     category_id = sa.Column(sa.Integer, sa.ForeignKey('spending_category.id'))
     receipt_account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
     amount = sa.Column(sa.Float(asdecimal=True))
-    currency = sa.Column(ChoiceType(CURRENCIES))
+    currency = sa.Column(sa.Enum(Currencies))
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
 
 
@@ -73,7 +68,7 @@ class GoalSpending(Base):
     account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
     goal_id = sa.Column(sa.Integer, sa.ForeignKey('goal.id'))
     amount = sa.Column(sa.Float(asdecimal=True))
-    currency = sa.Column(ChoiceType(CURRENCIES))
+    currency = sa.Column(sa.Enum(Currencies))
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
 
 
@@ -84,6 +79,9 @@ class Goal(Base):
     name = sa.Column(sa.String(255))
     target_amount = sa.Column(sa.Float(asdecimal=True))
     balance = sa.Column(sa.Float(asdecimal=True))
-    currency = sa.Column(ChoiceType(CURRENCIES))
+    currency = sa.Column(sa.Enum(Currencies))
 
     goal_spendings = relationship('GoalSpending', backref='goal')
+
+    async def get_the_rest_amount(self) -> Decimal:
+        return Decimal(self.target_amount) - Decimal(self.balance)

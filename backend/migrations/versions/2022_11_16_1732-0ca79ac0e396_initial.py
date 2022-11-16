@@ -1,30 +1,19 @@
 """initial
 
-Revision ID: 393afb231738
+Revision ID: 0ca79ac0e396
 Revises: 
-Create Date: 2022-11-16 01:00:27.179069
+Create Date: 2022-11-16 17:32:46.327927
 
 """
 from alembic import op
 import sqlalchemy as sa
-import sqlalchemy_utils
+
 
 # revision identifiers, used by Alembic.
-revision = '393afb231738'
+revision = '0ca79ac0e396'
 down_revision = None
 branch_labels = None
 depends_on = None
-
-ACCOUNT_TYPES = [
-    ('BA', 'Bank account'),
-    ('WA', 'Wallet')
-]
-
-CURRENCIES = [
-    ('US', 'American dollar'),
-    ('RU', 'Russian ruble'),
-    ('CNY', 'Renminbi')
-]
 
 
 def upgrade() -> None:
@@ -32,9 +21,9 @@ def upgrade() -> None:
     op.create_table('account',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(length=255), nullable=True),
-    sa.Column('type', sqlalchemy_utils.types.choice.ChoiceType(ACCOUNT_TYPES), nullable=True),
+    sa.Column('type', sa.Enum('WALLET', 'BANK_ACCOUNT', name='accounttypes'), nullable=True),
     sa.Column('balance', sa.Float(asdecimal=True), nullable=True),
-    sa.Column('currency', sqlalchemy_utils.types.choice.ChoiceType(CURRENCIES), nullable=True),
+    sa.Column('currency', sa.Enum('US', 'RUB', 'CNY', name='currencies'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('goal',
@@ -42,7 +31,7 @@ def upgrade() -> None:
     sa.Column('name', sa.String(length=255), nullable=True),
     sa.Column('target_amount', sa.Float(asdecimal=True), nullable=True),
     sa.Column('balance', sa.Float(asdecimal=True), nullable=True),
-    sa.Column('currency', sqlalchemy_utils.types.choice.ChoiceType(CURRENCIES), nullable=True),
+    sa.Column('currency', sa.Enum('US', 'RUB', 'CNY', name='currencies'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('spending_category',
@@ -57,7 +46,7 @@ def upgrade() -> None:
     sa.Column('account_id', sa.Integer(), nullable=True),
     sa.Column('goal_id', sa.Integer(), nullable=True),
     sa.Column('amount', sa.Float(asdecimal=True), nullable=True),
-    sa.Column('currency', sqlalchemy_utils.types.choice.ChoiceType(CURRENCIES), nullable=True),
+    sa.Column('currency', sa.Enum('US', 'RUB', 'CNY', name='currencies'), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['account_id'], ['account.id'], ),
     sa.ForeignKeyConstraint(['goal_id'], ['goal.id'], ),
@@ -66,7 +55,7 @@ def upgrade() -> None:
     op.create_table('income',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(length=255), nullable=True),
-    sa.Column('currency', sqlalchemy_utils.types.choice.ChoiceType(CURRENCIES), nullable=True),
+    sa.Column('currency', sa.Enum('US', 'RUB', 'CNY', name='currencies'), nullable=True),
     sa.Column('replenishment_account_id', sa.Integer(), nullable=True),
     sa.Column('amount', sa.Float(asdecimal=True), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -79,7 +68,7 @@ def upgrade() -> None:
     sa.Column('category_id', sa.Integer(), nullable=True),
     sa.Column('receipt_account_id', sa.Integer(), nullable=True),
     sa.Column('amount', sa.Float(asdecimal=True), nullable=True),
-    sa.Column('currency', sqlalchemy_utils.types.choice.ChoiceType(CURRENCIES), nullable=True),
+    sa.Column('currency', sa.Enum('US', 'RUB', 'CNY', name='currencies'), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['category_id'], ['spending_category.id'], ),
     sa.ForeignKeyConstraint(['receipt_account_id'], ['account.id'], ),

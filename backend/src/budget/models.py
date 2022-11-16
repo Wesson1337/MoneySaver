@@ -16,6 +16,7 @@ CURRENCIES = [
 class Income(Base):
     __tablename__ = 'income'
 
+    id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
     currency = sa.Column(ChoiceType(CURRENCIES))
     replenishment_account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
@@ -31,9 +32,11 @@ class Account(Base):
 
     __tablename__ = 'account'
 
+    id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
     type = sa.Column(ChoiceType(TYPES))
     balance = sa.Column(sa.Float(asdecimal=True))
+    currency = sa.Column(ChoiceType(CURRENCIES))
 
     incomes = relationship('Income', backref='account')
     spendings = relationship('Spending', backref='account')
@@ -43,16 +46,19 @@ class Account(Base):
 class Spending(Base):
     __tablename__ = 'spending'
 
+    id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
     category_id = sa.Column(sa.Integer, sa.ForeignKey('spending_category.id'))
     receipt_account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
     amount = sa.Column(sa.Float(asdecimal=True))
+    currency = sa.Column(ChoiceType(CURRENCIES))
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
 
 
 class SpendingCategory(Base):
     __tablename__ = 'spending_category'
 
+    id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
     spending_limit = sa.Column(sa.Float(asdecimal=True))
     limit_duration = sa.Column(sa.Integer)
@@ -63,17 +69,21 @@ class SpendingCategory(Base):
 class GoalSpending(Base):
     __tablename__ = 'goal_spending'
 
+    id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
     goal_id = sa.Column(sa.Integer, sa.ForeignKey('goal.id'))
     amount = sa.Column(sa.Float(asdecimal=True))
+    currency = sa.Column(ChoiceType(CURRENCIES))
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
 
 
 class Goal(Base):
     __tablename__ = 'goal'
 
+    id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
     target_amount = sa.Column(sa.Float(asdecimal=True))
     balance = sa.Column(sa.Float(asdecimal=True))
+    currency = sa.Column(ChoiceType(CURRENCIES))
 
     goal_spendings = relationship('GoalSpending', backref='goal')

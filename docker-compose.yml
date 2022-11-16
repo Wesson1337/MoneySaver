@@ -1,8 +1,8 @@
-version: "3.7"
+version: "3.9"
 
 services:
   db:
-    image: postgres:14.5-alpine
+    image: postgres:15-alpine
     restart: unless-stopped
     ports:
       - "5432:5432"
@@ -16,11 +16,11 @@ services:
         context: backend
       ports:
         - "8000:8000"
-      command: uvicorn src.main:app --reload --host 0.0.0.0
+      command: uvicorn backend.src.main:app --reload --host 0.0.0.0
       env_file:
         - .env
       volumes:
-        - ./backend:/home/app/MoneySaver
+        - ./backend:/home/app/MoneySaver/backend
       depends_on:
         - db
 

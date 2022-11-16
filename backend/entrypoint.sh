@@ -6,4 +6,12 @@ done
 
 echo "PostgreSQL started"
 
+echo "Rolling migrations..."
+
+cd backend || exit
+alembic upgrade head
+cd ..
+
+echo "Done"
+
 exec "$@"

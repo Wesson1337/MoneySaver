@@ -1,5 +1,5 @@
+import datetime
 from decimal import Decimal
-from typing import Optional
 
 from pydantic import BaseModel, constr, condecimal, conint
 
@@ -24,6 +24,4 @@ class IncomeSchemaIn(BaseIncomeSchema):
 class IncomeSchemaOut(BaseIncomeSchema):
     id: int
     replenishment_account: AccountSchemaOut
-
-
-
+    created_at: datetime.datetime

@@ -5,10 +5,11 @@ from typing import Optional
 from fastapi import Query
 
 from backend.src.config import Currencies
+from backend.src.dependencies import BaseQueryParams
 
 
 @dataclass
-class IncomeQueryParams:
+class IncomeQueryParams(BaseQueryParams):
     replenishment_account_id: Optional[int] = Query(default=None)
     currency: Optional[Currencies] = Query(default=None)
     created_at_gte: Optional[datetime.datetime] = Query(default=None,

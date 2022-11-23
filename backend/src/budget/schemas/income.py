@@ -1,5 +1,6 @@
 import datetime
 from decimal import Decimal
+from typing import Optional
 
 from pydantic import BaseModel, constr, condecimal, conint
 
@@ -19,6 +20,13 @@ class BaseIncomeSchema(BaseModel):
 class IncomeSchemaIn(BaseIncomeSchema):
     replenishment_account_id: conint(ge=1)
     amount = condecimal(gt=Decimal(0), decimal_places=2)
+
+
+class IncomeSchemaPatch(BaseIncomeSchema):
+    name: Optional[constr(max_length=255)]
+    currency: Optional[Currencies]
+    amount: Optional[condecimal(gt=Decimal(0), decimal_places=2)]
+    replenishment_account_id: Optional[conint(ge=1)]
 
 
 class IncomeSchemaOut(BaseIncomeSchema):

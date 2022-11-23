@@ -4,30 +4,13 @@ from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
-from sqlalchemy.sql import Select
 
 from backend.src.budget.dependencies import IncomeQueryParams
 from backend.src.budget.exceptions import IncomeNotFoundException
 from backend.src.budget.models import Income
-from backend.src.budget.schemas.income import IncomeSchemaIn
-
-
-async def _apply_income_filters(select_query: Select, query_params: IncomeQueryParams) -> Select:
-    """Applies filters from query parameters to sqlalchemy select query"""
-
-    if query_params.replenishment_account_id:
-        select_query = select_query.filter_by(replenishment_account_id=query_params.replenishment_account_id)
-
-    if query_params.currency:
-        select_query = select_query.filter_by(currency=query_params.currency)
-
-    if query_params.created_at_gte:
-        select_query = select_query.filter(Income.created_at >= query_params.created_at_gte)
-
-    if query_params.created_at_lte:
-        select_query = select_query.filter(Income.created_at <= query_params.created_at_lte)
-
-    return select_query
+from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch
+from backend.src.exceptions import NoDataForUpdateException
+from backend.src.utils import update_sql_model, apply_query_params_to_select_query
 
 
 async def get_all_incomes_db(session: AsyncSession, query_params: IncomeQueryParams) -> list[Income]:
@@ -37,9 +20,9 @@ async def get_all_incomes_db(session: AsyncSession, query_params: IncomeQueryPar
         order_by(Income.id.desc()).\
         options(joinedload(Income.replenishment_account))
 
-    select_query = await _apply_income_filters(select_query, query_params)
+    select_query_with_filter = await apply_query_params_to_select_query(select_query, query_params, Income)
 
-    result = await session.execute(select_query)
+    result = await session.execute(select_query_with_filter)
     incomes = result.scalars().all()
     return incomes
 
@@ -62,16 +45,7 @@ async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -
 
 async def get_certain_income_db(income_id: int, session: AsyncSession) -> Income:
     # Not using session.get, because we need to execute joinedload in async mode to pass it to pydantic model
-    select_query = sa.select(Income).\
-        where(Income.id == income_id).\
-        options(joinedload(Income.replenishment_account))\
-
-    result = await session.execute(select_query)
-
-    try:
-        income = result.scalar_one()
-    except NoResultFound:
-        raise IncomeNotFoundException()
+    income = await _get_income_by_id_with_joined_replenishment_account(income_id, session)
 
     return income
 
@@ -84,3 +58,30 @@ async def delete_income_db(income_id: int, session: AsyncSession) -> None:
 
     await session.delete(income)
     await session.commit()
+
+
+async def patch_income_db(income_id: int,
+                          income_data: IncomeSchemaPatch,
+                          session: AsyncSession) -> Income:
+    income_data_dict = income_data.dict(exclude_unset=True)
+
+    if not income_data_dict:
+        raise NoDataForUpdateException()
+
+    stored_income = await _get_income_by_id_with_joined_replenishment_account(income_id, session)
+
+    updated_income = await update_sql_model(income_data_dict, stored_income, session)
+
+
+async def _get_income_by_id_with_joined_replenishment_account(income_id: id,
+                                                              session: AsyncSession) -> Income:
+    result = await session.execute(sa.select(Income).
+                                   where(Income.id == income_id).
+                                   options(joinedload(Income.replenishment_account_id)))
+
+    try:
+        income = result.scalar_one()
+    except NoResultFound:
+        raise IncomeNotFoundException
+
+    return income

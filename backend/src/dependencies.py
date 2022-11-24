@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Protocol, Dict, Tuple
+from typing import Protocol
 
 from sqlalchemy.ext.asyncio import AsyncSession
 

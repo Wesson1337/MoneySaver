@@ -2,9 +2,8 @@ from dataclasses import fields
 from operator import methodcaller
 from typing import Type, Any
 
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import Select, ColumnElement
+from sqlalchemy.sql import Select
 
 from backend.src.database import Base
 from backend.src.dependencies import BaseQueryParams

@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.budget.dependencies import IncomeQueryParams
 from backend.src.budget.models import Income
-from backend.src.budget.schemas.income import IncomeSchemaOut, IncomeSchemaIn
+from backend.src.budget.schemas.income import IncomeSchemaOut, IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.budget.services.income import get_all_incomes_db, create_income_db, delete_income_db, \
-    get_certain_income_db
+    get_certain_income_db, patch_income_db
 from backend.src.dependencies import get_async_session
 
 router = APIRouter()
@@ -42,3 +42,10 @@ async def delete_income(income_id: int,
     await delete_income_db(income_id, session)
     return {"message": "done"}
 
+
+@router.patch('/{income_id}', response_model=IncomeSchemaOut)
+async def patch_income(income_id: int,
+                       income_data: IncomeSchemaPatch,
+                       session: AsyncSession = Depends(get_async_session)) -> Income:
+    updated_income = await patch_income_db(income_id, income_data, session)
+    return updated_income

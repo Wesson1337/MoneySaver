@@ -66,7 +66,10 @@ async def patch_income_db(income_id: int,
 
     stored_income = await _get_income_by_id_with_joined_replenishment_account(income_id, session)
 
-    updated_income = await update_sql_entity(income_data_dict, stored_income, session)
+    try:
+        updated_income = await update_sql_entity(income_data_dict, stored_income, session)
+    except (ForeignKeyViolationError, IntegrityError):
+        raise HTTPException(status_code=400, detail="Replenishment account not found.")
 
     return updated_income
 

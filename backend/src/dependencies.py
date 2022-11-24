@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Protocol, Dict
+from typing import Protocol, Dict, Tuple
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,4 +13,4 @@ async def get_async_session() -> AsyncSession:
 
 @dataclass
 class BaseQueryParams(Protocol):
-    __dataclass_fields__: Dict
+    pass

@@ -10,7 +10,7 @@ from backend.src.budget.exceptions import IncomeNotFoundException
 from backend.src.budget.models import Income
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.exceptions import NoDataForUpdateException
-from backend.src.utils import update_sql_model, apply_query_params_to_select_query
+from backend.src.utils import update_sql_entity, apply_query_params_to_select_query
 
 
 async def get_all_incomes_db(session: AsyncSession, query_params: IncomeQueryParams) -> list[Income]:
@@ -36,15 +36,11 @@ async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -
     except (ForeignKeyViolationError, IntegrityError):
         raise HTTPException(status_code=400, detail="Replenishment account not found.")
 
-    result = await session.execute(sa.select(Income).
-                                   where(Income.id == new_income.id).
-                                   options(joinedload(Income.replenishment_account)))
-    income = result.scalar_one()
+    income = await _get_income_by_id_with_joined_replenishment_account(income_id=new_income.id, session=session)
     return income
 
 
 async def get_certain_income_db(income_id: int, session: AsyncSession) -> Income:
-    # Not using session.get, because we need to execute joinedload in async mode to pass it to pydantic model
     income = await _get_income_by_id_with_joined_replenishment_account(income_id, session)
 
     return income
@@ -70,14 +66,18 @@ async def patch_income_db(income_id: int,
 
     stored_income = await _get_income_by_id_with_joined_replenishment_account(income_id, session)
 
-    updated_income = await update_sql_model(income_data_dict, stored_income, session)
+    updated_income = await update_sql_entity(income_data_dict, stored_income, session)
+
+    return updated_income
 
 
 async def _get_income_by_id_with_joined_replenishment_account(income_id: id,
                                                               session: AsyncSession) -> Income:
+    # Not using session.get, because we need to execute joinedload in async mode to pass it to pydantic model
+    # which is sync
     result = await session.execute(sa.select(Income).
                                    where(Income.id == income_id).
-                                   options(joinedload(Income.replenishment_account_id)))
+                                   options(joinedload(Income.replenishment_account)))
 
     try:
         income = result.scalar_one()

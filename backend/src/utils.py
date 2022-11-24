@@ -1,15 +1,17 @@
 from dataclasses import fields
-from typing import Type
+from operator import methodcaller
+from typing import Type, Any
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import Select
+from sqlalchemy.sql import Select, ColumnElement
 
 from backend.src.database import Base
 from backend.src.dependencies import BaseQueryParams
 from backend.src.exceptions import NoDataForUpdateException
 
 
-async def update_sql_model(data: dict, sql_entity: Base, session: AsyncSession) -> Base:
+async def update_sql_entity(data: dict, sql_entity: Base, session: AsyncSession) -> Base:
     """Updates sql model by dict with sql entity attribute as a key, returns sql model with updated attributes"""
     if not data:
         raise NoDataForUpdateException()
@@ -25,21 +27,42 @@ async def update_sql_model(data: dict, sql_entity: Base, session: AsyncSession) 
 
 async def apply_query_params_to_select_query(select_query: Select,
                                              query_params: Type[BaseQueryParams],
-                                             sql_model: Type[Base]) -> Select:
+                                             sql_table: Type[Base]) -> Select:
     """Applies query params to sql select query, using filter_by from sqlalchemy.
-    To apply query special params such as 'greater than' or 'lower than' use syntax in the end of an
+    To apply query specific params such as 'greater than' or 'lower than' use syntax in the end of an
     attribute of pydantic model:
-    >= = _gte
-    <= = _lte
+    >= = _ge
+    <= = _le
+    != = _ne
 
-    example: created_at_gte
+    example: created_at_ge
     """
-    for attr, value in fields(query_params):
-        if attr.endswith('gte'):
-            select_query = select_query.filter(getattr(sql_model, attr) >= value)
-        if attr.endswith('lte'):
-            select_query = select_query.filter(getattr(sql_model, attr) <= value)
-        else:
-            select_query = select_query.filter(getattr(sql_model, attr) == value)
+    prefixes_and_methods = {"_ge": "__ge__", "_le": "__le__", "_ne": "__ne__"}
 
+    for field in fields(query_params):
+        field_name = field.name
+        field_value = getattr(query_params, field_name)
+        param_is_specific = False
+
+        if field_value:
+            for prefix, method in prefixes_and_methods.items():
+                if field_name.endswith(prefix):
+                    select_query = await _apply_specific_param_to_select_query(field_name, field_value, prefix,
+                                                                               method, select_query, sql_table)
+                    param_is_specific = True
+                    break
+            if not param_is_specific:
+                table_attr = getattr(sql_table, field_name)
+                select_query = select_query.filter(table_attr == field_value)
+
+    return select_query
+
+
+async def _apply_specific_param_to_select_query(field_name: str, field_value: Any, prefix: str, method: str,
+                                                select_query: Select, sql_table: Type[Base]) -> Select:
+    field_without_prefix = field_name[:-len(prefix)]
+    compare_table_attr_with_value = methodcaller(method, field_value)
+    table_attr = getattr(sql_table, field_without_prefix)
+
+    select_query = select_query.filter(compare_table_attr_with_value(table_attr))
     return select_query

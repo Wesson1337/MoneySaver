@@ -11,7 +11,7 @@ from backend.src.exceptions import NoDataForUpdateException
 
 
 async def update_sql_entity(data: dict, sql_entity: Base, session: AsyncSession) -> Base:
-    """Updates sql model by dict with sql entity attribute as a key, returns sql model with updated attributes"""
+    """Updates sql entity by dict with sql entity attribute as a key, returns sql entity with updated attributes"""
     if not data:
         raise NoDataForUpdateException()
 

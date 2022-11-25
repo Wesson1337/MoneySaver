@@ -10,7 +10,7 @@ from backend.src.budget.exceptions import IncomeNotFoundException
 from backend.src.budget.models import Income
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.exceptions import NoDataForUpdateException
-from backend.src.utils import update_sql_entity, apply_query_params_to_select_query
+from backend.src.utils.service import update_sql_entity, apply_query_params_to_select_query
 
 
 async def get_all_incomes_db(session: AsyncSession, query_params: IncomeQueryParams) -> list[Income]:

@@ -4,3 +4,4 @@ asyncpg==0.27.0
 sqlalchemy==1.4.44
 alembic==1.8.1
 psycopg2==2.9.5
+pydantic_sqlalchemy==0.0.9

@@ -13,7 +13,6 @@ class IncomeSchemaIn(BaseORMSchema):
     name: constr(max_length=255)
     currency: Currencies
     replenishment_account_id: conint(ge=1)
-    # from db we get float, so we need to make decimal_places for Patch, In schemas
     amount: condecimal(gt=Decimal(0), decimal_places=2)
 
 
@@ -28,6 +27,7 @@ class IncomeSchemaOut(BaseORMSchema):
     id: int
     name: constr(max_length=255)
     currency: Currencies
+    # from db we get float, so we need to check decimal_places in amount field only in Patch, In schemas
     amount: condecimal(gt=Decimal(0))
     replenishment_account: AccountSchemaOut
     created_at: datetime.datetime

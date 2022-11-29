@@ -1,7 +1,7 @@
 import asyncio
-import os
 from decimal import Decimal
 from typing import Generator, Callable
+
 import pytest_asyncio
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSessio
 from sqlalchemy.orm import sessionmaker
 
 from backend.src.budget.models import Base, Account, Income
-from backend.src.config import get_db_url, AccountTypes, Currencies
+from backend.src.config import get_db_url
 from backend.src.dependencies import get_async_session
 from backend.src.main import app
 

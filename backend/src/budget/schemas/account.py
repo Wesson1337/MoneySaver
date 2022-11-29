@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from pydantic import BaseModel, constr
 
 from backend.src.config import AccountTypes, Currencies

@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 from .config import DATABASE_URL
 
-SQL_ALCHEMY_DATABASE_URL = f"postgresql+asyncpg://" + DATABASE_URL
+SQL_ALCHEMY_DATABASE_URL = "postgresql+asyncpg://" + DATABASE_URL
 
 engine = create_async_engine(
     SQL_ALCHEMY_DATABASE_URL, echo=bool(os.getenv('DEBUG'))

@@ -11,6 +11,14 @@ services:
     volumes:
       - db_volume:/var/lib/postgres/data
 
+  db-test:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8001:5432"
+
   backend:
       build:
         context: backend

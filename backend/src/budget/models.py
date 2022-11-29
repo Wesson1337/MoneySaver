@@ -18,6 +18,8 @@ class Income(Base):
     amount = sa.Column(sa.DECIMAL())
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
 
+    replenishment_account = relationship('Account', back_populates='incomes')
+
 
 class Account(Base):
     __tablename__ = 'account'
@@ -28,8 +30,8 @@ class Account(Base):
     balance = sa.Column(sa.DECIMAL())
     currency = sa.Column(sa.Enum(Currencies))
 
-    incomes = relationship('Income', backref='replenishment_account')
-    spendings = relationship('Spending', backref='receipt_account')
+    incomes = relationship('Income', back_populates='replenishment_account')
+    spendings = relationship('Spending', back_populates='receipt_account')
 
 
 class Spending(Base):
@@ -44,6 +46,10 @@ class Spending(Base):
     goal_id = sa.Column(sa.Integer, sa.ForeignKey('goal.id'))
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
 
+    receipt_account = relationship('Account', back_populates='spendings')
+    category = relationship('SpendingCategory', back_populates='spendings')
+    goal = relationship('Goal', back_populates='spendings')
+
 
 class SpendingCategory(Base):
     __tablename__ = 'spending_category'
@@ -53,7 +59,7 @@ class SpendingCategory(Base):
     spending_limit = sa.Column(sa.DECIMAL())
     limit_duration = sa.Column(sa.Integer)
 
-    spendings = relationship('Spending', backref='category')
+    spendings = relationship('Spending', back_populates='category')
 
 
 class Goal(Base):
@@ -65,7 +71,7 @@ class Goal(Base):
     balance = sa.Column(sa.DECIMAL())
     currency = sa.Column(sa.Enum(Currencies))
 
-    spendings = relationship('Spending', backref='goal')
+    spendings = relationship('Spending', back_populates='goal')
 
     async def get_the_rest_amount(self) -> Decimal:
         return Decimal(self.target_amount) - Decimal(self.balance)

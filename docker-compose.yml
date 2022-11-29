@@ -5,7 +5,7 @@ services:
     image: postgres:15-alpine
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${POSTGRES_DEV_PORT}:5432"
     env_file:
       - .env
     volumes:
@@ -17,7 +17,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8001:5432"
+      - "${POSTGRES_TEST_PORT}:5432"
 
   backend:
       build:

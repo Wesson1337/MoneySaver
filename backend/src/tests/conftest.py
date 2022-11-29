@@ -16,7 +16,7 @@ from backend.src.main import app
 
 TEST_DATABASE_URL = "postgresql+asyncpg://" + get_db_url(test=True)
 
-PAYLOAD_DATA = (
+PRELOAD_DATA = (
     {
         "table_name": Account,
         "data": {
@@ -32,6 +32,15 @@ PAYLOAD_DATA = (
             "name": "test",
             "currency": "US",
             "amount": Decimal(1.4),
+            "replenishment_account_id": 1
+        }
+    },
+    {
+        "table_name": Income,
+        "data": {
+            "name": "test",
+            "currency": "RUB",
+            "amount": Decimal(1.5),
             "replenishment_account_id": 1
         }
     }
@@ -67,7 +76,7 @@ async def session(db_engine: AsyncEngine) -> AsyncSession:
 async def seed_db(session: AsyncSession) -> None:
     accounts = await session.execute(select(Account))
     if not accounts.scalars().all():
-        for table in PAYLOAD_DATA:
+        for table in PRELOAD_DATA:
             new_table = table["table_name"](**table["data"])
             session.add(new_table)
         await session.commit()

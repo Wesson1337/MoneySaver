@@ -6,11 +6,12 @@ def get_db_url(test: bool = False) -> str:
     user = os.getenv('POSTGRES_USER') or 'postgres'
     password = os.getenv('POSTGRES_PASSWORD') or 'postgres'
     host = os.getenv('POSTGRES_HOST') or 'localhost'
+    db = os.getenv('POSTGRES_DB') or 'postgres'
+
     if test:
         port = os.getenv('POSTGRES_TEST_PORT') or '8001'
     else:
         port = os.getenv('POSTGRES_DEV_PORT') or '5432'
-    db = os.getenv('POSTGRES_DB') or 'postgres'
 
     return f"{user}:{password}@{host}:{port}/{db}"
 

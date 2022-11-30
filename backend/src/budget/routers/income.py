@@ -13,28 +13,36 @@ from backend.src.dependencies import get_async_session
 router = APIRouter()
 
 
-@router.get('/', response_model=List[IncomeSchemaOut])
+@router.get('/incomes/', response_model=List[IncomeSchemaOut])
 async def get_all_incomes(query_params: IncomeQueryParams = Depends(),
                           session: AsyncSession = Depends(get_async_session)) -> List[Income]:
     incomes = await get_all_incomes_db(session, query_params)
     return incomes
 
 
-@router.post('/', response_model=IncomeSchemaOut)
+@router.get('/accounts/{account_id}/incomes/', response_model=List[IncomeSchemaOut])
+async def get_all_incomes_by_account(account_id: int,
+                                     query_params: IncomeQueryParams = Depends(),
+                                     session: AsyncSession = Depends(get_async_session)) -> List[Income]:
+    incomes = await get_all_incomes_db(session, query_params, account_id)
+    return incomes
+
+
+@router.post('/incomes/', response_model=IncomeSchemaOut)
 async def create_income(income_data: IncomeSchemaIn,
                         session: AsyncSession = Depends(get_async_session)) -> Income:
     new_income = await create_income_db(income_data, session)
     return new_income
 
 
-@router.get('/{income_id}', response_model=IncomeSchemaOut)
+@router.get('/incomes/{income_id}/', response_model=IncomeSchemaOut)
 async def get_certain_income(income_id: int,
                              session: AsyncSession = Depends(get_async_session)) -> Income:
     income = await get_certain_income_db(income_id, session)
     return income
 
 
-@router.delete('/{income_id}')
+@router.delete('/incomes/{income_id}/')
 async def delete_income(income_id: int,
                         session: AsyncSession = Depends(get_async_session)
                         ) -> dict[Literal["message"], Literal["done"]]:
@@ -43,7 +51,7 @@ async def delete_income(income_id: int,
     return {"message": "done"}
 
 
-@router.patch('/{income_id}', response_model=IncomeSchemaOut)
+@router.patch('/incomes/{income_id}/', response_model=IncomeSchemaOut)
 async def patch_income(income_id: int,
                        income_data: IncomeSchemaPatch,
                        session: AsyncSession = Depends(get_async_session)) -> Income:

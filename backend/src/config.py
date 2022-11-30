@@ -3,6 +3,9 @@ from enum import Enum
 
 
 def get_db_url(test: bool = False) -> str:
+    """Returns database url without dialect and driver
+    add 'dialect+driver://' before it to use it in sqlalchemy"""
+
     user = os.getenv('POSTGRES_USER') or 'postgres'
     password = os.getenv('POSTGRES_PASSWORD') or 'postgres'
     host = os.getenv('POSTGRES_HOST') or 'localhost'

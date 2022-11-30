@@ -10,7 +10,7 @@ from backend.src.database import async_session
 
 app = FastAPI()
 
-app.include_router(income.router, prefix='/api/budget/incomes', tags=['Incomes'])
+app.include_router(income.router, prefix='/api/budget', tags=['Incomes'])
 
 
 @app.on_event("startup")

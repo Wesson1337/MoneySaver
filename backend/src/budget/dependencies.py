@@ -10,7 +10,6 @@ from backend.src.dependencies import BaseQueryParams
 
 @dataclass
 class IncomeQueryParams(BaseQueryParams):
-    replenishment_account_id: Optional[int] = Query(default=None)
     currency: Optional[Currencies] = Query(default=None)
     created_at_ge: Optional[datetime.datetime] = Query(default=None,
                                                        example="2022-11-19T11:49:27.702655",

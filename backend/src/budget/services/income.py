@@ -1,3 +1,5 @@
+from typing import Optional
+
 import sqlalchemy as sa
 from asyncpg.exceptions import ForeignKeyViolationError
 from fastapi import HTTPException
@@ -13,12 +15,16 @@ from backend.src.exceptions import NoDataForUpdateException
 from backend.src.utils.service import update_sql_entity, apply_query_params_to_select_query
 
 
-async def get_all_incomes_db(session: AsyncSession, query_params: IncomeQueryParams) -> list[Income]:
+async def get_all_incomes_db(session: AsyncSession, query_params: IncomeQueryParams,
+                             replenishment_account_id: Optional[int] = None) -> list[Income]:
 
     select_query = sa.select(Income).\
         order_by(Income.created_at.desc()).\
         order_by(Income.id.desc()).\
         options(joinedload(Income.replenishment_account))
+
+    if replenishment_account_id:
+        select_query = select_query.where(Income.replenishment_account_id == replenishment_account_id)
 
     select_query_with_filter = await apply_query_params_to_select_query(select_query, query_params, Income)
 

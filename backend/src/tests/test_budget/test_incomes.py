@@ -4,6 +4,7 @@ from decimal import Decimal
 import pytest
 from httpx import AsyncClient
 
+from backend.src.budget.exceptions import IncomeNotFoundException
 from backend.src.budget.models import Income
 from backend.src.tests.conftest import PRELOAD_DATA
 
@@ -16,7 +17,7 @@ async def test_get_all_incomes(client: AsyncClient):
 
     response_incomes = response.json()
 
-    preloaded_incomes = tuple((table for table in PRELOAD_DATA if table['table_name'] == Income))
+    preloaded_incomes = tuple((entity for entity in PRELOAD_DATA if entity['model'] == Income))
 
     assert len(response_incomes) == len(preloaded_incomes)
 
@@ -36,7 +37,7 @@ async def test_get_all_incomes_with_suitable_query(client: AsyncClient):
     response_incomes = response.json()
 
     preloaded_incomes_with_us_currency = tuple(
-        (table for table in PRELOAD_DATA if table['table_name'] == Income and table['data']['currency'] == 'US')
+        (entity for entity in PRELOAD_DATA if entity['model'] == Income and entity['data']['currency'] == 'US')
     )
 
     assert len(response.json()) == len(preloaded_incomes_with_us_currency)
@@ -76,3 +77,24 @@ async def test_get_all_incomes_by_account(client: AsyncClient):
     assert len(response_incomes) == 2
     for income in response_incomes:
         assert income['replenishment_account']['id'] == 1
+
+
+async def test_get_certain_income(client: AsyncClient):
+    response = await client.get('/api/budget/incomes/1/')
+
+    assert response.status_code == 200
+
+    preload_income = tuple((entity for entity in PRELOAD_DATA if entity['model'] == Income))[0]
+
+    response_income = response.json()
+
+    assert preload_income['data']['name'] == response_income['name']
+    assert preload_income['data']['amount'] == response_income['amount']
+    assert preload_income['data']['currency'] == response_income['currency']
+
+
+async def test_get_nonexistent_income(client: AsyncClient):
+    response = await client.get('/api/budget/incomes/9999/')
+
+    assert response.status_code == 404
+    assert response.json() == {'detail': IncomeNotFoundException().detail}

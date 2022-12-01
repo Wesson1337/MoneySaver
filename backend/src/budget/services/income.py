@@ -42,6 +42,8 @@ async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -
     except (ForeignKeyViolationError, IntegrityError):
         raise HTTPException(status_code=400, detail="Replenishment account not found.")
 
+    # TODO create logic to increase account amount
+
     income = await _get_income_by_id_with_joined_replenishment_account(income_id=new_income.id, session=session)
     return income
 
@@ -77,6 +79,8 @@ async def patch_income_db(income_id: int,
     except (ForeignKeyViolationError, IntegrityError):
         raise HTTPException(status_code=400, detail="Replenishment account not found.")
 
+    # TODO add logic to increase/decrease account amount if income amount changes
+
     return updated_income
 
 
@@ -91,6 +95,6 @@ async def _get_income_by_id_with_joined_replenishment_account(income_id: id,
     try:
         income = result.scalar_one()
     except NoResultFound:
-        raise IncomeNotFoundException
+        raise IncomeNotFoundException()
 
     return income

@@ -6,7 +6,7 @@ from pydantic import constr, condecimal, conint
 
 from backend.src.budget.schemas.account import AccountSchemaOut
 from backend.src.config import Currencies
-from backend.src.utils.utils import BaseORMSchema
+from backend.src.utils.schema import BaseORMSchema
 
 
 class IncomeSchemaIn(BaseORMSchema):

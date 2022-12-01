@@ -57,7 +57,7 @@ class SpendingCategory(Base):
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
     spending_limit = sa.Column(sa.DECIMAL())
-    limit_duration = sa.Column(sa.Integer)
+    spent_in_month = sa.Column(sa.DECIMAL())
 
     spendings = relationship('Spending', back_populates='category')
 

@@ -59,5 +59,20 @@ async def test_get_all_incomes_without_suitable_query(client: AsyncClient):
 
 
 async def test_get_all_incomes_with_wrong_query(client: AsyncClient):
-    query_params = ['currency', 'test_',
-                    ('created_at_ge', 'test')]
+    query_params = [('currency', 'test_'),
+                    ('created_at_ge', 'test'),
+                    ('test', 'test')]
+    response = await client.get('/api/budget/incomes/', params=query_params)
+    assert response.status_code == 422
+
+
+async def test_get_all_incomes_by_account(client: AsyncClient):
+    response = await client.get('/api/budget/accounts/1/incomes/')
+
+    assert response.status_code == 200
+
+    response_incomes = response.json()
+
+    assert len(response_incomes) == 2
+    for income in response_incomes:
+        assert income['replenishment_account']['id'] == 1

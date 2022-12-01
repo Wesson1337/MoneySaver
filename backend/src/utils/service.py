@@ -1,10 +1,13 @@
 from dataclasses import fields
+from decimal import Decimal
 from operator import methodcaller
 from typing import Type, Any
 
+from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
 
+from backend.src.config import Currencies
 from backend.src.database import Base
 from backend.src.dependencies import BaseQueryParams
 from backend.src.exceptions import NoDataForUpdateException
@@ -65,3 +68,15 @@ async def _apply_specific_param_to_select_query(field_name: str, field_value: An
 
     select_query = select_query.filter(compare_table_attr_with_value(table_attr))
     return select_query
+
+
+async def convert_amount_to_another_currency(amount: Decimal,
+                                             currency: Currencies | str,
+                                             desired_currency: Currencies | str) -> Decimal:
+    async with AsyncClient(base_url='https://api.api-ninjas.com/v1/convertcurrency') as client:
+        query_params = [('have', currency), ('want', desired_currency), ('amount', '{:.2f}'.format(amount))]
+        response = await client.get(url='/', params=query_params, timeout=10)
+        print(response.json())
+        amount_in_desired_currency = response.json()['new_amount']
+        return amount_in_desired_currency
+

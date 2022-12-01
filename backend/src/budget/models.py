@@ -4,7 +4,6 @@ from decimal import Decimal
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
-from ..config import Currencies, AccountTypes
 from ..database import Base
 
 
@@ -13,7 +12,7 @@ class Income(Base):
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
-    currency = sa.Column(sa.Enum(Currencies))
+    currency = sa.Column(sa.String(3))
     replenishment_account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
     amount = sa.Column(sa.DECIMAL())
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
@@ -26,9 +25,9 @@ class Account(Base):
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255))
-    type = sa.Column(sa.Enum(AccountTypes))
+    type = sa.Column(sa.String(12))
     balance = sa.Column(sa.DECIMAL())
-    currency = sa.Column(sa.Enum(Currencies))
+    currency = sa.Column(sa.String(3))
 
     incomes = relationship('Income', back_populates='replenishment_account')
     spendings = relationship('Spending', back_populates='receipt_account')
@@ -42,7 +41,7 @@ class Spending(Base):
     category_id = sa.Column(sa.Integer, sa.ForeignKey('spending_category.id'))
     receipt_account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
     amount = sa.Column(sa.DECIMAL())
-    currency = sa.Column(sa.Enum(Currencies))
+    currency = sa.Column(sa.String(3))
     goal_id = sa.Column(sa.Integer, sa.ForeignKey('goal.id'))
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
 
@@ -69,7 +68,7 @@ class Goal(Base):
     name = sa.Column(sa.String(255))
     target_amount = sa.Column(sa.DECIMAL())
     balance = sa.Column(sa.DECIMAL())
-    currency = sa.Column(sa.Enum(Currencies))
+    currency = sa.Column(sa.String(3))
 
     spendings = relationship('Spending', back_populates='goal')
 

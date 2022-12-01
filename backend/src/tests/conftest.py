@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSessio
 from sqlalchemy.orm import sessionmaker
 
 from backend.src.budget.models import Base, Account, Income
-from backend.src.config import get_db_url
+from backend.src.config import get_db_url, Currencies, AccountTypes
 from backend.src.dependencies import get_async_session
 from backend.src.main import app
 
@@ -21,16 +21,16 @@ PRELOAD_DATA = (
         "model": Account,
         "data": {
             "name": 'test',
-            "type": 'BANK_ACCOUNT',
+            "type": AccountTypes.BANK_ACCOUNT,
             "balance": Decimal(1.23),
-            "currency": "US"
+            "currency": Currencies.USD
         }
     },
     {
         "model": Income,
         "data": {
             "name": "test",
-            "currency": "US",
+            "currency": Currencies.USD,
             "amount": Decimal(1.4),
             "replenishment_account_id": 1
         }

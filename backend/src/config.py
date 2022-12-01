@@ -25,10 +25,11 @@ DATABASE_URL = get_db_url()
 class Currencies(str, Enum):
     """
     Enum type of currencies supported in app.
-    IMPORTANT! If you change this, necessarily make new migration with 'alembic revision'
     """
+    def __str__(self):
+        return str(self.value)
 
-    US = 'US'
+    USD = 'USD'
     RUB = 'RUB'
     CNY = 'CNY'
 
@@ -36,8 +37,9 @@ class Currencies(str, Enum):
 class AccountTypes(str, Enum):
     """
     Enum type of account types supported in app.
-    IMPORTANT! If you change this, necessarily make new migration with 'alembic revision'
     """
+    def __str__(self):
+        return str(self.value)
 
     WALLET = 'WALLET'
     BANK_ACCOUNT = 'BANK_ACCOUNT'

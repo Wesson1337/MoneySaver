@@ -24,7 +24,7 @@ async def seed_db():
                 name='test',
                 type=AccountTypes.BANK_ACCOUNT,
                 balance=Decimal(1.23),
-                currency=Currencies.US
+                currency=Currencies.USD
             )
 
             session.add(new_account)
@@ -32,7 +32,7 @@ async def seed_db():
 
             new_income = Income(
                 name='test',
-                currency='US',
+                currency=Currencies.USD,
                 amount=Decimal(1.4),
                 replenishment_account_id=new_account.id
             )

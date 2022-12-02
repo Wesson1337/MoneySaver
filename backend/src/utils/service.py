@@ -73,10 +73,13 @@ async def _apply_specific_param_to_select_query(field_name: str, field_value: An
 async def convert_amount_to_another_currency(amount: Decimal,
                                              currency: Currencies | str,
                                              desired_currency: Currencies | str) -> Decimal:
+    """Converts amount to another currency. It's using https://api-ninjas.com/api/convertcurrency#.
+    As specified in docs, there may be up to 1-hour delay in fetching the latest exchange rates, but
+    in this app real-time exchange rates are not required"""
+
     async with AsyncClient(base_url='https://api.api-ninjas.com/v1/convertcurrency') as client:
         query_params = [('have', currency), ('want', desired_currency), ('amount', '{:.2f}'.format(amount))]
         response = await client.get(url='/', params=query_params, timeout=10)
-        print(response.json())
         amount_in_desired_currency = response.json()['new_amount']
-        return amount_in_desired_currency
+        return Decimal(amount_in_desired_currency)
 

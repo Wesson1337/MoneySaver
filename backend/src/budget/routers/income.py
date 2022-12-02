@@ -1,7 +1,9 @@
 from typing import List, Literal
 
-from fastapi import APIRouter, Depends
+from asyncpg import ForeignKeyViolationError
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from backend.src.budget.dependencies import IncomeQueryParams
 from backend.src.budget.models import Income
@@ -28,10 +30,13 @@ async def get_all_incomes_by_account(account_id: int,
     return incomes
 
 
-@router.post('/incomes/', response_model=IncomeSchemaOut)
+@router.post('/incomes/', response_model=IncomeSchemaOut, status_code=201)
 async def create_income(income_data: IncomeSchemaIn,
                         session: AsyncSession = Depends(get_async_session)) -> Income:
-    new_income = await create_income_db(income_data, session)
+    try:
+        new_income = await create_income_db(income_data, session)
+    except (ForeignKeyViolationError, IntegrityError):
+        raise HTTPException(status_code=400, detail="Replenishment account doesn't exists")
     return new_income
 
 

@@ -39,8 +39,6 @@ async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -
     new_income = Income(**income_data.dict())
     session.add(new_income)
     replenishment_account = await session.get(Account, {'id': income_data.replenishment_account_id})
-    if not replenishment_account:
-        raise HTTPException(status_code=400, detail="Replenishment account not found.")
 
     await _add_income_amount_to_account_at_creation(new_income, replenishment_account)
 
@@ -103,7 +101,7 @@ async def _get_income_by_id_with_joined_replenishment_account(income_id: id,
 
 
 async def _add_income_amount_to_account_at_creation(income: Income, account: Account) -> None:
-    income_amount_in_account_currency = account.currency
+    income_amount_in_account_currency = income.amount
     if income.currency != account.currency:
         income_amount_in_account_currency = await convert_amount_to_another_currency(
             amount=Decimal(income.amount), currency=income.currency, desired_currency=account.currency

@@ -22,8 +22,6 @@ async def update_sql_entity(data: dict, sql_entity: Base, session: AsyncSession)
         if key and value:
             setattr(sql_entity, key, value)
 
-    await session.commit()
-
     return sql_entity
 
 

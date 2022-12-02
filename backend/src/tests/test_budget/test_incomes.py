@@ -1,5 +1,5 @@
 import datetime
-from decimal import Decimal, getcontext
+from decimal import Decimal
 
 import pytest
 from httpx import AsyncClient
@@ -158,3 +158,12 @@ async def test_create_incorrect_income(client: AsyncClient):
     }
     response = await client.post('/api/v1/budget/incomes/', json=income_data)
     assert response.status_code == 400
+
+    income_data = {}
+    response = await client.post('/api/v1/budget/incomes/', json=income_data)
+    assert response.status_code == 422
+
+
+async def test_income_patch():
+    pass
+    # TODO add this test

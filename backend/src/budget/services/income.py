@@ -2,9 +2,7 @@ from decimal import Decimal
 from typing import Optional
 
 import sqlalchemy as sa
-from asyncpg.exceptions import ForeignKeyViolationError
-from fastapi import HTTPException
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -19,10 +17,9 @@ from backend.src.utils.service import update_sql_entity, apply_query_params_to_s
 
 async def get_all_incomes_db(session: AsyncSession, query_params: IncomeQueryParams,
                              replenishment_account_id: Optional[int] = None) -> list[Income]:
-
-    select_query = sa.select(Income).\
-        order_by(Income.created_at.desc()).\
-        order_by(Income.id.desc()).\
+    select_query = sa.select(Income). \
+        order_by(Income.created_at.desc()). \
+        order_by(Income.id.desc()). \
         options(joinedload(Income.replenishment_account))
 
     if replenishment_account_id:
@@ -38,9 +35,8 @@ async def get_all_incomes_db(session: AsyncSession, query_params: IncomeQueryPar
 async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -> Income:
     new_income = Income(**income_data.dict())
     session.add(new_income)
-    replenishment_account = await session.get(Account, {'id': income_data.replenishment_account_id})
 
-    await _add_income_amount_to_account_at_creation(new_income, replenishment_account)
+    await _add_amount_to_account_at_income_creation(new_income, session)
 
     await session.commit()
 
@@ -74,12 +70,12 @@ async def patch_income_db(income_id: int,
 
     stored_income = await _get_income_by_id_with_joined_replenishment_account(income_id, session)
 
-    try:
-        updated_income = await update_sql_entity(income_data_dict, stored_income, session)
-    except (ForeignKeyViolationError, IntegrityError):
-        raise HTTPException(status_code=400, detail="Replenishment account not found.")
+    if income_data.amount and income_data.amount != stored_income.amount:
+        await _change_account_amount_at_income_patch(income_data, stored_income, session)
 
-    # TODO add logic to increase/decrease account amount if income amount changes
+    updated_income = await update_sql_entity(income_data_dict, stored_income, session)
+
+    await session.commit()
 
     return updated_income
 
@@ -100,11 +96,19 @@ async def _get_income_by_id_with_joined_replenishment_account(income_id: id,
     return income
 
 
-async def _add_income_amount_to_account_at_creation(income: Income, account: Account) -> None:
+async def _add_amount_to_account_at_income_creation(income: Income, session: AsyncSession) -> None:
+    replenishment_account = await session.get(Account, {'id': income.replenishment_account_id})
     income_amount_in_account_currency = income.amount
-    if income.currency != account.currency:
+    if income.currency != replenishment_account.currency:
         income_amount_in_account_currency = await convert_amount_to_another_currency(
-            amount=Decimal(income.amount), currency=income.currency, desired_currency=account.currency
+            amount=Decimal(income.amount), currency=income.currency, desired_currency=replenishment_account.currency
         )
 
-    account.balance += income_amount_in_account_currency
+    replenishment_account.balance += income_amount_in_account_currency
+
+
+async def _change_account_amount_at_income_patch(income_data: IncomeSchemaPatch,
+                                                 stored_income: Income,
+                                                 session: AsyncSession) -> None:
+    replenishment_account = await session.get(Account, {'pk': stored_income.replenishment_account_id})
+    # TODO continue logic for this

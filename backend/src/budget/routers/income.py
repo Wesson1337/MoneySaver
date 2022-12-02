@@ -2,8 +2,8 @@ from typing import List, Literal
 
 from asyncpg import ForeignKeyViolationError
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.budget.dependencies import IncomeQueryParams
 from backend.src.budget.models import Income
@@ -51,7 +51,6 @@ async def get_certain_income(income_id: int,
 async def delete_income(income_id: int,
                         session: AsyncSession = Depends(get_async_session)
                         ) -> dict[Literal["message"], Literal["done"]]:
-
     await delete_income_db(income_id, session)
     return {"message": "done"}
 

@@ -20,7 +20,6 @@ class IncomeSchemaPatch(BaseORMSchema):
     name: Optional[constr(max_length=255)]
     currency: Optional[Currencies]
     amount: Optional[condecimal(gt=Decimal(0), decimal_places=2)]
-    replenishment_account_id: Optional[conint(ge=1)]
 
 
 class IncomeSchemaOut(BaseORMSchema):

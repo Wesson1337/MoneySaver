@@ -98,11 +98,12 @@ async def _get_income_by_id_with_joined_replenishment_account(income_id: id,
 
 async def _add_amount_to_account_at_income_creation(income: Income, session: AsyncSession) -> None:
     replenishment_account = await session.get(Account, {'id': income.replenishment_account_id})
-    income_amount_in_account_currency = income.amount
     if income.currency != replenishment_account.currency:
         income_amount_in_account_currency = await convert_amount_to_another_currency(
             amount=Decimal(income.amount), currency=income.currency, desired_currency=replenishment_account.currency
         )
+    else:
+        income_amount_in_account_currency = income.amount
 
     replenishment_account.balance += income_amount_in_account_currency
 
@@ -110,5 +111,14 @@ async def _add_amount_to_account_at_income_creation(income: Income, session: Asy
 async def _change_account_amount_at_income_patch(income_data: IncomeSchemaPatch,
                                                  stored_income: Income,
                                                  session: AsyncSession) -> None:
-    replenishment_account = await session.get(Account, {'pk': stored_income.replenishment_account_id})
-    # TODO continue logic for this
+
+    new_and_stored_income_amount_difference = Decimal(income_data.amount) - Decimal(stored_income.amount)
+
+    replenishment_account = await session.get(Account, {'id': stored_income.replenishment_account_id})
+    if stored_income.currency != replenishment_account.currency:
+        new_and_stored_income_amount_difference = await convert_amount_to_another_currency(
+            amount=new_and_stored_income_amount_difference, currency=stored_income.currency,
+            desired_currency=replenishment_account.currency
+        )
+
+    replenishment_account.balance += new_and_stored_income_amount_difference

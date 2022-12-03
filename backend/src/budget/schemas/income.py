@@ -18,7 +18,6 @@ class IncomeSchemaIn(BaseORMSchema):
 
 class IncomeSchemaPatch(BaseORMSchema):
     name: Optional[constr(max_length=255)]
-    currency: Optional[Currencies]
     amount: Optional[condecimal(gt=Decimal(0), decimal_places=2)]
 
 

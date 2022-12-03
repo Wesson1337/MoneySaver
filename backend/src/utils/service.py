@@ -1,3 +1,4 @@
+import os
 from dataclasses import fields
 from decimal import Decimal
 from operator import methodcaller
@@ -71,13 +72,13 @@ async def _apply_specific_param_to_select_query(field_name: str, field_value: An
 async def convert_amount_to_another_currency(amount: Decimal,
                                              currency: Currencies | str,
                                              desired_currency: Currencies | str) -> Decimal:
-    """Converts amount to another currency. It's using https://api-ninjas.com/api/convertcurrency#.
-    As specified in docs, there may be up to 1-hour delay in fetching the latest exchange rates, but
-    in this app real-time exchange rates are not required"""
+    """Converts amount to another currency. It's using https://app.freecurrencyapi.com/.
+    Returns a decimal object with two digits after the dot"""
 
-    async with AsyncClient(base_url='https://api.api-ninjas.com/v1/convertcurrency') as client:
-        query_params = [('have', currency), ('want', desired_currency), ('amount', '{:.2f}'.format(amount))]
+    async with AsyncClient(base_url='https://api.freecurrencyapi.com/v1/latest') as client:
+        query_params = [('apikey', os.getenv('CURRENCY_API_KEY')),
+                        ('base_currency', currency)]
         response = await client.get(url='/', params=query_params, timeout=10)
-        amount_in_desired_currency = response.json()['new_amount']
-        return Decimal(amount_in_desired_currency)
-
+        desired_currency_rate = response.json()['data'][desired_currency]
+        amount_in_desired_currency = amount * Decimal(desired_currency_rate)
+        return Decimal(amount_in_desired_currency).quantize(Decimal('.01'))

@@ -117,18 +117,44 @@ async def test_create_income(client: AsyncClient):
     assert response.status_code == 201
 
     income_json = response.json()
-    preloaded_account = tuple((entity for entity in PRELOAD_DATA if entity['model'] == Account))[0]
 
     assert income_json['name'] == income_data['name']
     assert income_json['currency'] == income_data['currency']
     assert income_json['replenishment_account']['id'] == income_data['replenishment_account_id']
     assert income_json['amount'] == income_data['amount']
 
+    preloaded_account = tuple((entity for entity in PRELOAD_DATA if entity['model'] == Account))[0]
     preloaded_account_balance = preloaded_account['data']['balance']
     sum_of_income_amount_and_preload_account_balance = \
         preloaded_account_balance.quantize(Decimal('.01')) + Decimal(income_data['amount']).quantize(Decimal('.01'))
     response_account_balance = Decimal(income_json['replenishment_account']['balance']).quantize(Decimal('.01'))
     assert response_account_balance == sum_of_income_amount_and_preload_account_balance
+
+
+async def test_create_income_with_different_currency_from_account(client: AsyncClient):
+    income_data = {
+        "name": "test_income",
+        "currency": "CNY",
+        "replenishment_account_id": 1,
+        "amount": 2.30
+    }
+
+    get_income_response = await client.get('/api/v1/budget/incomes/1/')
+    replenishment_account_before_income_creation = get_income_response.json()['replenishment_account']
+
+    create_income_response = await client.post('/api/v1/budget/incomes/', json=income_data)
+
+    assert create_income_response.status_code == 201
+
+    income_json = create_income_response.json()
+
+    assert income_json['name'] == income_data['name']
+    assert income_json['currency'] == income_data['currency']
+    assert income_json['replenishment_account']['id'] == income_data['replenishment_account_id']
+    assert income_json['amount'] == income_data['amount']
+
+    replenishment_account_balance_before_income_creation = replenishment_account_before_income_creation['balance']
+    assert income_json['replenishment_account']['balance'] > replenishment_account_balance_before_income_creation
 
 
 async def test_create_incorrect_income(client: AsyncClient):

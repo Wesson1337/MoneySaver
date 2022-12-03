@@ -22,7 +22,7 @@ PRELOAD_DATA = (
         "data": {
             "name": 'test',
             "type": AccountTypes.BANK_ACCOUNT,
-            "balance": Decimal(1.23),
+            "balance": Decimal(2.9),
             "currency": Currencies.USD
         }
     },
@@ -39,7 +39,7 @@ PRELOAD_DATA = (
         "model": Income,
         "data": {
             "name": "test",
-            "currency": "RUB",
+            "currency": Currencies.RUB,
             "amount": Decimal(1.5),
             "replenishment_account_id": 1
         }
@@ -47,21 +47,21 @@ PRELOAD_DATA = (
 )
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 def event_loop(request) -> Generator:
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def db_engine() -> AsyncEngine:
     engine = create_async_engine(TEST_DATABASE_URL)
     yield engine
     await engine.dispose()
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def session(db_engine: AsyncEngine) -> AsyncSession:
     async_session = sessionmaker(bind=db_engine, expire_on_commit=False, class_=AsyncSession)
     async with db_engine.begin() as conn:
@@ -72,7 +72,7 @@ async def session(db_engine: AsyncEngine) -> AsyncSession:
             await session.rollback()
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def seed_db(session: AsyncSession) -> None:
     accounts = await session.execute(select(Account))
     if not accounts.scalars().all():
@@ -82,7 +82,7 @@ async def seed_db(session: AsyncSession) -> None:
         await session.commit()
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 def override_get_async_session(session: AsyncSession) -> Callable:
     async def _override_get_async_session():
         yield session
@@ -90,13 +90,13 @@ def override_get_async_session(session: AsyncSession) -> Callable:
     return _override_get_async_session
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 def test_app(override_get_async_session: Callable) -> FastAPI:
     app.dependency_overrides[get_async_session] = override_get_async_session
     return app
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def client(seed_db, test_app: FastAPI) -> AsyncClient:
     async with AsyncClient(app=app, base_url="http://localhost:8000") as ac:
         yield ac

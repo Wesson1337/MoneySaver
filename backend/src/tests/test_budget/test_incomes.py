@@ -64,9 +64,15 @@ async def test_get_all_incomes_without_suitable_query(client: AsyncClient):
 
 
 async def test_get_all_incomes_with_wrong_query(client: AsyncClient):
-    query_params = [('currency', 'test_'),
-                    ('created_at_ge', 'test'),
-                    ('test', 'test')]
+    query_params = [('created_at_ge', 'test')]
+    response = await client.get('/api/v1/budget/incomes/', params=query_params)
+    assert response.status_code == 422
+
+    query_params = [('currency', 'test_')]
+    response = await client.get('/api/v1/budget/incomes/', params=query_params)
+    assert response.status_code == 422
+
+    query_params = [('created_at_le', 'test')]
     response = await client.get('/api/v1/budget/incomes/', params=query_params)
     assert response.status_code == 422
 
@@ -190,6 +196,67 @@ async def test_create_incorrect_income(client: AsyncClient):
     assert response.status_code == 422
 
 
-async def test_income_patch():
-    pass
-    # TODO add this test
+async def test_income_patch(client: AsyncClient):
+    income_data = {
+        "name": "test_income",
+        "amount": 0.49
+    }
+
+    get_income_response = await client.get('/api/v1/budget/incomes/1/')
+    replenishment_account_before_income_patch = get_income_response.json()['replenishment_account']
+    income_amount_before_patch = get_income_response.json()['amount']
+
+    response = await client.patch('/api/v1/budget/incomes/1/', json=income_data)
+
+    assert response.status_code == 200
+
+    income_json = response.json()
+    assert income_json['name'] == income_data['name']
+    assert income_json['amount'] == income_data['amount']
+    assert income_amount_before_patch != income_json['amount']
+
+    new_and_old_income_amount_difference = Decimal(income_data['amount']) - Decimal(income_amount_before_patch)
+    assert Decimal(income_json['replenishment_account']['balance']).quantize(Decimal('.01')) == \
+        Decimal(replenishment_account_before_income_patch['balance']).quantize(Decimal('.01')) + \
+        new_and_old_income_amount_difference.quantize(Decimal('.01'))
+
+
+async def test_income_patch_with_different_currency_from_account(client: AsyncClient):
+    income_data = {
+        "name": "test_income",
+        "amount": 60
+    }
+
+    get_income_response = await client.get('/api/v1/budget/incomes/1/')
+    replenishment_account_before_income_patch = get_income_response.json()['replenishment_account']
+    income_amount_before_patch = get_income_response.json()['amount']
+
+    response = await client.patch('/api/v1/budget/incomes/1/', json=income_data)
+
+    assert response.status_code == 200
+
+    income_json = response.json()
+    assert income_json['name'] == income_data['name']
+    assert income_json['amount'] == income_data['amount']
+    assert income_amount_before_patch != income_json['amount']
+
+    assert Decimal(income_json['replenishment_account']['balance']) > \
+           Decimal(replenishment_account_before_income_patch['balance'])
+
+
+async def test_income_patch_with_incorrect_data(client: AsyncClient):
+    income_data = {
+        "amount": '1.22222'
+    }
+    response = await client.patch('/api/v1/budget/incomes/1/', json=income_data)
+    assert response.status_code == 422
+
+    income_data = {
+        "amount": -1
+    }
+    response = await client.patch('/api/v1/budget/incomes/1/', json=income_data)
+    assert response.status_code == 422
+
+    income_data = {}
+    response = await client.patch('/api/v1/budget/incomes/1/', json=income_data)
+    assert response.status_code == 422

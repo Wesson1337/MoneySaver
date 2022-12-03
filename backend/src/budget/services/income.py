@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from backend.src.budget.dependencies import IncomeQueryParams
-from backend.src.budget.exceptions import IncomeNotFoundException
+from backend.src.budget.exceptions import IncomeNotFoundException, AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Income, Account
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.exceptions import NoDataForUpdateException
@@ -36,7 +36,7 @@ async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -
     new_income = Income(**income_data.dict())
     session.add(new_income)
 
-    await _add_amount_to_account_at_income_creation(new_income, session)
+    await _add_income_amount_to_account_balance(Decimal(new_income.amount), new_income, session)
 
     await session.commit()
 
@@ -56,6 +56,8 @@ async def delete_income_db(income_id: int, session: AsyncSession) -> None:
     if not income:
         raise IncomeNotFoundException()
 
+    await _add_income_amount_to_account_balance(Decimal(-income.amount), income, session)
+
     await session.delete(income)
     await session.commit()
 
@@ -71,7 +73,9 @@ async def patch_income_db(income_id: int,
     stored_income = await _get_income_by_id_with_joined_replenishment_account(income_id, session)
 
     if income_data.amount and income_data.amount != stored_income.amount:
-        await _change_account_amount_at_income_patch(income_data, stored_income, session)
+        new_and_stored_income_amount_difference = Decimal(income_data.amount).quantize(Decimal('.01')) \
+                                                  - Decimal(stored_income.amount).quantize(Decimal('.01'))
+        await _add_income_amount_to_account_balance(new_and_stored_income_amount_difference, stored_income, session)
 
     updated_income = await update_sql_entity(income_data_dict, stored_income, session)
 
@@ -96,29 +100,18 @@ async def _get_income_by_id_with_joined_replenishment_account(income_id: id,
     return income
 
 
-async def _add_amount_to_account_at_income_creation(income: Income, session: AsyncSession) -> None:
+async def _add_income_amount_to_account_balance(amount: Decimal,
+                                                income: Income,
+                                                session: AsyncSession) -> None:
     replenishment_account = await session.get(Account, {'id': income.replenishment_account_id})
     if income.currency != replenishment_account.currency:
-        income_amount_in_account_currency = await convert_amount_to_another_currency(
-            amount=Decimal(income.amount), currency=income.currency, desired_currency=replenishment_account.currency
+        amount_in_account_currency = await convert_amount_to_another_currency(
+            amount=amount, currency=income.currency, desired_currency=replenishment_account.currency
         )
     else:
-        income_amount_in_account_currency = income.amount
+        amount_in_account_currency = amount
 
-    replenishment_account.balance += income_amount_in_account_currency
-
-
-async def _change_account_amount_at_income_patch(income_data: IncomeSchemaPatch,
-                                                 stored_income: Income,
-                                                 session: AsyncSession) -> None:
-
-    new_and_stored_income_amount_difference = Decimal(income_data.amount) - Decimal(stored_income.amount)
-
-    replenishment_account = await session.get(Account, {'id': stored_income.replenishment_account_id})
-    if stored_income.currency != replenishment_account.currency:
-        new_and_stored_income_amount_difference = await convert_amount_to_another_currency(
-            amount=new_and_stored_income_amount_difference, currency=stored_income.currency,
-            desired_currency=replenishment_account.currency
-        )
-
-    replenishment_account.balance += new_and_stored_income_amount_difference
+    replenishment_account.balance += amount_in_account_currency
+    if replenishment_account.balance < 0:
+        # We can get negative Decimal in func param, so we have to raise exception in that case
+        raise AccountBalanceWillGoNegativeException()

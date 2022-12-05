@@ -50,9 +50,9 @@ async def get_certain_income(income_id: int,
 @router.delete('/incomes/{income_id}/')
 async def delete_income(income_id: int,
                         session: AsyncSession = Depends(get_async_session)
-                        ) -> dict[Literal["message"], Literal["done"]]:
+                        ) -> dict[Literal["message"], Literal["success"]]:
     await delete_income_db(income_id, session)
-    return {"message": "done"}
+    return {"message": "success"}
 
 
 @router.patch('/incomes/{income_id}/', response_model=IncomeSchemaOut)

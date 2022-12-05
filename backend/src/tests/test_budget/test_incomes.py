@@ -217,8 +217,8 @@ async def test_income_patch(client: AsyncClient):
 
     new_and_old_income_amount_difference = Decimal(income_data['amount']) - Decimal(income_amount_before_patch)
     assert Decimal(income_json['replenishment_account']['balance']).quantize(Decimal('.01')) == \
-        Decimal(replenishment_account_before_income_patch['balance']).quantize(Decimal('.01')) + \
-        new_and_old_income_amount_difference.quantize(Decimal('.01'))
+           Decimal(replenishment_account_before_income_patch['balance']).quantize(Decimal('.01')) + \
+           new_and_old_income_amount_difference.quantize(Decimal('.01'))
 
 
 async def test_income_patch_with_different_currency_from_account(client: AsyncClient):
@@ -260,3 +260,33 @@ async def test_income_patch_with_incorrect_data(client: AsyncClient):
     income_data = {}
     response = await client.patch('/api/v1/budget/incomes/1/', json=income_data)
     assert response.status_code == 422
+
+
+async def test_income_delete(client: AsyncClient):
+    get_income_response = await client.get('/api/v1/budget/incomes/1/')
+    stored_income = get_income_response.json()
+
+    delete_response = await client.delete('/api/v1/budget/incomes/1/')
+    assert delete_response.status_code == 200
+    assert delete_response.json() == {'message': 'success'}
+
+    deleted_income_get_response = await client.get('/api/v1/budget/incomes/1/')
+    assert deleted_income_get_response.status_code == 404
+
+    get_second_income_response = await client.get('/api/v1/budget/incomes/2/')
+    updated_account = get_second_income_response.json()['replenishment_account']
+
+    assert Decimal(stored_income['replenishment_account']['balance']).quantize(Decimal('.01')) == \
+           Decimal(updated_account['balance']).quantize(Decimal('.01')) + \
+           Decimal(stored_income['amount']).quantize(Decimal('.01'))
+
+
+async def test_delete_nonexistent_income(client: AsyncClient):
+    all_incomes_response_before_deletion = await client.get('/api/v1/budget/incomes/')
+
+    response = await client.delete('/api/v1/budget/incomes/999/')
+    assert response.status_code == 404
+
+    all_incomes_response_after_deletion = await client.get('/api/v1/budget/incomes/')
+    assert all_incomes_response_before_deletion.json() == all_incomes_response_after_deletion.json()
+

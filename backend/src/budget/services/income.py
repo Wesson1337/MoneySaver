@@ -11,7 +11,7 @@ from backend.src.budget.exceptions import IncomeNotFoundException, AccountBalanc
 from backend.src.budget.models import Income, Account
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.exceptions import NoDataForUpdateException
-from backend.src.utils.service import update_sql_entity, apply_query_params_to_select_query, \
+from backend.src.utils.service import update_sql_entity, apply_query_params_to_select_sql_query, \
     convert_amount_to_another_currency
 
 
@@ -25,7 +25,7 @@ async def get_all_incomes_db(session: AsyncSession, query_params: IncomeQueryPar
     if replenishment_account_id:
         select_query = select_query.where(Income.replenishment_account_id == replenishment_account_id)
 
-    select_query_with_filter = await apply_query_params_to_select_query(select_query, query_params, Income)
+    select_query_with_filter = await apply_query_params_to_select_sql_query(select_query, query_params, Income)
 
     result = await session.execute(select_query_with_filter)
     incomes = result.scalars().all()
@@ -77,7 +77,7 @@ async def patch_income_db(income_id: int,
                                                   - Decimal(stored_income.amount).quantize(Decimal('.01'))
         await _add_income_amount_to_account_balance(new_and_stored_income_amount_difference, stored_income, session)
 
-    updated_income = await update_sql_entity(income_data_dict, stored_income, session)
+    updated_income = await update_sql_entity(income_data_dict, stored_income)
 
     await session.commit()
 

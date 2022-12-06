@@ -28,6 +28,7 @@ class Account(Base):
     type = sa.Column(sa.String(12))
     balance = sa.Column(sa.DECIMAL())
     currency = sa.Column(sa.String(3))
+    is_active = sa.Column(sa.Boolean)
 
     incomes = relationship('Income', back_populates='replenishment_account')
     spendings = relationship('Spending', back_populates='receipt_account')

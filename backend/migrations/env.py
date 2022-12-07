@@ -20,7 +20,9 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
+# noinspection PyUnresolvedReferences
 from backend.src.budget.models import Base
+from backend.src.auth.models import Base
 
 target_metadata = Base.metadata
 

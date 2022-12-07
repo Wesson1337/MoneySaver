@@ -9,6 +9,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
+# noinspection PyUnresolvedReferences
+from backend.src.auth.models import Base
 from backend.src.budget.models import Base, Account, Income
 from backend.src.config import get_db_url, Currencies, AccountTypes
 from backend.src.dependencies import get_async_session

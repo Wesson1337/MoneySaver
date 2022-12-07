@@ -16,7 +16,9 @@ class Income(Base):
     replenishment_account_id = sa.Column(sa.Integer, sa.ForeignKey('account.id'))
     amount = sa.Column(sa.DECIMAL())
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
+    user_id = sa.Column(sa.ForeignKey('user.id'))
 
+    user = relationship('User', back_populates='incomes')
     replenishment_account = relationship('Account', back_populates='incomes')
 
 
@@ -29,7 +31,9 @@ class Account(Base):
     balance = sa.Column(sa.DECIMAL())
     currency = sa.Column(sa.String(3))
     is_active = sa.Column(sa.Boolean)
+    user_id = sa.Column(sa.ForeignKey('user.id'))
 
+    user = relationship('User', back_populates='accounts')
     incomes = relationship('Income', back_populates='replenishment_account')
     spendings = relationship('Spending', back_populates='receipt_account')
 
@@ -45,7 +49,9 @@ class Spending(Base):
     currency = sa.Column(sa.String(3))
     goal_id = sa.Column(sa.Integer, sa.ForeignKey('goal.id'))
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now())
+    user_id = sa.Column(sa.ForeignKey('user.id'))
 
+    user = relationship('User', back_populates='spendings')
     receipt_account = relationship('Account', back_populates='spendings')
     category = relationship('SpendingCategory', back_populates='spendings')
     goal = relationship('Goal', back_populates='spendings')
@@ -58,7 +64,9 @@ class SpendingCategory(Base):
     name = sa.Column(sa.String(255))
     spending_limit = sa.Column(sa.DECIMAL())
     spent_in_month = sa.Column(sa.DECIMAL())
+    user_id = sa.Column(sa.ForeignKey('user.id'))
 
+    user = relationship('User', back_populates='spending_categories')
     spendings = relationship('Spending', back_populates='category')
 
 
@@ -70,7 +78,9 @@ class Goal(Base):
     target_amount = sa.Column(sa.DECIMAL())
     balance = sa.Column(sa.DECIMAL())
     currency = sa.Column(sa.String(3))
+    user_id = sa.Column(sa.ForeignKey('user.id'))
 
+    user = relationship('User', back_populates='goals')
     spendings = relationship('Spending', back_populates='goal')
 
     async def get_the_rest_amount(self) -> Decimal:

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import EmailStr, constr, validator
+from pydantic import EmailStr, constr, validator, BaseModel
 
 from backend.src.utils.schema import BaseORMSchema
 
@@ -29,3 +29,12 @@ class UserSchemaOut(BaseORMSchema):
     email: str
     is_active: bool
     is_superuser: bool
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    email: EmailStr

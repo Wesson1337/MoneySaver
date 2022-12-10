@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, Literal
 
 import sqlalchemy as sa
 from sqlalchemy.exc import NoResultFound
@@ -15,9 +15,10 @@ from backend.src.utils.service import update_sql_entity, apply_query_params_to_s
     convert_amount_to_another_currency
 
 
-async def get_all_incomes_db(session: AsyncSession, query_params: IncomeQueryParams,
-                             replenishment_account_id: Optional[int] = None) -> list[Income]:
-    select_query = sa.select(Income). \
+async def get_incomes_db(session: AsyncSession, query_params: IncomeQueryParams, user_id: int,
+                         replenishment_account_id: Optional[int] = None) -> list[Income]:
+    select_query = sa.select(Income).\
+        where(Income.user_id == user_id).\
         order_by(Income.created_at.desc()). \
         order_by(Income.id.desc()). \
         options(joinedload(Income.replenishment_account))
@@ -32,8 +33,8 @@ async def get_all_incomes_db(session: AsyncSession, query_params: IncomeQueryPar
     return incomes
 
 
-async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -> Income:
-    new_income = Income(**income_data.dict())
+async def create_income_db(income_data: IncomeSchemaIn, user_id: int, session: AsyncSession) -> Income:
+    new_income = Income(user_id=user_id, **income_data.dict())
     session.add(new_income)
 
     await _add_income_amount_to_account_balance(Decimal(new_income.amount), new_income, session)
@@ -44,8 +45,8 @@ async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -
     return income
 
 
-async def get_certain_income_db(income_id: int, session: AsyncSession) -> Income:
-    income = await _get_income_by_id_with_joined_replenishment_account(income_id, session)
+async def get_certain_income_db(income_id: int, user_id: int, session: AsyncSession) -> Income:
+    income = await _get_income_by_id_with_joined_replenishment_account(income_id, user_id, session)
 
     return income
 
@@ -85,17 +86,16 @@ async def patch_income_db(income_id: int,
 
 
 async def _get_income_by_id_with_joined_replenishment_account(income_id: id,
+                                                              user_id: int,
                                                               session: AsyncSession) -> Income:
     # Not using session.get, because we need to execute joinedload in async mode to pass it to pydantic model
     # which is sync
     result = await session.execute(sa.select(Income).
                                    where(Income.id == income_id).
+                                   where(Income.user_id == user_id).
                                    options(joinedload(Income.replenishment_account)))
 
-    try:
-        income = result.scalar_one()
-    except NoResultFound:
-        raise IncomeNotFoundException()
+    income = result.scalar_one_or_none()
 
     return income
 

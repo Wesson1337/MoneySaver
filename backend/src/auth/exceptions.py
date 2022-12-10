@@ -25,3 +25,20 @@ class NotSuperUserException(HTTPException):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only superuser can grant superuser rights"
         )
+
+
+class IncorrectEmailOrPasswordException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect user or password",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+
+class EmailAlreadyExistsException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This email already exists"
+        )

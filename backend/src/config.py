@@ -1,6 +1,8 @@
 import os
 from enum import Enum
 
+DEFAULT_API_PREFIX = "/api/v1"
+
 
 def get_db_url(test: bool = False) -> str:
     """Returns database url without dialect and driver,

@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from pydantic import EmailStr, constr, validator, BaseModel
@@ -29,6 +30,7 @@ class UserSchemaOut(BaseORMSchema):
     email: str
     is_active: bool
     is_superuser: bool
+    created_at: datetime.datetime
 
 
 class Token(BaseModel):

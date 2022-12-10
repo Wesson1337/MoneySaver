@@ -5,12 +5,14 @@ from fastapi import FastAPI
 
 from backend.src.budget.models import Account, Income
 from backend.src.budget.routers import income
-from backend.src.config import AccountTypes, Currencies
+from backend.src.config import AccountTypes, Currencies, DEFAULT_API_PREFIX
 from backend.src.database import async_session
+import backend.src.auth.router as auth
 
 app = FastAPI()
 
-app.include_router(income.router, prefix='/api/v1/budget', tags=['Incomes'])
+app.include_router(auth.router, prefix=f'{DEFAULT_API_PREFIX}', tags=['Users'])
+app.include_router(income.router, prefix=f'{DEFAULT_API_PREFIX}/budget', tags=['Incomes'])
 
 
 @app.on_event("startup")

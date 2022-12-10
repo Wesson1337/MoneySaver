@@ -1,11 +1,13 @@
 from datetime import timedelta, datetime
 from typing import Optional
-
+import sqlalchemy as sa
+from asyncpg import UniqueViolationError
 from jose import jwt
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.auth.config import pwd_context, JWT_SECRET_KEY, JWT_ALGORITHM
-from backend.src.auth.exceptions import NotSuperUserException
+from backend.src.auth.exceptions import NotSuperUserException, EmailAlreadyExistsException
 from backend.src.auth.models import User
 from backend.src.auth.schemas import UserSchemaIn
 
@@ -34,7 +36,8 @@ def check_user_is_superuser(user: Optional[User]) -> bool:
 
 
 async def get_user_by_email(email: str, session: AsyncSession) -> User:
-    user = await session.get(User, {"email": email})
+    result = await session.execute(sa.select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
     return user
 
 
@@ -47,14 +50,17 @@ async def authenticate_user(email: str, password: str, session: AsyncSession) ->
     return user
 
 
-async def create_user(current_user: User, new_user_data: UserSchemaIn, session: AsyncSession) -> User:
+async def create_user(new_user_data: UserSchemaIn, session: AsyncSession, current_user: Optional[User] = None) -> User:
     if new_user_data.is_superuser and not check_user_is_superuser(current_user):
         raise NotSuperUserException()
 
     new_user_dict = _change_user_password_to_hashed_password(new_user_data)
     new_user = User(**new_user_dict)
     session.add(new_user)
-    await session.commit()
+    try:
+        await session.commit()
+    except (UniqueViolationError, IntegrityError):
+        raise EmailAlreadyExistsException()
 
     return new_user
 

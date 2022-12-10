@@ -6,14 +6,14 @@ from httpx import AsyncClient
 
 from backend.src.budget.exceptions import IncomeNotFoundException
 from backend.src.budget.models import Income, Account
-from backend.src.config import Currencies
+from backend.src.config import Currencies, DEFAULT_API_PREFIX
 from backend.src.tests.conftest import PRELOAD_DATA
 
 pytestmark = pytest.mark.asyncio
 
 
 async def test_get_all_incomes(client: AsyncClient):
-    response = await client.get('/api/v1/budget/incomes/')
+    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/')
     assert response.status_code == 200
 
     response_incomes = response.json()
@@ -31,7 +31,7 @@ async def test_get_all_incomes_with_suitable_query(client: AsyncClient):
     query_params = [('currency', Currencies.USD),
                     ('created_at_ge', datetime.datetime(year=2022, month=1, day=1)),
                     ('created_at_le', datetime.datetime.now())]
-    response = await client.get('/api/v1/budget/incomes/', params=query_params)
+    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/', params=query_params)
 
     print(response.json())
 
@@ -57,7 +57,7 @@ async def test_get_all_incomes_without_suitable_query(client: AsyncClient):
                     ('created_at_ge', datetime.datetime.now()),
                     ('created_at_le', datetime.datetime.now())]
 
-    response = await client.get('/api/v1/budget/incomes/', params=query_params)
+    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/', params=query_params)
 
     assert response.status_code == 200
     assert len(response.json()) == 0
@@ -65,20 +65,20 @@ async def test_get_all_incomes_without_suitable_query(client: AsyncClient):
 
 async def test_get_all_incomes_with_wrong_query(client: AsyncClient):
     query_params = [('created_at_ge', 'test')]
-    response = await client.get('/api/v1/budget/incomes/', params=query_params)
+    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/', params=query_params)
     assert response.status_code == 422
 
     query_params = [('currency', 'test_')]
-    response = await client.get('/api/v1/budget/incomes/', params=query_params)
+    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/', params=query_params)
     assert response.status_code == 422
 
     query_params = [('created_at_le', 'test')]
-    response = await client.get('/api/v1/budget/incomes/', params=query_params)
+    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/', params=query_params)
     assert response.status_code == 422
 
 
 async def test_get_all_incomes_by_account(client: AsyncClient):
-    response = await client.get('/api/v1/budget/accounts/1/incomes/')
+    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/accounts/1/incomes/')
 
     assert response.status_code == 200
 
@@ -90,7 +90,7 @@ async def test_get_all_incomes_by_account(client: AsyncClient):
 
 
 async def test_get_certain_income(client: AsyncClient):
-    response = await client.get('/api/v1/budget/incomes/1/')
+    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
 
     assert response.status_code == 200
 
@@ -104,7 +104,7 @@ async def test_get_certain_income(client: AsyncClient):
 
 
 async def test_get_nonexistent_income(client: AsyncClient):
-    response = await client.get('/api/v1/budget/incomes/9999/')
+    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/9999/')
 
     assert response.status_code == 404
     assert response.json() == {'detail': IncomeNotFoundException().detail}
@@ -118,7 +118,7 @@ async def test_create_income(client: AsyncClient):
         "amount": 2.30
     }
 
-    response = await client.post('/api/v1/budget/incomes/', json=income_data)
+    response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
 
     assert response.status_code == 201
 
@@ -145,10 +145,10 @@ async def test_create_income_with_different_currency_from_account(client: AsyncC
         "amount": 2.30
     }
 
-    get_income_response = await client.get('/api/v1/budget/incomes/1/')
+    get_income_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
     replenishment_account_before_income_creation = get_income_response.json()['replenishment_account']
 
-    create_income_response = await client.post('/api/v1/budget/incomes/', json=income_data)
+    create_income_response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
 
     assert create_income_response.status_code == 201
 
@@ -170,7 +170,7 @@ async def test_create_incorrect_income(client: AsyncClient):
         "replenishment_account_id": 1,
         "amount": 2.30
     }
-    response = await client.post('/api/v1/budget/incomes/', json=income_data)
+    response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
     assert response.status_code == 422
 
     income_data = {
@@ -179,7 +179,7 @@ async def test_create_incorrect_income(client: AsyncClient):
         "replenishment_account_id": 1,
         "amount": 2.3333
     }
-    response = await client.post('/api/v1/budget/incomes/', json=income_data)
+    response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
     assert response.status_code == 422
 
     income_data = {
@@ -188,11 +188,11 @@ async def test_create_incorrect_income(client: AsyncClient):
         "replenishment_account_id": 3,
         "amount": 2.33
     }
-    response = await client.post('/api/v1/budget/incomes/', json=income_data)
+    response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
     assert response.status_code == 400
 
     income_data = {}
-    response = await client.post('/api/v1/budget/incomes/', json=income_data)
+    response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
     assert response.status_code == 422
 
 
@@ -202,11 +202,11 @@ async def test_income_patch(client: AsyncClient):
         "amount": 0.49
     }
 
-    get_income_response = await client.get('/api/v1/budget/incomes/1/')
+    get_income_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
     replenishment_account_before_income_patch = get_income_response.json()['replenishment_account']
     income_amount_before_patch = get_income_response.json()['amount']
 
-    response = await client.patch('/api/v1/budget/incomes/1/', json=income_data)
+    response = await client.patch(f'{DEFAULT_API_PREFIX}/budget/incomes/1/', json=income_data)
 
     assert response.status_code == 200
 
@@ -227,11 +227,11 @@ async def test_income_patch_with_different_currency_from_account(client: AsyncCl
         "amount": 60
     }
 
-    get_income_response = await client.get('/api/v1/budget/incomes/1/')
+    get_income_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
     replenishment_account_before_income_patch = get_income_response.json()['replenishment_account']
     income_amount_before_patch = get_income_response.json()['amount']
 
-    response = await client.patch('/api/v1/budget/incomes/1/', json=income_data)
+    response = await client.patch(f'{DEFAULT_API_PREFIX}/budget/incomes/1/', json=income_data)
 
     assert response.status_code == 200
 
@@ -248,32 +248,32 @@ async def test_income_patch_with_incorrect_data(client: AsyncClient):
     income_data = {
         "amount": '1.22222'
     }
-    response = await client.patch('/api/v1/budget/incomes/1/', json=income_data)
+    response = await client.patch(f'{DEFAULT_API_PREFIX}/budget/incomes/1/', json=income_data)
     assert response.status_code == 422
 
     income_data = {
         "amount": -1
     }
-    response = await client.patch('/api/v1/budget/incomes/1/', json=income_data)
+    response = await client.patch(f'{DEFAULT_API_PREFIX}/budget/incomes/1/', json=income_data)
     assert response.status_code == 422
 
     income_data = {}
-    response = await client.patch('/api/v1/budget/incomes/1/', json=income_data)
+    response = await client.patch(f'{DEFAULT_API_PREFIX}/budget/incomes/1/', json=income_data)
     assert response.status_code == 422
 
 
 async def test_income_delete(client: AsyncClient):
-    get_income_response = await client.get('/api/v1/budget/incomes/1/')
+    get_income_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
     stored_income = get_income_response.json()
 
-    delete_response = await client.delete('/api/v1/budget/incomes/1/')
+    delete_response = await client.delete(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
     assert delete_response.status_code == 200
     assert delete_response.json() == {'message': 'success'}
 
-    deleted_income_get_response = await client.get('/api/v1/budget/incomes/1/')
+    deleted_income_get_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
     assert deleted_income_get_response.status_code == 404
 
-    get_second_income_response = await client.get('/api/v1/budget/incomes/2/')
+    get_second_income_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/2/')
     updated_account = get_second_income_response.json()['replenishment_account']
 
     assert Decimal(stored_income['replenishment_account']['balance']).quantize(Decimal('.01')) == \
@@ -282,11 +282,11 @@ async def test_income_delete(client: AsyncClient):
 
 
 async def test_delete_nonexistent_income(client: AsyncClient):
-    all_incomes_response_before_deletion = await client.get('/api/v1/budget/incomes/')
+    all_incomes_response_before_deletion = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/')
 
-    response = await client.delete('/api/v1/budget/incomes/999/')
+    response = await client.delete(f'{DEFAULT_API_PREFIX}/budget/incomes/999/')
     assert response.status_code == 404
 
-    all_incomes_response_after_deletion = await client.get('/api/v1/budget/incomes/')
+    all_incomes_response_after_deletion = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/')
     assert all_incomes_response_before_deletion.json() == all_incomes_response_after_deletion.json()
 

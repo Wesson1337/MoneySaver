@@ -4,13 +4,13 @@ from asyncpg import UniqueViolationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.auth.exceptions import NotSuperUserException, EmailAlreadyExistsException
+from backend.src.auth.exceptions import NotSuperUserException, EmailAlreadyExistsException, UserNotFoundException
 from backend.src.auth.models import User
 from backend.src.auth.schemas import UserSchemaIn
 import backend.src.auth.utils as auth_utils
 
 
-async def get_user_by_email(email: str, session: AsyncSession) -> User:
+async def get_user_by_email(email: str, session: AsyncSession) -> User | None:
     result = await session.execute(sa.select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     return user
@@ -22,6 +22,14 @@ async def authenticate_user(email: str, password: str, session: AsyncSession) ->
         return
     if not auth_utils.verify_password(password, user.hashed_password):
         return
+    return user
+
+
+async def get_user_by_id(user_id: int, session: AsyncSession) -> User:
+    result = await session.execute(sa.select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise UserNotFoundException()
     return user
 
 

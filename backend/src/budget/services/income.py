@@ -41,7 +41,9 @@ async def create_income_db(income_data: IncomeSchemaIn, user_id: int, session: A
 
     await session.commit()
 
-    income = await _get_income_by_id_with_joined_replenishment_account(income_id=new_income.id, session=session)
+    income = await _get_income_by_id_with_joined_replenishment_account(
+        income_id=new_income.id, user_id=user_id, session=session
+    )
     return income
 
 
@@ -51,8 +53,11 @@ async def get_certain_income_db(income_id: int, user_id: int, session: AsyncSess
     return income
 
 
-async def delete_income_db(income_id: int, session: AsyncSession) -> None:
-    income = await session.get(Income, {'id': income_id})
+async def delete_income_db(income_id: int, user_id: int, session: AsyncSession) -> None:
+    result = await session.execute(sa.select().
+                                   where(Income.id == income_id).
+                                   where(Income.user_id == user_id))
+    income = result.scalar_one_or_none()
 
     if not income:
         raise IncomeNotFoundException()
@@ -64,6 +69,7 @@ async def delete_income_db(income_id: int, session: AsyncSession) -> None:
 
 
 async def patch_income_db(income_id: int,
+                          user_id: int,
                           income_data: IncomeSchemaPatch,
                           session: AsyncSession) -> Income:
     income_data_dict = income_data.dict(exclude_unset=True)
@@ -71,7 +77,7 @@ async def patch_income_db(income_id: int,
     if not income_data_dict:
         raise NoDataForUpdateException()
 
-    stored_income = await _get_income_by_id_with_joined_replenishment_account(income_id, session)
+    stored_income = await _get_income_by_id_with_joined_replenishment_account(income_id, user_id, session)
 
     if income_data.amount and income_data.amount != stored_income.amount:
         new_and_stored_income_amount_difference = Decimal(income_data.amount).quantize(Decimal('.01')) \
@@ -96,6 +102,9 @@ async def _get_income_by_id_with_joined_replenishment_account(income_id: id,
                                    options(joinedload(Income.replenishment_account)))
 
     income = result.scalar_one_or_none()
+
+    if not income:
+        raise IncomeNotFoundException()
 
     return income
 

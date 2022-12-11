@@ -23,6 +23,7 @@ class IncomeSchemaPatch(BaseORMSchema):
 
 class IncomeSchemaOut(BaseORMSchema):
     id: int
+    user_id: int
     name: constr(max_length=255)
     currency: Currencies
     # from db we get float, so we need to check decimal_places in amount field only in Patch, In schemas

@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSessio
 from sqlalchemy.orm import sessionmaker
 
 # noinspection PyUnresolvedReferences
-from backend.src.auth.models import Base
+from backend.src.auth.models import Base, User
 from backend.src.budget.models import Base, Account, Income
 from backend.src.config import get_db_url, Currencies, AccountTypes
 from backend.src.dependencies import get_async_session
@@ -44,6 +44,13 @@ PRELOAD_DATA = (
             "currency": Currencies.RUB,
             "amount": Decimal(1.5),
             "replenishment_account_id": 1
+        }
+    },
+    {
+        "model": User,
+        "data": {
+            "email": "testmail@example.com",
+            "hashed_password": ""
         }
     }
 )

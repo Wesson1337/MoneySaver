@@ -3,11 +3,11 @@ from decimal import Decimal
 import sqlalchemy as sa
 from fastapi import FastAPI
 
+import backend.src.auth.router as auth
 from backend.src.budget.models import Account, Income
 from backend.src.budget.routers import income
 from backend.src.config import AccountTypes, Currencies, DEFAULT_API_PREFIX
 from backend.src.database import async_session
-import backend.src.auth.router as auth
 
 app = FastAPI()
 

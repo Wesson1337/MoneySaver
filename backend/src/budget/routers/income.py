@@ -5,11 +5,11 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.budget.exceptions import ReplenishmentAccountNotExistsException
 from backend.src.auth.dependencies import get_current_active_user
 from backend.src.auth.exceptions import NotSuperUserException
 from backend.src.auth.models import User
 from backend.src.budget.dependencies import IncomeQueryParams
+from backend.src.budget.exceptions import ReplenishmentAccountNotExistsException
 from backend.src.budget.models import Income
 from backend.src.budget.schemas.income import IncomeSchemaOut, IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.budget.services.income import create_income_db, delete_income_db, \
@@ -47,6 +47,20 @@ async def get_all_incomes_by_account_owned_by_current_user(
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)) -> List[Income]:
     incomes = await get_incomes_db(session, query_params, current_user.id, account_id)
+    return incomes
+
+
+@router.get('/users/{user_id}/accounts/{account_id}/incomes/', response_model=List[IncomeSchemaOut])
+async def get_all_incomes_by_account_owned_by_user(
+        account_id: int,
+        user_id: int,
+        query_params: IncomeQueryParams = Depends(),
+        current_user: User = Depends(get_current_active_user),
+        session: AsyncSession = Depends(get_async_session)) -> List[Income]:
+    if user_id != current_user.id and not current_user.is_superuser:
+        raise NotSuperUserException()
+
+    incomes = await get_incomes_db(session, query_params, user_id, account_id)
     return incomes
 
 

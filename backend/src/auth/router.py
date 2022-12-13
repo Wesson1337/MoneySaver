@@ -1,9 +1,10 @@
-import backend.src.auth.utils as auth_utils
 from datetime import timedelta
+
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import backend.src.auth.utils as auth_utils
 from backend.src.auth import service
 from backend.src.auth.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from backend.src.auth.dependencies import get_current_active_user
@@ -44,8 +45,6 @@ async def get_certain_user(
 
     user = await service.get_user_by_id(user_id, session)
     return user
-
-
 
 
 @router.post('/users/', response_model=UserSchemaOut)

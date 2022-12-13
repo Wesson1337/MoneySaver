@@ -1,8 +1,7 @@
 from decimal import Decimal
-from typing import Optional, Literal
+from typing import Optional
 
 import sqlalchemy as sa
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 

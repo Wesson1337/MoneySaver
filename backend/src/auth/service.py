@@ -1,13 +1,14 @@
 from typing import Optional
+
 import sqlalchemy as sa
 from asyncpg import UniqueViolationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import backend.src.auth.utils as auth_utils
 from backend.src.auth.exceptions import NotSuperUserException, EmailAlreadyExistsException, UserNotFoundException
 from backend.src.auth.models import User
 from backend.src.auth.schemas import UserSchemaIn
-import backend.src.auth.utils as auth_utils
 
 
 async def get_user_by_email(email: str, session: AsyncSession) -> User | None:

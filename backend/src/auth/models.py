@@ -13,7 +13,7 @@ class User(Base):
     email = sa.Column(sa.String(255), unique=True, index=True)
     hashed_password = sa.Column(sa.String)
     is_active = sa.Column(sa.Boolean, default=True)
-    is_superuser = sa.Column(sa.Boolean)
+    is_superuser = sa.Column(sa.Boolean, default=False)
     created_at = sa.Column(sa.DateTime(), default=datetime.now())
 
     incomes = relationship('Income', back_populates='user')

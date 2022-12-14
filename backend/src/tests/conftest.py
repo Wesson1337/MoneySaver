@@ -1,14 +1,17 @@
 import asyncio
+from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Generator, Callable
+from typing import Generator, Callable, Type, Literal
 
 import pytest_asyncio
 from fastapi import FastAPI
 from httpx import AsyncClient
+from jose import jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
+from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM
 # noinspection PyUnresolvedReferences
 from backend.src.auth.models import Base, User
 from backend.src.budget.models import Base, Account, Income
@@ -18,42 +21,56 @@ from backend.src.main import app
 
 TEST_DATABASE_URL = "postgresql+asyncpg://" + get_db_url(test=True)
 
-PRELOAD_DATA = (
-    {
+PRELOAD_DATA = {
+    "user_1": {
+        "model": User,
+        "data": {
+            "email": "testmail@example.com",
+            # plain password = test_password
+            "hashed_password": "$2b$12$Ql7XTNhMhDbIEHlYnBxQeOi1MMPS.yxx3cWt4j1FILtJ.VkMubnJy",
+            "is_superuser": True
+        }
+    },
+    "user_2": {
+        "model": User,
+        "data": {
+            "email": "test@example.com",
+            # plain password = test_password
+            "hashed_password": "$2b$12$kYRIvRY4vySCrR10hhZaVuRQCjU.78x2zaGpo2TsuSOjJVoVEBIyG",
+            "is_superuser": False
+        }
+    },
+    "account_1": {
         "model": Account,
         "data": {
-            "name": 'test',
+            "name": "test",
+            "user_id": 1,
             "type": AccountTypes.BANK_ACCOUNT,
             "balance": Decimal(2.9),
             "currency": Currencies.USD
         }
     },
-    {
+    "income_1": {
         "model": Income,
         "data": {
             "name": "test",
+            "user_id": 1,
             "currency": Currencies.USD,
             "amount": Decimal(1.4),
             "replenishment_account_id": 1
         }
     },
-    {
+    "income_2": {
         "model": Income,
         "data": {
             "name": "test",
+            "user_id": 1,
             "currency": Currencies.RUB,
             "amount": Decimal(1.5),
             "replenishment_account_id": 1
         }
-    },
-    {
-        "model": User,
-        "data": {
-            "email": "testmail@example.com",
-            "hashed_password": ""
-        }
     }
-)
+}
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -83,12 +100,9 @@ async def session(db_engine: AsyncEngine) -> AsyncSession:
 
 @pytest_asyncio.fixture(scope="function")
 async def seed_db(session: AsyncSession) -> None:
-    accounts = await session.execute(select(Account))
-    if not accounts.scalars().all():
-        for entity in PRELOAD_DATA:
-            new_table = entity["model"](**entity["data"])
-            session.add(new_table)
-        await session.commit()
+    for entity in PRELOAD_DATA.values():
+        session.add(entity["model"](**entity["data"]))
+    await session.commit()
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -109,3 +123,21 @@ def test_app(override_get_async_session: Callable) -> FastAPI:
 async def client(seed_db, test_app: FastAPI) -> AsyncClient:
     async with AsyncClient(app=app, base_url="http://localhost:8000") as ac:
         yield ac
+
+
+@pytest_asyncio.fixture(scope="function")
+async def auth_headers_superuser() -> tuple[Literal["Authorization"], str]:
+    user_email = PRELOAD_DATA['user_1']['data']['email']
+    data_to_encode = {"sub": user_email, "exp": datetime.utcnow() + timedelta(minutes=300)}
+    encoded_jwt_token = jwt.encode(data_to_encode, JWT_SECRET_KEY, JWT_ALGORITHM)
+    auth_headers = ('Authorization', f'Bearer {encoded_jwt_token}')
+    return auth_headers
+
+
+@pytest_asyncio.fixture(scope="function")
+async def auth_headers_ordinary_user() -> tuple[Literal["Authorization"], str]:
+    user_email = PRELOAD_DATA['user_2']['data']['email']
+    data_to_encode = {"sub": user_email, "exp": datetime.utcnow() + timedelta(minutes=300)}
+    encoded_jwt_token = jwt.encode(data_to_encode, JWT_SECRET_KEY, JWT_ALGORITHM)
+    auth_headers = ('Authorization', f'Bearer {encoded_jwt_token}')
+    return auth_headers

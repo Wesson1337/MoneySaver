@@ -10,7 +10,6 @@ class UserSchemaIn(BaseORMSchema):
     email: EmailStr
     password1: constr(min_length=6, max_length=32)
     password2: constr(min_length=6, max_length=32)
-    is_superuser: bool = False
 
     @validator('password2')
     def password_match(cls, v, values):

@@ -45,4 +45,3 @@ def test_check_user_is_superuser():
     assert check_user_is_superuser(user)
     user = None
     assert not check_user_is_superuser(user)
-

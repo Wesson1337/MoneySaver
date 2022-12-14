@@ -35,9 +35,6 @@ async def get_user_by_id(user_id: int, session: AsyncSession) -> User:
 
 
 async def create_user(new_user_data: UserSchemaIn, session: AsyncSession, current_user: Optional[User] = None) -> User:
-    if new_user_data.is_superuser and not auth_utils.check_user_is_superuser(current_user):
-        raise NotSuperUserException()
-
     new_user_dict = _change_user_password_to_hashed_password(new_user_data)
     new_user = User(**new_user_dict)
     session.add(new_user)

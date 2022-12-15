@@ -1,10 +1,12 @@
 from typing import Literal
-
+import sqlalchemy as sa
 import pytest
 from httpx import AsyncClient
 from jose import jwt
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM
+from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM, pwd_context
+from backend.src.auth.models import User
 from backend.src.config import DEFAULT_API_PREFIX
 from backend.src.tests.conftest import PRELOAD_DATA
 
@@ -41,7 +43,15 @@ async def test_login_for_access_token_wrong_data(client: AsyncClient):
     }
     response = await client.post(f'{DEFAULT_API_PREFIX}/token/', data=login_data)
     assert response.status_code == 401
+    assert ('www-authenticate', 'Bearer') in response.headers.items()
     assert response.json()['detail'] == 'Incorrect email or password'
+
+    login_data = {
+        "username": "   ",
+        "password": "wrongpass"
+    }
+    response = await client.post(f'{DEFAULT_API_PREFIX}/token/', data=login_data)
+    assert response.status_code == 401
 
 
 async def test_get_current_user(client: AsyncClient, auth_headers_superuser: tuple[Literal["Authorization"], str]):
@@ -106,9 +116,7 @@ async def test_get_certain_user_wrong_data(
     assert response.status_code == 422
 
 
-async def test_create_user(
-        client: AsyncClient,
-):
+async def test_create_user(client: AsyncClient, session: AsyncSession):
     user_data = {
         "email": "test123@example.com",
         "password1": "test_password",
@@ -124,4 +132,46 @@ async def test_create_user(
     assert response_user_data['is_active'] is True
     assert response_user_data['is_superuser'] is False
 
-# TODO make test_create_user_wrong_data
+    result = await session.execute(sa.select(User).where(User.id == response_user_data['id']))
+    user = result.scalar_one_or_none()
+    assert pwd_context.verify(user_data['password1'], user.hashed_password)
+
+
+async def test_create_user_wrong_data(client: AsyncClient):
+    user_data = {
+        "email": "wrong_email"
+    }
+    response = await client.post(f'{DEFAULT_API_PREFIX}/users/', json=user_data)
+    assert response.status_code == 422
+
+    user_data = {
+        "email": "test@example.com",
+        "password1": "correct_password",
+        "password2": "incorrect_password"
+    }
+    response = await client.post(f'{DEFAULT_API_PREFIX}/users/', json=user_data)
+    assert response.status_code == 422
+
+    user_data = {
+        "password1": "correct_password",
+        "password2": "correct_password"
+    }
+    response = await client.post(f'{DEFAULT_API_PREFIX}/users/', json=user_data)
+    assert response.status_code == 422
+
+    user_data = {
+        "email": "test@example.com",
+        "password": "lol"
+    }
+    response = await client.post(f'{DEFAULT_API_PREFIX}/users/', json=user_data)
+    assert response.status_code == 422
+
+    user_data = {
+        "email": "test@example.com",
+        "password1": "incorrect_password",
+        "password2": "incorrect_password"
+    }
+    response = await client.post(f'{DEFAULT_API_PREFIX}/users/', json=user_data)
+    print(response.json())
+    assert response.status_code == 400
+    assert response.json()['detail'] == "This email already exists"

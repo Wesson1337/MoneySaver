@@ -3,17 +3,17 @@ from typing import Optional
 
 from jose import jwt
 
-from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM, pwd_context
+from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM, pwd_context, ACCESS_TOKEN_EXPIRE_MINUTES
 from backend.src.auth.models import User
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = (datetime.utcnow() + expires_delta).timestamp()
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({'exp': expire})
+        expire = (datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)).timestamp()
+    to_encode.update({'exp': int(expire)})
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, JWT_ALGORITHM)
     return encoded_jwt
 

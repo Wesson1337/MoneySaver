@@ -40,6 +40,16 @@ PRELOAD_DATA = {
             "is_superuser": False
         }
     },
+    "user_3": {
+        "model": User,
+        "data": {
+            "email": "inactiveuser@example.com",
+            # plain password = test_password
+            "hashed_password": "$2b$12$kYRIvRY4vySCrR10hhZaVuRQCjU.78x2zaGpo2TsuSOjJVoVEBIyG",
+            "is_superuser": False,
+            "is_active": False
+        }
+    },
     "account_1": {
         "model": Account,
         "data": {
@@ -126,18 +136,28 @@ async def client(seed_db, test_app: FastAPI) -> AsyncClient:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def auth_headers_superuser() -> tuple[Literal["Authorization"], str]:
+async def superuser_encoded_jwt_token(seed_db) -> str:
     user_email = PRELOAD_DATA['user_1']['data']['email']
     data_to_encode = {"sub": user_email, "exp": datetime.utcnow() + timedelta(minutes=300)}
     encoded_jwt_token = jwt.encode(data_to_encode, JWT_SECRET_KEY, JWT_ALGORITHM)
-    auth_headers = ('Authorization', f'Bearer {encoded_jwt_token}')
+    return encoded_jwt_token
+
+
+@pytest_asyncio.fixture(scope="function")
+async def auth_headers_superuser(superuser_encoded_jwt_token: str) -> tuple[Literal["Authorization"], str]:
+    auth_headers = ('Authorization', f'Bearer {superuser_encoded_jwt_token}')
     return auth_headers
 
 
 @pytest_asyncio.fixture(scope="function")
-async def auth_headers_ordinary_user() -> tuple[Literal["Authorization"], str]:
+async def ordinary_user_encoded_jwt_token(seed_db) -> str:
     user_email = PRELOAD_DATA['user_2']['data']['email']
     data_to_encode = {"sub": user_email, "exp": datetime.utcnow() + timedelta(minutes=300)}
     encoded_jwt_token = jwt.encode(data_to_encode, JWT_SECRET_KEY, JWT_ALGORITHM)
-    auth_headers = ('Authorization', f'Bearer {encoded_jwt_token}')
+    return encoded_jwt_token
+
+
+@pytest_asyncio.fixture(scope="function")
+async def auth_headers_ordinary_user(ordinary_user_encoded_jwt_token: str) -> tuple[Literal["Authorization"], str]:
+    auth_headers = ('Authorization', f'Bearer {ordinary_user_encoded_jwt_token}')
     return auth_headers

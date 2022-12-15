@@ -34,7 +34,7 @@ async def get_user_by_id(user_id: int, session: AsyncSession) -> User:
     return user
 
 
-async def create_user(new_user_data: UserSchemaIn, session: AsyncSession, current_user: Optional[User] = None) -> User:
+async def create_user(new_user_data: UserSchemaIn, session: AsyncSession) -> User:
     new_user_dict = _change_user_password_to_hashed_password(new_user_data)
     new_user = User(**new_user_dict)
     session.add(new_user)

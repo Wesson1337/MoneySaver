@@ -1,5 +1,6 @@
 import datetime
 from decimal import Decimal
+from typing import Literal
 
 import pytest
 from httpx import AsyncClient
@@ -12,22 +13,29 @@ from backend.src.tests.conftest import PRELOAD_DATA
 pytestmark = pytest.mark.asyncio
 
 
-async def test_get_all_incomes(client: AsyncClient):
-    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/')
+async def test_get_all_incomes_current_user(
+        client: AsyncClient,
+        auth_headers_ordinary_user: tuple[Literal["Authorization"], str]
+):
+    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/users/me/incomes/', headers=[auth_headers_ordinary_user])
     assert response.status_code == 200
 
     response_incomes = response.json()
 
-    preloaded_incomes = tuple((entity for entity in PRELOAD_DATA if entity['model'] == Income))
+    preloaded_incomes_data = \
+        [PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
+         if PRELOAD_DATA[name]['model'] == Income and PRELOAD_DATA[name]['data']['user_id'] == 2]
 
-    assert len(response_incomes) == len(preloaded_incomes)
+    assert len(response_incomes) == len(preloaded_incomes_data)
 
-    assert response_incomes[0].get('currency') == Currencies.RUB
-    assert response_incomes[0].get('amount') == Decimal(1.5)
+    assert response_incomes[0].get('currency') == Currencies.USD
+    assert response_incomes[0].get('amount') == Decimal(2)
     assert response_incomes[0].get('replenishment_account').get('id') == 1
 
 
-async def test_get_all_incomes_with_suitable_query(client: AsyncClient):
+async def test_get_all_incomes_with_suitable_query(
+        client: AsyncClient
+):
     query_params = [('currency', Currencies.USD),
                     ('created_at_ge', datetime.datetime(year=2022, month=1, day=1)),
                     ('created_at_le', datetime.datetime.now())]

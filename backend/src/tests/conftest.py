@@ -63,7 +63,7 @@ PRELOAD_DATA = {
     "income_1": {
         "model": Income,
         "data": {
-            "name": "test",
+            "name": "test_income_1",
             "user_id": 1,
             "currency": Currencies.USD,
             "amount": Decimal(1.4),
@@ -73,13 +73,23 @@ PRELOAD_DATA = {
     "income_2": {
         "model": Income,
         "data": {
-            "name": "test",
-            "user_id": 1,
+            "name": "test_income_2",
+            "user_id": 2,
             "currency": Currencies.RUB,
             "amount": Decimal(1.5),
             "replenishment_account_id": 1
         }
-    }
+    },
+    "income_3": {
+        "model": Income,
+        "data": {
+            "name": "test_income_3",
+            "user_id": 2,
+            "currency": Currencies.USD,
+            "amount": Decimal(2),
+            "replenishment_account_id": 1
+        }
+    },
 }
 
 

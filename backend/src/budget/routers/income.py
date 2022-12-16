@@ -23,7 +23,8 @@ router = APIRouter()
 async def get_all_incomes_owned_by_current(
         query_params: IncomeQueryParams = Depends(),
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)) -> List[Income]:
+        session: AsyncSession = Depends(get_async_session)
+) -> List[Income]:
     incomes = await get_incomes_db(session, query_params, current_user.id)
     return incomes
 
@@ -33,7 +34,8 @@ async def get_all_incomes_owned_by_user(
         user_id: int,
         query_params: IncomeQueryParams = Depends(),
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)) -> List[Income]:
+        session: AsyncSession = Depends(get_async_session)
+) -> List[Income]:
     if user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
     incomes = await get_incomes_db(session, query_params, user_id)
@@ -45,7 +47,8 @@ async def get_all_incomes_by_account_owned_by_current_user(
         account_id: int,
         query_params: IncomeQueryParams = Depends(),
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)) -> List[Income]:
+        session: AsyncSession = Depends(get_async_session)
+) -> List[Income]:
     incomes = await get_incomes_db(session, query_params, current_user.id, account_id)
     return incomes
 
@@ -56,7 +59,8 @@ async def get_all_incomes_by_account_owned_by_user(
         user_id: int,
         query_params: IncomeQueryParams = Depends(),
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)) -> List[Income]:
+        session: AsyncSession = Depends(get_async_session)
+) -> List[Income]:
     if user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
 
@@ -65,9 +69,11 @@ async def get_all_incomes_by_account_owned_by_user(
 
 
 @router.post('/users/me/incomes/', response_model=IncomeSchemaOut, status_code=201)
-async def create_income_for_current_user(income_data: IncomeSchemaIn,
-                                         current_user: User = Depends(get_current_active_user),
-                                         session: AsyncSession = Depends(get_async_session)) -> Income:
+async def create_income_for_current_user(
+        income_data: IncomeSchemaIn,
+        current_user: User = Depends(get_current_active_user),
+        session: AsyncSession = Depends(get_async_session)
+) -> Income:
     try:
         new_income = await create_income_db(income_data, current_user.id, session)
     except (ForeignKeyViolationError, IntegrityError):
@@ -76,10 +82,12 @@ async def create_income_for_current_user(income_data: IncomeSchemaIn,
 
 
 @router.post('/users/{user_id}/incomes/', response_model=IncomeSchemaOut, status_code=201)
-async def create_income_for_user(income_data: IncomeSchemaIn,
-                                 user_id: int,
-                                 current_user: User = Depends(get_current_active_user),
-                                 session: AsyncSession = Depends(get_async_session)) -> Income:
+async def create_income_for_user(
+        income_data: IncomeSchemaIn,
+        user_id: int,
+        current_user: User = Depends(get_current_active_user),
+        session: AsyncSession = Depends(get_async_session)
+) -> Income:
     if user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException
     try: 
@@ -90,19 +98,23 @@ async def create_income_for_user(income_data: IncomeSchemaIn,
 
 
 @router.get('/users/me/incomes/{income_id}/', response_model=IncomeSchemaOut)
-async def get_certain_income_owned_by_current_user(income_id: int,
-                                                   current_user: User = Depends(get_current_active_user),
-                                                   session: AsyncSession = Depends(get_async_session)) -> Income:
+async def get_certain_income_owned_by_current_user(
+        income_id: int,
+        current_user: User = Depends(get_current_active_user),
+        session: AsyncSession = Depends(get_async_session)
+) -> Income:
     income = await get_certain_income_db(income_id, current_user.id, session)
 
     return income
 
 
 @router.get('/users/{user_id}/incomes/{income_id}', response_model=IncomeSchemaOut)
-async def get_certain_income_owned_by_user(income_id: int,
-                                           user_id: int,
-                                           current_user: User = Depends(get_current_active_user),
-                                           session: AsyncSession = Depends(get_async_session)) -> Income:
+async def get_certain_income_owned_by_user(
+        income_id: int,
+        user_id: int,
+        current_user: User = Depends(get_current_active_user),
+        session: AsyncSession = Depends(get_async_session)
+) -> Income:
     if user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
     
@@ -112,10 +124,11 @@ async def get_certain_income_owned_by_user(income_id: int,
 
 
 @router.delete('/users/me/incomes/{income_id}/')
-async def delete_income_owned_by_current_user(income_id: int,
-                                              current_user: User = Depends(get_current_active_user),
-                                              session: AsyncSession = Depends(get_async_session)
-                                              ) -> dict[Literal["message"], Literal["success"]]:
+async def delete_income_owned_by_current_user(
+        income_id: int,
+        current_user: User = Depends(get_current_active_user),
+        session: AsyncSession = Depends(get_async_session)
+) -> dict[Literal["message"], Literal["success"]]:
     await delete_income_db(income_id, current_user.id, session)
     return {"message": "success"}
 
@@ -125,7 +138,8 @@ async def delete_income_owned_by_user(
         income_id: int,
         user_id: int,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)) -> dict[Literal["message"], Literal["success"]]:
+        session: AsyncSession = Depends(get_async_session)
+) -> dict[Literal["message"], Literal["success"]]:
     if user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
 
@@ -138,7 +152,8 @@ async def patch_income_owned_by_current_user(
         income_id: int,
         income_data: IncomeSchemaPatch,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)) -> Income:
+        session: AsyncSession = Depends(get_async_session)
+) -> Income:
     updated_income = await patch_income_db(income_id, current_user.id, income_data, session)
     return updated_income
 
@@ -149,7 +164,8 @@ async def patch_income_owned_by_user(
         user_id: int,
         income_data: IncomeSchemaPatch,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)) -> Income:
+        session: AsyncSession = Depends(get_async_session)
+) -> Income:
     if user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
 

@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import EmailStr, constr, validator, BaseModel
 
-from backend.src.utils.schema import BaseORMSchema
+from backend.src.utils import BaseORMSchema
 
 
 class UserSchemaIn(BaseORMSchema):

@@ -10,24 +10,35 @@ from sqlalchemy.sql import Select
 from backend.src.config import Currencies
 from backend.src.database import Base
 from backend.src.dependencies import BaseQueryParams
-from backend.src.exceptions import NoDataForUpdateException
+from backend.src.exceptions import NoDataForUpdateException, WrongDataForUpdateException, CurrencyNotSupportedException
+from pydantic import BaseModel
 
 
-async def update_sql_entity(data: dict, sql_entity: Base) -> Base:
+class BaseORMSchema(BaseModel):
+    class Config:
+        orm_mode = True
+
+
+async def update_sql_entity(sql_entity: Type[Base], data: dict) -> Type[Base]:
     """Updates sql entity by dict with sql entity attribute as a key, returns sql entity with updated attributes"""
     if not data:
         raise NoDataForUpdateException()
 
     for key, value in data.items():
+        if key not in dir(sql_entity):
+            raise WrongDataForUpdateException()
+
         if key and value:
             setattr(sql_entity, key, value)
 
     return sql_entity
 
 
-async def apply_query_params_to_select_sql_query(select_sql_query: Select,
-                                                 query_params: Type[BaseQueryParams],
-                                                 sql_table: Type[Base]) -> Select:
+async def apply_query_params_to_select_sql_query(
+        select_sql_query: Select,
+        query_params: Type[BaseQueryParams],
+        sql_table: Type[Base]
+) -> Select:
     """Applies query params to sql select query, using filter_by from sqlalchemy.
     To apply query specific params such as 'greater than' or 'lower than' use syntax in the end of an
     attribute of pydantic model:
@@ -47,9 +58,9 @@ async def apply_query_params_to_select_sql_query(select_sql_query: Select,
         if query_field_value:
             for prefix, method in prefixes_and_methods.items():
                 if query_field_name.endswith(prefix):
-                    select_sql_query = await _apply_specific_param_to_select_query(query_field_name, query_field_value,
-                                                                                   prefix, method, select_sql_query,
-                                                                                   sql_table)
+                    select_sql_query = await _apply_specific_param_to_select_query(
+                        query_field_name, query_field_value, prefix, method, select_sql_query, sql_table
+                    )
                     query_param_is_specific = True
                     break
             if not query_param_is_specific:
@@ -59,8 +70,13 @@ async def apply_query_params_to_select_sql_query(select_sql_query: Select,
     return select_sql_query
 
 
-async def _apply_specific_param_to_select_query(field_name: str, field_value: Any, prefix: str, method: str,
-                                                select_sql_query: Select, sql_table: Type[Base]) -> Select:
+async def _apply_specific_param_to_select_query(
+        field_name: str,
+        field_value: Any,
+        prefix: str,
+        method: str, select_sql_query: Select,
+        sql_table: Type[Base]
+) -> Select:
     field_without_prefix = field_name[:-len(prefix)]
     compare_table_attr_with_value = methodcaller(method, field_value)
     table_attr = getattr(sql_table, field_without_prefix)
@@ -69,11 +85,18 @@ async def _apply_specific_param_to_select_query(field_name: str, field_value: An
     return select_sql_query
 
 
-async def convert_amount_to_another_currency(amount: Decimal,
-                                             currency: Currencies | str,
-                                             desired_currency: Currencies | str) -> Decimal:
+async def convert_amount_to_another_currency(
+        amount: Decimal,
+        currency: Currencies | str,
+        desired_currency: Currencies | str
+) -> Decimal:
     """Converts amount to another currency. It's using https://app.freecurrencyapi.com/.
     Returns a decimal object with two digits after the dot"""
+    supported_currencies = [field.value for field in Currencies]
+    if currency not in supported_currencies:
+        raise CurrencyNotSupportedException(currency)
+    if desired_currency not in supported_currencies:
+        raise CurrencyNotSupportedException(desired_currency)
 
     async with AsyncClient(base_url='https://api.freecurrencyapi.com/v1/latest') as client:
         query_params = [('apikey', os.getenv('CURRENCY_API_KEY')),

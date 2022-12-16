@@ -10,7 +10,7 @@ from backend.src.budget.exceptions import IncomeNotFoundException, AccountBalanc
 from backend.src.budget.models import Income, Account
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.exceptions import NoDataForUpdateException
-from backend.src.utils.service import update_sql_entity, apply_query_params_to_select_sql_query, \
+from backend.src.utils import update_sql_entity, apply_query_params_to_select_sql_query, \
     convert_amount_to_another_currency
 
 
@@ -83,16 +83,18 @@ async def patch_income_db(income_id: int,
                                                   - Decimal(stored_income.amount).quantize(Decimal('.01'))
         await _add_income_amount_to_account_balance(new_and_stored_income_amount_difference, stored_income, session)
 
-    updated_income = await update_sql_entity(income_data_dict, stored_income)
+    updated_income = await update_sql_entity(stored_income, income_data_dict)
 
     await session.commit()
 
     return updated_income
 
 
-async def _get_income_by_id_with_joined_replenishment_account(income_id: id,
-                                                              user_id: int,
-                                                              session: AsyncSession) -> Income:
+async def _get_income_by_id_with_joined_replenishment_account(
+        income_id: id,
+        user_id: int,
+        session: AsyncSession
+) -> Income:
     # Not using session.get, because we need to execute joinedload in async mode to pass it to pydantic model
     # which is sync
     result = await session.execute(sa.select(Income).

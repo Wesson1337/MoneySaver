@@ -5,13 +5,13 @@ from operator import methodcaller
 from typing import Type, Any
 
 from httpx import AsyncClient
+from pydantic import BaseModel
 from sqlalchemy.sql import Select
 
 from backend.src.config import Currencies
 from backend.src.database import Base
 from backend.src.dependencies import BaseQueryParams
 from backend.src.exceptions import NoDataForUpdateException, WrongDataForUpdateException, CurrencyNotSupportedException
-from pydantic import BaseModel
 
 
 class BaseORMSchema(BaseModel):

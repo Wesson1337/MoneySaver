@@ -1,6 +1,7 @@
 from typing import Literal
-import sqlalchemy as sa
+
 import pytest
+import sqlalchemy as sa
 from httpx import AsyncClient
 from jose import jwt
 from sqlalchemy.ext.asyncio import AsyncSession

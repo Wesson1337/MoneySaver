@@ -34,14 +34,17 @@ async def test_get_all_incomes_current_user(
 
 
 async def test_get_all_incomes_with_suitable_query(
-        client: AsyncClient
+        client: AsyncClient,
+        auth_headers_superuser: tuple[Literal["Authorization"], str]
 ):
     query_params = [('currency', Currencies.USD),
                     ('created_at_ge', datetime.datetime(year=2022, month=1, day=1)),
                     ('created_at_le', datetime.datetime.now())]
-    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/', params=query_params)
-
-    print(response.json())
+    response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/users/2/incomes/',
+        params=query_params,
+        headers=[auth_headers_superuser]
+    )
 
     assert response.status_code == 200
 

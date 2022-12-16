@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import backend.src.auth.utils as auth_utils
-from backend.src.auth.exceptions import NotSuperUserException, EmailAlreadyExistsException, UserNotFoundException
+from backend.src.auth.exceptions import EmailAlreadyExistsException, UserNotFoundException
 from backend.src.auth.models import User
 from backend.src.auth.schemas import UserSchemaIn
 

@@ -1,13 +1,12 @@
 import asyncio
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Generator, Callable, Type, Literal
+from typing import Generator, Callable, Literal
 
 import pytest_asyncio
 from fastapi import FastAPI
 from httpx import AsyncClient
 from jose import jwt
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 

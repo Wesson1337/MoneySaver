@@ -45,7 +45,7 @@ async def test_get_all_incomes_with_suitable_query(
         params=query_params,
         headers=[auth_headers_superuser]
     )
-
+    # TODO change this
     assert response.status_code == 200
 
     response_incomes = response.json()

@@ -14,4 +14,4 @@ class AccountBalanceWillGoNegativeException(HTTPException):
 
 class ReplenishmentAccountNotExistsException(HTTPException):
     def __init__(self) -> None:
-        super().__init__(status_code=400, detail="Replenishment account doesn't exists")
+        super().__init__(status_code=400, detail=f"Replenishment account doesn't exist.")

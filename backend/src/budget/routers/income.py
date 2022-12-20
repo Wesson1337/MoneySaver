@@ -1,7 +1,7 @@
 from typing import List, Literal
 
 from asyncpg import ForeignKeyViolationError
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -42,29 +42,18 @@ async def get_all_incomes_owned_by_certain_user(
     return incomes
 
 
-@router.get('/users/me/accounts/{account_id}/incomes/', response_model=List[IncomeSchemaOut])
-async def get_all_incomes_by_account_owned_by_current_user(
+@router.get('/accounts/{account_id}/incomes/', response_model=List[IncomeSchemaOut])
+async def get_all_incomes_by_account(
         account_id: int,
         query_params: IncomeQueryParams = Depends(),
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> List[Income]:
+    if not current_user.is_superuser:
+        current_user_account_ids = [account.id for account in current_user.accounts]
+        if account_id not in current_user_account_ids:
+            raise NotSuperUserException()
     incomes = await get_incomes_db(session, query_params, current_user.id, account_id)
-    return incomes
-
-
-@router.get('/users/{user_id}/accounts/{account_id}/incomes/', response_model=List[IncomeSchemaOut])
-async def get_all_incomes_by_account_owned_by_certain_user(
-        account_id: int,
-        user_id: int,
-        query_params: IncomeQueryParams = Depends(),
-        current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
-) -> List[Income]:
-    if user_id != current_user.id and not current_user.is_superuser:
-        raise NotSuperUserException()
-
-    incomes = await get_incomes_db(session, query_params, user_id, account_id)
     return incomes
 
 
@@ -76,7 +65,7 @@ async def create_income_for_current_user(
 ) -> Income:
     try:
         new_income = await create_income_db(income_data, current_user.id, session)
-    except (ForeignKeyViolationError, IntegrityError):
+    except IntegrityError:
         raise ReplenishmentAccountNotExistsException()
     return new_income
 
@@ -90,35 +79,22 @@ async def create_income_for_certain_user(
 ) -> Income:
     if user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException
-    try: 
+    try:
         new_income = await create_income_db(income_data, user_id, session)
     except (ForeignKeyViolationError, IntegrityError):
         raise ReplenishmentAccountNotExistsException()
     return new_income
 
 
-@router.get('/users/me/incomes/{income_id}/', response_model=IncomeSchemaOut)
-async def get_certain_income_owned_by_current_user(
+@router.get('/incomes/{income_id}/', response_model=IncomeSchemaOut)
+async def get_certain_income(
         income_id: int,
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> Income:
     income = await get_certain_income_db(income_id, current_user.id, session)
-
-    return income
-
-
-@router.get('/users/{user_id}/incomes/{income_id}', response_model=IncomeSchemaOut)
-async def get_certain_income_owned_by_certain_user(
-        income_id: int,
-        user_id: int,
-        current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
-) -> Income:
-    if user_id != current_user.id and not current_user.is_superuser:
+    if income.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
-    
-    income = await get_certain_income_db(income_id, user_id, session)
 
     return income
 

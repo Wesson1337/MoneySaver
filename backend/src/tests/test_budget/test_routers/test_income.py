@@ -14,6 +14,36 @@ from backend.src.tests.conftest import PRELOAD_DATA
 pytestmark = pytest.mark.asyncio
 
 
+@pytest.mark.parametrize(
+    'url', [
+        "{DEFAULT_API_PREFIX}/budget/users/{user_id}/incomes/",
+        "{DEFAULT_API_PREFIX}/budget/users/{user_id}/accounts/1/incomes/",
+    ]
+)
+@pytest.mark.parametrize(
+    'auth_headers, user_id, status_code, response_detail', [
+        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
+        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
+        [lazy_fixture('auth_headers_ordinary_user'), 2, 200, None],
+        [lazy_fixture('auth_headers_superuser'), 2, 200, None]
+    ]
+)
+async def test_get_incomes_auth(
+        auth_headers: tuple[Literal["Authorization"], str],
+        status_code: int,
+        response_detail: str,
+        user_id: int,
+        client: AsyncClient
+):
+    response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/users/{user_id}/incomes/',
+        headers=[auth_headers]
+    )
+    assert response.status_code == status_code
+    if response.status_code != 200:
+        assert response.json()['detail'] == response_detail
+
+
 async def test_get_all_incomes_current_user(
         client: AsyncClient,
         auth_headers_ordinary_user: tuple[Literal["Authorization"], str]
@@ -108,32 +138,13 @@ async def test_get_all_incomes_with_wrong_query(
     assert response.status_code == status_code
 
 
-@pytest.mark.parametrize(
-    'auth_headers, user_id, status_code, response_detail', [
-        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
-        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
-        [lazy_fixture('auth_headers_ordinary_user'), 2, 200, None],
-        [lazy_fixture('auth_headers_superuser'), 2, 200, None]
-    ]
-)
-async def test_get_all_incomes_auth(
-        auth_headers: tuple[Literal["Authorization"], str],
-        status_code: int,
-        response_detail: str,
-        user_id: int,
+
+
+
+async def test_get_all_incomes_by_account(
         client: AsyncClient
 ):
-    response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/users/{user_id}/incomes/',
-        headers=[auth_headers]
-    )
-    assert response.status_code == status_code
-    if not response.status_code == 200:
-        assert response.json()['detail'] == response_detail
-
-
-async def test_get_all_incomes_by_account(client: AsyncClient):
-    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/accounts/1/incomes/')
+    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/users/1/accounts/1/incomes/')
 
     assert response.status_code == 200
 

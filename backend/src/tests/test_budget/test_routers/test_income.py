@@ -4,6 +4,7 @@ from typing import Literal
 
 import pytest
 from httpx import AsyncClient
+from pytest_lazyfixture import lazy_fixture
 
 from backend.src.budget.exceptions import IncomeNotFoundException
 from backend.src.budget.models import Income, Account
@@ -17,11 +18,16 @@ async def test_get_all_incomes_current_user(
         client: AsyncClient,
         auth_headers_ordinary_user: tuple[Literal["Authorization"], str]
 ):
-    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/users/me/incomes/', headers=[auth_headers_ordinary_user])
+    query_params = [('created_at_ge', datetime.datetime(year=2022, month=1, day=1)),
+                    ('created_at_le', datetime.datetime.now())]
+    response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/users/me/incomes/',
+        params=query_params,
+        headers=[auth_headers_ordinary_user]
+    )
     assert response.status_code == 200
 
     response_incomes = response.json()
-
     preloaded_incomes_data = \
         [PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
          if PRELOAD_DATA[name]['model'] == Income and PRELOAD_DATA[name]['data']['user_id'] == 2]
@@ -41,51 +47,89 @@ async def test_get_all_incomes_with_suitable_query(
                     ('created_at_ge', datetime.datetime(year=2022, month=1, day=1)),
                     ('created_at_le', datetime.datetime.now())]
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/users/2/incomes/',
+        f'{DEFAULT_API_PREFIX}/budget/users/1/incomes/',
         params=query_params,
         headers=[auth_headers_superuser]
     )
-    # TODO change this
     assert response.status_code == 200
-
     response_incomes = response.json()
 
-    preloaded_incomes_with_us_currency = tuple(
-        (entity for entity in PRELOAD_DATA if entity['model'] == Income
-         and entity['data']['currency'] == Currencies.USD)
-    )
+    preloaded_incomes_with_us_currency = \
+        [PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
+         if PRELOAD_DATA[name]['model'] == Income
+         and PRELOAD_DATA[name]['data']['user_id'] == 1
+         and PRELOAD_DATA[name]['data']['currency'] == Currencies.USD]
 
     assert len(response.json()) == len(preloaded_incomes_with_us_currency)
 
-    assert response_incomes[0]['currency'] == preloaded_incomes_with_us_currency[0]['data']['currency']
+    assert response_incomes[0]['currency'] == preloaded_incomes_with_us_currency[0]['currency']
     assert response_incomes[0]['replenishment_account']['id'] == \
-           preloaded_incomes_with_us_currency[0]['data']['replenishment_account_id']
-    assert response_incomes[0]['amount'] == preloaded_incomes_with_us_currency[0]['data']['amount']
+           preloaded_incomes_with_us_currency[0]['replenishment_account_id']
+    assert response_incomes[0]['amount'] == preloaded_incomes_with_us_currency[0]['amount']
 
 
-async def test_get_all_incomes_without_suitable_query(client: AsyncClient):
+async def test_get_all_incomes_without_suitable_query(
+        client: AsyncClient,
+        auth_headers_superuser: tuple[Literal["Authorization"], str]
+):
     query_params = [('currency', Currencies.USD),
                     ('created_at_ge', datetime.datetime.now()),
                     ('created_at_le', datetime.datetime.now())]
 
-    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/', params=query_params)
+    response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/users/1/incomes/',
+        headers=[auth_headers_superuser],
+        params=query_params
+    )
 
     assert response.status_code == 200
     assert len(response.json()) == 0
 
 
-async def test_get_all_incomes_with_wrong_query(client: AsyncClient):
-    query_params = [('created_at_ge', 'test')]
-    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/', params=query_params)
-    assert response.status_code == 422
+@pytest.mark.parametrize(
+    'query_params, status_code', [
+        ([('created_at_ge', 'test_')], 422),
+        ([('currency', 'test_')], 422),
+        ([('created_at_le', 'test_')], 422),
+        ([('currency', 'USA')], 422),
+    ]
+)
+async def test_get_all_incomes_with_wrong_query(
+        query_params: list[tuple],
+        status_code: int,
+        client: AsyncClient,
+        auth_headers_superuser: tuple[Literal["Authorization"], str]
+):
+    response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/users/1/incomes/',
+        headers=[auth_headers_superuser],
+        params=query_params
+    )
+    assert response.status_code == status_code
 
-    query_params = [('currency', 'test_')]
-    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/', params=query_params)
-    assert response.status_code == 422
 
-    query_params = [('created_at_le', 'test')]
-    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/', params=query_params)
-    assert response.status_code == 422
+@pytest.mark.parametrize(
+    'auth_headers, user_id, status_code, response_detail', [
+        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
+        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
+        [lazy_fixture('auth_headers_ordinary_user'), 2, 200, None],
+        [lazy_fixture('auth_headers_superuser'), 2, 200, None]
+    ]
+)
+async def test_get_all_incomes_auth(
+        auth_headers: tuple[Literal["Authorization"], str],
+        status_code: int,
+        response_detail: str,
+        user_id: int,
+        client: AsyncClient
+):
+    response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/users/{user_id}/incomes/',
+        headers=[auth_headers]
+    )
+    assert response.status_code == status_code
+    if not response.status_code == 200:
+        assert response.json()['detail'] == response_detail
 
 
 async def test_get_all_incomes_by_account(client: AsyncClient):

@@ -20,7 +20,7 @@ router = APIRouter()
 
 
 @router.get('/users/me/incomes/', response_model=List[IncomeSchemaOut])
-async def get_all_incomes_owned_by_current(
+async def get_all_incomes_owned_by_current_user(
         query_params: IncomeQueryParams = Depends(),
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
@@ -30,7 +30,7 @@ async def get_all_incomes_owned_by_current(
 
 
 @router.get('/users/{user_id}/incomes/', response_model=List[IncomeSchemaOut])
-async def get_all_incomes_owned_by_user(
+async def get_all_incomes_owned_by_certain_user(
         user_id: int,
         query_params: IncomeQueryParams = Depends(),
         current_user: User = Depends(get_current_active_user),
@@ -54,7 +54,7 @@ async def get_all_incomes_by_account_owned_by_current_user(
 
 
 @router.get('/users/{user_id}/accounts/{account_id}/incomes/', response_model=List[IncomeSchemaOut])
-async def get_all_incomes_by_account_owned_by_user(
+async def get_all_incomes_by_account_owned_by_certain_user(
         account_id: int,
         user_id: int,
         query_params: IncomeQueryParams = Depends(),
@@ -82,7 +82,7 @@ async def create_income_for_current_user(
 
 
 @router.post('/users/{user_id}/incomes/', response_model=IncomeSchemaOut, status_code=201)
-async def create_income_for_user(
+async def create_income_for_certain_user(
         income_data: IncomeSchemaIn,
         user_id: int,
         current_user: User = Depends(get_current_active_user),
@@ -109,7 +109,7 @@ async def get_certain_income_owned_by_current_user(
 
 
 @router.get('/users/{user_id}/incomes/{income_id}', response_model=IncomeSchemaOut)
-async def get_certain_income_owned_by_user(
+async def get_certain_income_owned_by_certain_user(
         income_id: int,
         user_id: int,
         current_user: User = Depends(get_current_active_user),
@@ -134,7 +134,7 @@ async def delete_income_owned_by_current_user(
 
 
 @router.delete('/users/{user_id}/incomes/{income_id}/')
-async def delete_income_owned_by_user(
+async def delete_income_owned_by_certain_user(
         income_id: int,
         user_id: int,
         current_user: User = Depends(get_current_active_user),
@@ -159,7 +159,7 @@ async def patch_income_owned_by_current_user(
 
 
 @router.patch('/users/{user_id}/incomes/{income_id}/', response_model=IncomeSchemaOut)
-async def patch_income_owned_by_user(
+async def patch_income_owned_by_certain_user(
         income_id: int,
         user_id: int,
         income_data: IncomeSchemaPatch,

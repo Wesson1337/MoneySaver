@@ -10,6 +10,7 @@ from backend.src.utils import BaseORMSchema
 
 
 class IncomeSchemaIn(BaseORMSchema):
+    user_id: conint(ge=1)
     name: constr(max_length=255)
     currency: Currencies
     replenishment_account_id: conint(ge=1)

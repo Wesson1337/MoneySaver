@@ -1,17 +1,32 @@
 from fastapi import HTTPException
+from starlette import status
 
 
 class IncomeNotFoundException(HTTPException):
-    def __init__(self) -> None:
-        super().__init__(status_code=404, detail="Income not found")
+    def __init__(self, income_id: int) -> None:
+        super().__init__(status_code=status.HTTP_404_NOT_FOUND, detail=f"Income with id {income_id} is not found")
+
+
+class AccountNotFoundException(HTTPException):
+    def __init__(self, account_id: int) -> None:
+        super().__init__(status_code=status.HTTP_404_NOT_FOUND, detail=f"Account with id {account_id} is not found")
 
 
 class AccountBalanceWillGoNegativeException(HTTPException):
     def __init__(self) -> None:
-        super().__init__(status_code=400, detail="After this operation account balance will go negative."
-                                                 "Change amount of the operation")
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="After this operation account balance will go negative. Change amount of the operation")
 
 
 class ReplenishmentAccountNotExistsException(HTTPException):
-    def __init__(self) -> None:
-        super().__init__(status_code=400, detail=f"Replenishment account doesn't exist.")
+    def __init__(self, replenishment_account_id: int) -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Replenishment account with id {replenishment_account_id} doesn't exist"
+        )
+
+
+class UserNotExistsException(HTTPException):
+    def __init__(self, user_id: int) -> None:
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=f"User with id {user_id} doesn't exist")

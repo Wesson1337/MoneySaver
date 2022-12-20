@@ -14,7 +14,7 @@ from backend.src.utils import update_sql_entity, apply_query_params_to_select_sq
     convert_amount_to_another_currency
 
 
-async def get_incomes_db(session: AsyncSession, query_params: IncomeQueryParams, user_id: int,
+async def get_incomes_db(query_params: IncomeQueryParams, user_id: int, session: AsyncSession,
                          replenishment_account_id: Optional[int] = None) -> list[Income]:
     select_query = sa.select(Income).\
         where(Income.user_id == user_id).\
@@ -32,43 +32,34 @@ async def get_incomes_db(session: AsyncSession, query_params: IncomeQueryParams,
     return incomes
 
 
-async def create_income_db(income_data: IncomeSchemaIn, user_id: int, session: AsyncSession) -> Income:
-    new_income = Income(user_id=user_id, **income_data.dict())
+async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -> Income:
+    new_income = Income(**income_data.dict())
     session.add(new_income)
 
-    await _add_income_amount_to_account_balance(Decimal(new_income.amount), new_income, session)
+    await _add_income_amount_to_account_balance(Decimal(new_income.amount), new_income)
 
     await session.commit()
 
     income = await _get_income_by_id_with_joined_replenishment_account(
-        income_id=new_income.id, user_id=user_id, session=session
+        income_id=new_income.id, session=session
     )
     return income
 
 
-async def get_certain_income_db(income_id: int, user_id: int, session: AsyncSession) -> Income:
-    income = await _get_income_by_id_with_joined_replenishment_account(income_id, user_id, session)
+async def get_certain_income_db(income_id: int, session: AsyncSession) -> Income:
+    income = await _get_income_by_id_with_joined_replenishment_account(income_id, session)
 
     return income
 
 
-async def delete_income_db(income_id: int, user_id: int, session: AsyncSession) -> None:
-    result = await session.execute(sa.select().
-                                   where(Income.id == income_id).
-                                   where(Income.user_id == user_id))
-    income = result.scalar_one_or_none()
-
-    if not income:
-        raise IncomeNotFoundException()
-
-    await _add_income_amount_to_account_balance(Decimal(-income.amount), income, session)
+async def delete_income_db(income: Income, session: AsyncSession) -> None:
+    await _add_income_amount_to_account_balance(Decimal(-income.amount), income)
 
     await session.delete(income)
     await session.commit()
 
 
-async def patch_income_db(income_id: int,
-                          user_id: int,
+async def patch_income_db(stored_income: Income,
                           income_data: IncomeSchemaPatch,
                           session: AsyncSession) -> Income:
     income_data_dict = income_data.dict(exclude_unset=True)
@@ -76,12 +67,10 @@ async def patch_income_db(income_id: int,
     if not income_data_dict:
         raise NoDataForUpdateException()
 
-    stored_income = await _get_income_by_id_with_joined_replenishment_account(income_id, user_id, session)
-
     if income_data.amount and income_data.amount != stored_income.amount:
         new_and_stored_income_amount_difference = Decimal(income_data.amount).quantize(Decimal('.01')) \
                                                   - Decimal(stored_income.amount).quantize(Decimal('.01'))
-        await _add_income_amount_to_account_balance(new_and_stored_income_amount_difference, stored_income, session)
+        await _add_income_amount_to_account_balance(new_and_stored_income_amount_difference, stored_income)
 
     updated_income = await update_sql_entity(stored_income, income_data_dict)
 
@@ -92,28 +81,21 @@ async def patch_income_db(income_id: int,
 
 async def _get_income_by_id_with_joined_replenishment_account(
         income_id: id,
-        user_id: int,
         session: AsyncSession
-) -> Income:
+) -> Optional[Income]:
     # Not using session.get, because we need to execute joinedload in async mode to pass it to pydantic model
     # which is sync
     result = await session.execute(sa.select(Income).
                                    where(Income.id == income_id).
-                                   where(Income.user_id == user_id).
                                    options(joinedload(Income.replenishment_account)))
 
     income = result.scalar_one_or_none()
 
-    if not income:
-        raise IncomeNotFoundException()
-
     return income
 
 
-async def _add_income_amount_to_account_balance(amount: Decimal,
-                                                income: Income,
-                                                session: AsyncSession) -> None:
-    replenishment_account = await session.get(Account, {'id': income.replenishment_account_id})
+async def _add_income_amount_to_account_balance(amount: Decimal, income: Income) -> None:
+    replenishment_account = income.replenishment_account
     if income.currency != replenishment_account.currency:
         amount_in_account_currency = await convert_amount_to_another_currency(
             amount=amount, currency=income.currency, desired_currency=replenishment_account.currency

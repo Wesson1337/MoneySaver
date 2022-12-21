@@ -97,6 +97,8 @@ async def convert_amount_to_another_currency(
         raise CurrencyNotSupportedException(currency)
     if desired_currency not in supported_currencies:
         raise CurrencyNotSupportedException(desired_currency)
+    if currency == desired_currency:
+        return amount
 
     async with AsyncClient(base_url='https://api.freecurrencyapi.com/v1/latest') as client:
         query_params = [('apikey', os.getenv('CURRENCY_API_KEY')),

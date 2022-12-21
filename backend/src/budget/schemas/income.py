@@ -29,5 +29,6 @@ class IncomeSchemaOut(BaseORMSchema):
     currency: Currencies
     # from db we get float, so we need to check decimal_places in amount field only in Patch, In schemas
     amount: condecimal(gt=Decimal(0))
+    amount_in_account_currency_at_creation: condecimal(gt=Decimal(0))
     replenishment_account: AccountSchemaOut
     created_at: datetime.datetime

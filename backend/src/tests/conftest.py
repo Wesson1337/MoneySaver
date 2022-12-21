@@ -55,7 +55,7 @@ PRELOAD_DATA = {
             "name": "test",
             "user_id": 1,
             "type": AccountTypes.BANK_ACCOUNT,
-            "balance": Decimal(2.9),
+            "balance": Decimal(3),
             "currency": Currencies.USD
         }
     },
@@ -76,7 +76,8 @@ PRELOAD_DATA = {
             "user_id": 1,
             "currency": Currencies.USD,
             "amount": Decimal(1.4),
-            "replenishment_account_id": 1
+            "replenishment_account_id": 1,
+            "amount_in_account_currency_at_creation": Decimal(1.4)
         }
     },
     "income_2": {
@@ -86,7 +87,8 @@ PRELOAD_DATA = {
             "user_id": 1,
             "currency": Currencies.RUB,
             "amount": Decimal(1.5),
-            "replenishment_account_id": 1
+            "replenishment_account_id": 1,
+            "amount_in_account_currency_at_creation": Decimal(0.3)
         }
     },
     "income_3": {
@@ -96,7 +98,8 @@ PRELOAD_DATA = {
             "user_id": 1,
             "currency": Currencies.USD,
             "amount": Decimal(2),
-            "replenishment_account_id": 1
+            "replenishment_account_id": 1,
+            "amount_in_account_currency_at_creation": Decimal(2)
         }
     },
     "income_4": {
@@ -106,7 +109,8 @@ PRELOAD_DATA = {
             "user_id": 2,
             "currency": Currencies.RUB,
             "amount": Decimal(3.0),
-            "replenishment_account_id": 2
+            "replenishment_account_id": 2,
+            "amount_in_account_currency_at_creation": Decimal(3.0)
         }
     }
 }

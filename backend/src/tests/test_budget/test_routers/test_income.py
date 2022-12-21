@@ -69,6 +69,8 @@ async def test_get_all_incomes_with_suitable_query(
     assert response_incomes[income_index]['replenishment_account']['id'] == \
            preloaded_incomes_with_us_currency[income_index]['replenishment_account_id']
     assert response_incomes[income_index]['amount'] == preloaded_incomes_with_us_currency[income_index]['amount']
+    assert response_incomes[income_index]['amount_in_account_currency_at_creation'] == \
+           preloaded_incomes_with_us_currency[income_index]['amount_in_account_currency_at_creation']
 
 
 @pytest.mark.parametrize(
@@ -199,37 +201,96 @@ async def test_get_all_incomes_by_account_nonexistent_account(
     assert response.json()['detail'] == AccountNotFoundException(9999).detail
 
 
-async def test_get_certain_income(client: AsyncClient):
-    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
+@pytest.mark.parametrize('income_id', [1, 2, 3])
+async def test_get_certain_income(
+        income_id: int,
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+        client: AsyncClient
+):
+    response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/',
+        headers=[auth_headers_superuser]
+    )
 
     assert response.status_code == 200
 
-    preload_income = tuple((entity for entity in PRELOAD_DATA if entity['model'] == Income))[0]
+    preloaded_income = [
+        PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
+        if PRELOAD_DATA[name]['model'] == Income
+        and name.endswith(f'_{income_id}')
+    ]
 
     response_income = response.json()
 
-    assert preload_income['data']['name'] == response_income['name']
-    assert preload_income['data']['amount'] == response_income['amount']
-    assert preload_income['data']['currency'] == response_income['currency']
+    assert preloaded_income[0]['name'] == response_income['name']
+    assert preloaded_income[0]['amount'] == response_income['amount']
+    assert preloaded_income[0]['currency'] == response_income['currency']
 
 
-async def test_get_nonexistent_income(client: AsyncClient):
-    response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/9999/')
+async def test_get_nonexistent_income(
+        client: AsyncClient,
+        auth_headers_superuser: tuple[Literal["Authorization"], str]
+):
+    response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/9999/',
+        headers=[auth_headers_superuser]
+    )
 
     assert response.status_code == 404
     assert response.json() == {'detail': IncomeNotFoundException(9999).detail}
 
 
-async def test_create_income(client: AsyncClient):
-    income_data = {
+@pytest.mark.parametrize(
+    'auth_headers, income_id, status_code, response_detail', [
+        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
+        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
+        [lazy_fixture('auth_headers_ordinary_user'), 4, 200, None],
+        [lazy_fixture('auth_headers_superuser'), 4, 200, None]
+    ]
+)
+async def test_get_certain_income_auth(
+        auth_headers: tuple[Literal["Authorization"], str],
+        income_id: int,
+        status_code: int,
+        response_detail: str,
+        client: AsyncClient
+):
+    response = await client.get(
+        f"{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/",
+        headers=[auth_headers]
+    )
+    assert response.status_code == status_code
+    if response.status_code != 200:
+        assert response.json()['detail'] == response_detail
+
+
+@pytest.mark.parametrize('income_data', [
+    {
         "name": "test_income",
-        "currency": "USD",
+        "user_id": 1,
+        "currency": Currencies.USD,
         "replenishment_account_id": 1,
         "amount": 2.30
+    },
+    {
+        "name": "test_income",
+        "user_id": 2,
+        "currency": Currencies.RUB,
+        "replenishment_account_id": 2,
+        "amount": 200
     }
-
-    response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
-
+])
+async def test_create_income(
+        income_data: dict,
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+        client: AsyncClient
+):
+    response = await client.post(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/',
+        headers=[auth_headers_superuser],
+        json=income_data
+    )
+    print(response.json())
     assert response.status_code == 201
 
     income_json = response.json()
@@ -238,9 +299,16 @@ async def test_create_income(client: AsyncClient):
     assert income_json['currency'] == income_data['currency']
     assert income_json['replenishment_account']['id'] == income_data['replenishment_account_id']
     assert income_json['amount'] == income_data['amount']
+    assert income_json['amount_in_account_currency_at_creation'] == \
+           income_data['amount']
 
-    preloaded_account = tuple((entity for entity in PRELOAD_DATA if entity['model'] == Account))[0]
-    preloaded_account_balance = preloaded_account['data']['balance']
+    preloaded_account = [
+        PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
+        if PRELOAD_DATA[name]['model'] == Account
+        and name.endswith(f'_{income_data["replenishment_account_id"]}')
+    ][0]
+
+    preloaded_account_balance = preloaded_account['balance']
     sum_of_income_amount_and_preload_account_balance = \
         preloaded_account_balance.quantize(Decimal('.01')) + Decimal(income_data['amount']).quantize(Decimal('.01'))
     response_account_balance = Decimal(income_json['replenishment_account']['balance']).quantize(Decimal('.01'))
@@ -399,4 +467,3 @@ async def test_delete_nonexistent_income(client: AsyncClient):
 
     all_incomes_response_after_deletion = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/')
     assert all_incomes_response_before_deletion.json() == all_incomes_response_after_deletion.json()
-

@@ -9,6 +9,7 @@ from backend.src.budget.dependencies import IncomeQueryParams
 from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Income
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch
+from backend.src.budget.services.account import get_account_by_id
 from backend.src.exceptions import NoDataForUpdateException
 from backend.src.utils import update_sql_entity, apply_query_params_to_select_sql_query, \
     convert_amount_to_another_currency
@@ -38,10 +39,11 @@ async def get_incomes_db(
 
 async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -> Income:
     new_income = Income(**income_data.dict())
+    amount_in_account_currency = await _add_income_amount_to_account_balance(
+        amount=Decimal(new_income.amount), income=new_income, session=session
+    )
+    new_income.amount_in_account_currency_at_creation = amount_in_account_currency
     session.add(new_income)
-
-    await _add_income_amount_to_account_balance(Decimal(new_income.amount), new_income)
-    # TODO make logic for adding amount, because we will fall without loaded account
 
     await session.commit()
 
@@ -51,14 +53,16 @@ async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -
     return income
 
 
-async def get_certain_income_db(income_id: int, session: AsyncSession) -> Income:
+async def get_certain_income_by_id(income_id: int, session: AsyncSession) -> Income:
     income = await _get_income_by_id_with_joined_replenishment_account(income_id, session)
 
     return income
 
 
 async def delete_income_db(income: Income, session: AsyncSession) -> None:
-    await _add_income_amount_to_account_balance(Decimal(-income.amount), income)
+    await _add_income_amount_to_account_balance(
+        amount=Decimal(-income.amount_in_account_currency_at_creation), income=income, session=session
+    )
 
     await session.delete(income)
     await session.commit()
@@ -77,7 +81,10 @@ async def patch_income_db(
     if income_data.amount and income_data.amount != stored_income.amount:
         new_and_stored_income_amount_difference = Decimal(income_data.amount).quantize(Decimal('.01')) \
                                                   - Decimal(stored_income.amount).quantize(Decimal('.01'))
-        await _add_income_amount_to_account_balance(new_and_stored_income_amount_difference, stored_income)
+        amount_in_account_currency = await _add_income_amount_to_account_balance(
+            amount=new_and_stored_income_amount_difference, income=stored_income, session=session
+        )
+        income_data_dict['amount_in_account_currency_at_creation'] = amount_in_account_currency
 
     updated_income = await update_sql_entity(stored_income, income_data_dict)
 
@@ -101,16 +108,14 @@ async def _get_income_by_id_with_joined_replenishment_account(
     return income
 
 
-async def _add_income_amount_to_account_balance(amount: Decimal, income: Income) -> None:
-    replenishment_account = income.replenishment_account
-    if income.currency != replenishment_account.currency:
-        amount_in_account_currency = await convert_amount_to_another_currency(
-            amount=amount, currency=income.currency, desired_currency=replenishment_account.currency
-        )
-    else:
-        amount_in_account_currency = amount
+async def _add_income_amount_to_account_balance(amount: Decimal, income: Income, session: AsyncSession) -> Decimal:
+    replenishment_account = await get_account_by_id(account_id=income.replenishment_account_id, session=session)
+    amount_in_account_currency = await convert_amount_to_another_currency(
+        amount=amount, currency=income.currency, desired_currency=replenishment_account.currency
+    )
 
     replenishment_account.balance += amount_in_account_currency
     if replenishment_account.balance < 0:
         # We can get negative Decimal in func param, so we have to raise exception in that case
         raise AccountBalanceWillGoNegativeException()
+    return amount_in_account_currency

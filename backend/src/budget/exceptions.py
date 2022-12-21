@@ -46,5 +46,6 @@ class ReplenishmentAccountNotBelongsToUserException(HTTPException):
     def __init__(self, replenishment_account_id: int, user_id: int):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Account with id {replenishment_account_id} not belongs to user with id {user_id}"
+            detail=f"Account with id {replenishment_account_id} doesn't belong to user with id {user_id}"
         )
+        

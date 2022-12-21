@@ -6,16 +6,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from backend.src.budget.dependencies import IncomeQueryParams
-from backend.src.budget.exceptions import IncomeNotFoundException, AccountBalanceWillGoNegativeException
-from backend.src.budget.models import Income, Account
+from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
+from backend.src.budget.models import Income
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.exceptions import NoDataForUpdateException
 from backend.src.utils import update_sql_entity, apply_query_params_to_select_sql_query, \
     convert_amount_to_another_currency
 
 
-async def get_incomes_db(query_params: IncomeQueryParams, user_id: int, session: AsyncSession,
-                         replenishment_account_id: Optional[int] = None) -> list[Income]:
+async def get_incomes_db(
+        query_params: IncomeQueryParams,
+        user_id: int,
+        session: AsyncSession,
+        replenishment_account_id: Optional[int] = None
+) -> list[Income]:
     select_query = sa.select(Income).\
         where(Income.user_id == user_id).\
         order_by(Income.created_at.desc()). \
@@ -60,9 +64,11 @@ async def delete_income_db(income: Income, session: AsyncSession) -> None:
     await session.commit()
 
 
-async def patch_income_db(stored_income: Income,
-                          income_data: IncomeSchemaPatch,
-                          session: AsyncSession) -> Income:
+async def patch_income_db(
+        stored_income: Income,
+        income_data: IncomeSchemaPatch,
+        session: AsyncSession
+) -> Income:
     income_data_dict = income_data.dict(exclude_unset=True)
 
     if not income_data_dict:

@@ -111,13 +111,13 @@ async def patch_income(
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> Income:
-    income = await get_certain_income_db(income_id, session)
-    if not income:
+    stored_income = await get_certain_income_db(income_id, session)
+    if not stored_income:
         raise IncomeNotFoundException(income_id)
 
-    if income.user_id != current_user.id and not current_user.is_superuser:
+    if stored_income.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
 
-    updated_income = await patch_income_db(income, income_data, session)
+    updated_income = await patch_income_db(stored_income, income_data, session)
     return updated_income
 

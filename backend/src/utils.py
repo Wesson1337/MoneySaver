@@ -19,12 +19,12 @@ class BaseORMSchema(BaseModel):
         orm_mode = True
 
 
-async def update_sql_entity(sql_entity: Type[Base], data: dict) -> Type[Base]:
+async def update_sql_entity(sql_entity: Type[Base], data_to_update: dict) -> Type[Base]:
     """Updates sql entity by dict with sql entity attribute as a key, returns sql entity with updated attributes"""
-    if not data:
+    if not data_to_update:
         raise NoDataForUpdateException()
 
-    for key, value in data.items():
+    for key, value in data_to_update.items():
         if key not in dir(sql_entity):
             raise WrongDataForUpdateException()
 

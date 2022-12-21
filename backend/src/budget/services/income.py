@@ -37,6 +37,7 @@ async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -
     session.add(new_income)
 
     await _add_income_amount_to_account_balance(Decimal(new_income.amount), new_income)
+    # TODO make logic for adding amount, because we will fall without loaded account
 
     await session.commit()
 

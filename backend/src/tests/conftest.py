@@ -59,6 +59,16 @@ PRELOAD_DATA = {
             "currency": Currencies.USD
         }
     },
+    "account_2": {
+        "model": Account,
+        "data": {
+            "name": "test",
+            "user_id": 2,
+            "type": AccountTypes.BANK_ACCOUNT,
+            "balance": Decimal(3.0),
+            "currency": Currencies.RUB
+        }
+    },
     "income_1": {
         "model": Income,
         "data": {
@@ -73,7 +83,7 @@ PRELOAD_DATA = {
         "model": Income,
         "data": {
             "name": "test_income_2",
-            "user_id": 2,
+            "user_id": 1,
             "currency": Currencies.RUB,
             "amount": Decimal(1.5),
             "replenishment_account_id": 1
@@ -83,12 +93,22 @@ PRELOAD_DATA = {
         "model": Income,
         "data": {
             "name": "test_income_3",
-            "user_id": 2,
+            "user_id": 1,
             "currency": Currencies.USD,
             "amount": Decimal(2),
             "replenishment_account_id": 1
         }
     },
+    "income_4": {
+        "model": Income,
+        "data": {
+            "name": "test_income_4",
+            "user_id": 2,
+            "currency": Currencies.RUB,
+            "amount": Decimal(3.0),
+            "replenishment_account_id": 2
+        }
+    }
 }
 
 

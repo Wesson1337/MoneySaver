@@ -9,7 +9,7 @@ from backend.src.auth.exceptions import NotSuperUserException
 from backend.src.auth.models import User
 from backend.src.budget.dependencies import IncomeQueryParams
 from backend.src.budget.exceptions import ReplenishmentAccountNotExistsException, UserNotExistsException, \
-    IncomeNotFoundException, AccountNotFoundException
+    IncomeNotFoundException, AccountNotFoundException, ReplenishmentAccountNotBelongsToUserException
 from backend.src.budget.models import Income
 from backend.src.budget.schemas.income import IncomeSchemaOut, IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.budget.services.account import get_certain_account_db
@@ -18,16 +18,6 @@ from backend.src.budget.services.income import create_income_db, delete_income_d
 from backend.src.dependencies import get_async_session
 
 router = APIRouter()
-
-
-@router.get('/users/me/incomes/', response_model=List[IncomeSchemaOut])
-async def get_all_incomes_owned_by_current_user(
-        query_params: IncomeQueryParams = Depends(),
-        current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
-) -> List[Income]:
-    incomes = await get_incomes_db(query_params, current_user.id, session)
-    return incomes
 
 
 @router.get('/users/{user_id}/incomes/', response_model=List[IncomeSchemaOut])
@@ -50,14 +40,13 @@ async def get_all_incomes_by_account(
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> List[Income]:
-    if not current_user.is_superuser:
-        account = await get_certain_account_db(account_id, session)
-        if not account:
-            raise AccountNotFoundException(account_id)
-        if account.user_id != current_user.id:
-            raise NotSuperUserException()
+    account = await get_certain_account_db(account_id, session)
+    if not account:
+        raise AccountNotFoundException(account_id)
+    if account.user_id != current_user.id and not current_user.is_superuser:
+        raise NotSuperUserException()
 
-    incomes = await get_incomes_db(query_params, current_user.id, session, account_id)
+    incomes = await get_incomes_db(query_params, account.user_id, session, account_id)
     return incomes
 
 
@@ -70,14 +59,16 @@ async def create_income(
     if income_data.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
 
+    account = await get_certain_account_db(income_data.replenishment_account_id, session)
+    if not account:
+        raise ReplenishmentAccountNotExistsException(income_data.replenishment_account_id)
+    if account.user_id != income_data.user_id:
+        raise ReplenishmentAccountNotBelongsToUserException(income_data.replenishment_account_id, income_data.user_id)
+
     try:
         new_income = await create_income_db(income_data, session)
-    except IntegrityError as e:
-        exc_detail = str(e.orig.args).split('\\n')[1]
-        if 'replenishment_account_id' in exc_detail:
-            raise ReplenishmentAccountNotExistsException(income_data.replenishment_account_id)
-        else:
-            raise UserNotExistsException(income_data.user_id)
+    except IntegrityError:
+        raise UserNotExistsException(income_data.user_id)
 
     return new_income
 

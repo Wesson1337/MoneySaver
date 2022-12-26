@@ -1,21 +1,20 @@
 from typing import List, Literal
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.auth.dependencies import get_current_active_user
-from backend.src.exceptions import NotSuperUserException
 from backend.src.auth.models import User
 from backend.src.budget.dependencies import IncomeQueryParams
-from backend.src.budget.exceptions import ReplenishmentAccountNotExistsException, UserNotExistsException, \
-    IncomeNotFoundException, AccountNotFoundException, ReplenishmentAccountNotBelongsToUserException
+from backend.src.budget.exceptions import ReplenishmentAccountNotExistsException, IncomeNotFoundException, \
+    AccountNotFoundException, ReplenishmentAccountNotBelongsToUserException
 from backend.src.budget.models import Income
 from backend.src.budget.schemas.income import IncomeSchemaOut, IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.budget.services.account import get_account_by_id
 from backend.src.budget.services.income import create_income_db, delete_income_db, \
     get_certain_income_by_id, patch_income_db, get_incomes_db
 from backend.src.dependencies import get_async_session
+from backend.src.exceptions import NotSuperUserException
 
 router = APIRouter()
 
@@ -65,10 +64,7 @@ async def create_income(
     if account.user_id != income_data.user_id:
         raise ReplenishmentAccountNotBelongsToUserException(income_data.replenishment_account_id, income_data.user_id)
 
-    try:
-        new_income = await create_income_db(income_data, session)
-    except IntegrityError:
-        raise UserNotExistsException(income_data.user_id)
+    new_income = await create_income_db(income_data, session)
 
     return new_income
 

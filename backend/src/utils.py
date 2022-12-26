@@ -1,6 +1,6 @@
 import os
 from dataclasses import fields
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from operator import methodcaller
 from typing import Type, Any
 

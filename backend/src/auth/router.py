@@ -9,10 +9,10 @@ from backend.src.auth import service
 from backend.src.auth.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from backend.src.auth.dependencies import get_current_active_user
 from backend.src.auth.exceptions import IncorrectEmailOrPasswordException
-from backend.src.exceptions import NotSuperUserException
 from backend.src.auth.models import User
 from backend.src.auth.schemas import Token, UserSchemaOut, UserSchemaIn
 from backend.src.dependencies import get_async_session
+from backend.src.exceptions import NotSuperUserException
 
 router = APIRouter()
 

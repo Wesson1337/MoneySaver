@@ -6,7 +6,8 @@ import pytest
 from httpx import AsyncClient
 from pytest_lazyfixture import lazy_fixture
 
-from backend.src.budget.exceptions import IncomeNotFoundException, AccountNotFoundException
+from backend.src.budget.exceptions import IncomeNotFoundException, AccountNotFoundException, \
+    ReplenishmentAccountNotBelongsToUserException, ReplenishmentAccountNotExistsException
 from backend.src.budget.models import Income, Account
 from backend.src.config import Currencies, DEFAULT_API_PREFIX
 from backend.src.tests.conftest import PRELOAD_DATA
@@ -360,37 +361,97 @@ async def test_create_income_with_different_currency_from_account(
     assert income_json['replenishment_account']['balance'] > replenishment_account_before_income_creation['balance']
 
 
-async def test_create_incorrect_income(client: AsyncClient):
-    income_data = {
+@pytest.mark.parametrize('income_data, status_code, detail', [
+    ({
         "name": "test_income",
+        "user_id": 1,
         "currency": "dffjdjj",
         "replenishment_account_id": 1,
         "amount": 2.30
-    }
-    response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
-    assert response.status_code == 422
-
-    income_data = {
+    }, 422, None),
+    ({
         "name": "test_income",
+        "currency": Currencies.RUB,
+        "replenishment_account_id": 2,
+        "amount": 200
+     }, 422, None),
+    ({
+        "name": "test_income",
+        "user_id": 1,
         "currency": "USD",
         "replenishment_account_id": 1,
         "amount": 2.3333
-    }
-    response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
-    assert response.status_code == 422
+    }, 422, None),
+    ({
+        "name": "test_income",
+        "user_id": 1,
+        "currency": "USD",
+        "replenishment_account_id": 2,
+        "amount": 2.33
+    }, 400, ReplenishmentAccountNotBelongsToUserException(2, 1).detail),
+    ({
+        "name": "test_income",
+        "user_id": 1,
+        "currency": "USD",
+        "replenishment_account_id": 999,
+        "amount": 2.33
+    }, 400, ReplenishmentAccountNotExistsException(999).detail),
+    ({
+        "name": "test_income",
+        "user_id": 999,
+        "currency": "USD",
+        "replenishment_account_id": 1,
+        "amount": 2.33
+    }, 400, ReplenishmentAccountNotBelongsToUserException(1, 999).detail),
+    ({}, 422, None)
+])
+async def test_create_incorrect_income(
+        income_data: dict,
+        status_code: int,
+        detail: str,
+        client: AsyncClient,
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+):
+    response = await client.post(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/',
+        headers=[auth_headers_superuser],
+        json=income_data
+    )
+    assert response.status_code == status_code
+    if detail:
+        assert response.json()['detail'] == detail
 
+
+@pytest.mark.parametrize(
+    'auth_headers, user_id, status_code, response_detail', [
+        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
+        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
+        [lazy_fixture('auth_headers_ordinary_user'), 2, 201, None],
+        [lazy_fixture('auth_headers_superuser'), 2, 201, None]
+    ]
+)
+async def test_create_income_auth(
+        auth_headers: tuple,
+        user_id: int,
+        status_code: int,
+        response_detail: str,
+        client: AsyncClient
+):
     income_data = {
         "name": "test_income",
-        "currency": "USD",
-        "replenishment_account_id": 3,
-        "amount": 2.33
+        "user_id": user_id,
+        "currency": Currencies.USD,
+        "replenishment_account_id": 2,
+        "amount": 2.0
     }
-    response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
-    assert response.status_code == 400
-
-    income_data = {}
-    response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
-    assert response.status_code == 422
+    response = await client.post(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/',
+        headers=[auth_headers],
+        json=income_data
+    )
+    assert response.status_code == status_code
+    if response_detail:
+        assert response.json()['detail'] == response_detail
 
 
 async def test_income_patch(client: AsyncClient):

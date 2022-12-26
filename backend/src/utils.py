@@ -1,6 +1,6 @@
 import os
 from dataclasses import fields
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from operator import methodcaller
 from typing import Type, Any
 
@@ -86,7 +86,7 @@ async def _apply_specific_param_to_select_query(
 
 
 async def convert_amount_to_another_currency(
-        amount: Decimal,
+        amount: Decimal | float | int,
         currency: Currencies | str,
         desired_currency: Currencies | str
 ) -> Decimal:
@@ -99,6 +99,8 @@ async def convert_amount_to_another_currency(
         raise CurrencyNotSupportedException(desired_currency)
     if currency == desired_currency:
         return amount
+
+    amount = Decimal(amount)
 
     async with AsyncClient(base_url='https://api.freecurrencyapi.com/v1/latest') as client:
         query_params = [('apikey', os.getenv('CURRENCY_API_KEY')),

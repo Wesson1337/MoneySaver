@@ -10,6 +10,7 @@ from backend.src.budget.exceptions import IncomeNotFoundException, AccountNotFou
 from backend.src.budget.models import Income, Account
 from backend.src.config import Currencies, DEFAULT_API_PREFIX
 from backend.src.tests.conftest import PRELOAD_DATA
+from backend.src.utils import convert_amount_to_another_currency
 
 pytestmark = pytest.mark.asyncio
 
@@ -315,18 +316,35 @@ async def test_create_income(
     assert response_account_balance == sum_of_income_amount_and_preload_account_balance
 
 
-async def test_create_income_with_different_currency_from_account(client: AsyncClient):
+async def test_create_income_with_different_currency_from_account(
+        client: AsyncClient,
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+):
     income_data = {
         "name": "test_income",
+        "user_id": 1,
         "currency": "CNY",
         "replenishment_account_id": 1,
         "amount": 2.30
     }
 
-    get_income_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
+    get_income_response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/1/',
+        headers=[auth_headers_superuser]
+    )
     replenishment_account_before_income_creation = get_income_response.json()['replenishment_account']
 
-    create_income_response = await client.post(f'{DEFAULT_API_PREFIX}/budget/incomes/', json=income_data)
+    create_income_response = await client.post(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/',
+        headers=[auth_headers_superuser],
+        json=income_data
+    )
+
+    income_amount_in_account_currency = await convert_amount_to_another_currency(
+        amount=income_data['amount'],
+        currency=income_data['currency'],
+        desired_currency=replenishment_account_before_income_creation['currency']
+    )
 
     assert create_income_response.status_code == 201
 
@@ -336,9 +354,10 @@ async def test_create_income_with_different_currency_from_account(client: AsyncC
     assert income_json['currency'] == income_data['currency']
     assert income_json['replenishment_account']['id'] == income_data['replenishment_account_id']
     assert income_json['amount'] == income_data['amount']
+    assert Decimal(income_json['amount_in_account_currency_at_creation']).quantize(Decimal('.01')) == \
+        income_amount_in_account_currency
 
-    replenishment_account_balance_before_income_creation = replenishment_account_before_income_creation['balance']
-    assert income_json['replenishment_account']['balance'] > replenishment_account_balance_before_income_creation
+    assert income_json['replenishment_account']['balance'] > replenishment_account_before_income_creation['balance']
 
 
 async def test_create_incorrect_income(client: AsyncClient):

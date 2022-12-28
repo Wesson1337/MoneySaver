@@ -58,13 +58,13 @@ async def create_income(
     if income_data.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
 
-    account = await get_account_by_id(income_data.replenishment_account_id, session)
-    if not account:
+    replenishment_account = await get_account_by_id(income_data.replenishment_account_id, session)
+    if not replenishment_account:
         raise ReplenishmentAccountNotExistsException(income_data.replenishment_account_id)
-    if account.user_id != income_data.user_id:
+    if replenishment_account.user_id != income_data.user_id:
         raise ReplenishmentAccountNotBelongsToUserException(income_data.replenishment_account_id, income_data.user_id)
 
-    new_income = await create_income_db(income_data, session)
+    new_income = await create_income_db(income_data, replenishment_account, session)
 
     return new_income
 

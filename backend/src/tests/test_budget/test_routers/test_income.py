@@ -60,8 +60,8 @@ async def test_get_all_incomes_with_suitable_query(
     preloaded_incomes_with_us_currency = [
         PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]['model'] == Income
-        and PRELOAD_DATA[name]['data']['user_id'] == 1
-        and PRELOAD_DATA[name]['data']['currency'] == Currencies.USD
+           and PRELOAD_DATA[name]['data']['user_id'] == 1
+           and PRELOAD_DATA[name]['data']['currency'] == Currencies.USD
     ]
     preloaded_incomes_with_us_currency.reverse()
 
@@ -158,7 +158,7 @@ async def test_get_all_incomes_by_account(
     preloaded_incomes = [
         PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]['model'] == Income
-        and PRELOAD_DATA[name]['data']['replenishment_account_id'] == replenishment_account_id
+           and PRELOAD_DATA[name]['data']['replenishment_account_id'] == replenishment_account_id
     ]
     response_incomes = response.json()
 
@@ -219,7 +219,7 @@ async def test_get_certain_income(
     preloaded_income = [
         PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]['model'] == Income
-        and name.endswith(f'_{income_id}')
+           and name.endswith(f'_{income_id}')
     ]
 
     response_income = response.json()
@@ -307,7 +307,7 @@ async def test_create_income(
     preloaded_account = [
         PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]['model'] == Account
-        and name.endswith(f'_{income_data["replenishment_account_id"]}')
+           and name.endswith(f'_{income_data["replenishment_account_id"]}')
     ][0]
 
     preloaded_account_balance = preloaded_account['balance']
@@ -356,53 +356,53 @@ async def test_create_income_with_different_currency_from_account(
     assert income_json['replenishment_account']['id'] == income_data['replenishment_account_id']
     assert income_json['amount'] == income_data['amount']
     assert Decimal(income_json['amount_in_account_currency_at_creation']).quantize(Decimal('.01')) == \
-        income_amount_in_account_currency
+           income_amount_in_account_currency
 
     assert income_json['replenishment_account']['balance'] > replenishment_account_before_income_creation['balance']
 
 
 @pytest.mark.parametrize('income_data, status_code, detail', [
     ({
-        "name": "test_income",
-        "user_id": 1,
-        "currency": "dffjdjj",
-        "replenishment_account_id": 1,
-        "amount": 2.30
-    }, 422, None),
-    ({
-        "name": "test_income",
-        "currency": Currencies.RUB,
-        "replenishment_account_id": 2,
-        "amount": 200
+         "name": "test_income",
+         "user_id": 1,
+         "currency": "dffjdjj",
+         "replenishment_account_id": 1,
+         "amount": 2.30
      }, 422, None),
     ({
-        "name": "test_income",
-        "user_id": 1,
-        "currency": "USD",
-        "replenishment_account_id": 1,
-        "amount": 2.3333
-    }, 422, None),
+         "name": "test_income",
+         "currency": Currencies.RUB,
+         "replenishment_account_id": 2,
+         "amount": 200
+     }, 422, None),
     ({
-        "name": "test_income",
-        "user_id": 1,
-        "currency": "USD",
-        "replenishment_account_id": 2,
-        "amount": 2.33
-    }, 400, ReplenishmentAccountNotBelongsToUserException(2, 1).detail),
+         "name": "test_income",
+         "user_id": 1,
+         "currency": "USD",
+         "replenishment_account_id": 1,
+         "amount": 2.3333
+     }, 422, None),
     ({
-        "name": "test_income",
-        "user_id": 1,
-        "currency": "USD",
-        "replenishment_account_id": 999,
-        "amount": 2.33
-    }, 400, ReplenishmentAccountNotExistsException(999).detail),
+         "name": "test_income",
+         "user_id": 1,
+         "currency": "USD",
+         "replenishment_account_id": 2,
+         "amount": 2.33
+     }, 400, ReplenishmentAccountNotBelongsToUserException(2, 1).detail),
     ({
-        "name": "test_income",
-        "user_id": 999,
-        "currency": "USD",
-        "replenishment_account_id": 1,
-        "amount": 2.33
-    }, 400, ReplenishmentAccountNotBelongsToUserException(1, 999).detail),
+         "name": "test_income",
+         "user_id": 1,
+         "currency": "USD",
+         "replenishment_account_id": 999,
+         "amount": 2.33
+     }, 400, ReplenishmentAccountNotExistsException(999).detail),
+    ({
+         "name": "test_income",
+         "user_id": 999,
+         "currency": "USD",
+         "replenishment_account_id": 1,
+         "amount": 2.33
+     }, 400, ReplenishmentAccountNotBelongsToUserException(1, 999).detail),
     ({}, 422, None)
 ])
 async def test_create_incorrect_income(
@@ -454,27 +454,35 @@ async def test_create_income_auth(
         assert response.json()['detail'] == response_detail
 
 
-@pytest.mark.parametrize(
-    'income_data', []
-)
-async def test_income_patch(client: AsyncClient):
+async def test_income_patch(
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+        client: AsyncClient
+):
     income_data = {
         "name": "test_income",
-        "amount": 0.49
+        "amount": 0.9
     }
-
-    get_income_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
+    get_income_response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/1/',
+        headers=[auth_headers_superuser]
+    )
     replenishment_account_before_income_patch = get_income_response.json()['replenishment_account']
     income_amount_before_patch = get_income_response.json()['amount']
 
-    response = await client.patch(f'{DEFAULT_API_PREFIX}/budget/incomes/1/', json=income_data)
+    response = await client.patch(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/1/',
+        json=income_data,
+        headers=[auth_headers_superuser]
+    )
+    print(response.json())
 
     assert response.status_code == 200
 
     income_json = response.json()
     assert income_json['name'] == income_data['name']
     assert income_json['amount'] == income_data['amount']
-    assert income_amount_before_patch != income_json['amount']
+    assert income_json['amount_in_account_currency_at_creation'] == \
+           income_data['amount']
 
     new_and_old_income_amount_difference = Decimal(income_data['amount']) - Decimal(income_amount_before_patch)
     assert Decimal(income_json['replenishment_account']['balance']).quantize(Decimal('.01')) == \
@@ -482,45 +490,102 @@ async def test_income_patch(client: AsyncClient):
            new_and_old_income_amount_difference.quantize(Decimal('.01'))
 
 
-async def test_income_patch_with_different_currency_from_account(client: AsyncClient):
-    income_data = {
-        "name": "test_income",
-        "amount": 60
-    }
+@pytest.mark.parametrize(
+    'income_data', [
+        {
+            "name": "test_income",
+            "amount": 60
+        },
+        {
+            "name": "test",
+            "amount": 1
+        }
+    ]
+)
+async def test_income_patch_with_different_currency_from_account(
+        income_data: dict,
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+        client: AsyncClient
+):
 
-    get_income_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
-    replenishment_account_before_income_patch = get_income_response.json()['replenishment_account']
-    income_amount_before_patch = get_income_response.json()['amount']
+    get_income_response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/2/',
+        headers=[auth_headers_superuser]
+    )
+    stored_income = get_income_response.json()
+    replenishment_account_before_income_patch = stored_income['replenishment_account']
 
-    response = await client.patch(f'{DEFAULT_API_PREFIX}/budget/incomes/1/', json=income_data)
+    incomes_difference_in_account_currency = await convert_amount_to_another_currency(
+        amount=Decimal(income_data['amount'] - stored_income['amount']),
+        currency=stored_income['currency'],
+        desired_currency=replenishment_account_before_income_patch['currency'],
+    )
+
+    response = await client.patch(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/2/',
+        headers=[auth_headers_superuser],
+        json=income_data
+    )
 
     assert response.status_code == 200
 
     income_json = response.json()
     assert income_json['name'] == income_data['name']
     assert income_json['amount'] == income_data['amount']
-    assert income_amount_before_patch != income_json['amount']
+    assert stored_income['amount'] != income_json['amount']
+    assert Decimal(income_json['amount_in_account_currency_at_creation']).quantize(Decimal('.01')) == \
+        Decimal(stored_income['amount_in_account_currency_at_creation']).quantize(Decimal('.01')) + \
+        incomes_difference_in_account_currency
 
-    assert Decimal(income_json['replenishment_account']['balance']) > \
+    assert Decimal(income_json['replenishment_account']['balance']) != \
            Decimal(replenishment_account_before_income_patch['balance'])
 
 
-async def test_income_patch_with_incorrect_data(client: AsyncClient):
-    income_data = {
-        "amount": '1.22222'
-    }
-    response = await client.patch(f'{DEFAULT_API_PREFIX}/budget/incomes/1/', json=income_data)
-    assert response.status_code == 422
+@pytest.mark.parametrize("income_data, status_code", [
+    ({"amount": 1.222}, 422),
+    ({"amount": -1}, 422),
+    ({}, 400)
+])
+async def test_income_patch_with_incorrect_data(
+        income_data: dict,
+        status_code: int,
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+        client: AsyncClient
+):
+    response = await client.patch(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/1/',
+        headers=[auth_headers_superuser],
+        json=income_data
+    )
+    assert response.status_code == status_code
 
-    income_data = {
-        "amount": -1
-    }
-    response = await client.patch(f'{DEFAULT_API_PREFIX}/budget/incomes/1/', json=income_data)
-    assert response.status_code == 422
 
-    income_data = {}
-    response = await client.patch(f'{DEFAULT_API_PREFIX}/budget/incomes/1/', json=income_data)
-    assert response.status_code == 422
+@pytest.mark.parametrize(
+    'auth_headers, income_id, status_code, response_detail', [
+        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
+        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
+        [lazy_fixture('auth_headers_ordinary_user'), 4, 200, None],
+        [lazy_fixture('auth_headers_superuser'), 4, 200, None]
+    ]
+)
+async def test_income_patch_auth(
+        auth_headers: tuple,
+        income_id: int,
+        status_code: int,
+        response_detail: str,
+        client: AsyncClient
+):
+    income_data = {
+        "amount": 1
+    }
+    response = await client.patch(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/',
+        headers=[auth_headers],
+        json=income_data
+    )
+    assert response.status_code == status_code
+    if response_detail:
+        assert response.json()['detail'] == response_detail
 
 
 async def test_income_delete(client: AsyncClient):

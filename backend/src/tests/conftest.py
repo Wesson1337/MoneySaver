@@ -65,7 +65,7 @@ PRELOAD_DATA = {
             "name": "test",
             "user_id": 2,
             "type": AccountTypes.BANK_ACCOUNT,
-            "balance": Decimal(3.0),
+            "balance": Decimal(1000),
             "currency": Currencies.RUB
         }
     },

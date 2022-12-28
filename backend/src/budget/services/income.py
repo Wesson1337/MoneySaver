@@ -7,9 +7,10 @@ from sqlalchemy.orm import joinedload
 
 from backend.src.budget.dependencies import IncomeQueryParams
 from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
-from backend.src.budget.models import Income
+from backend.src.budget.models import Income, Account
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.budget.services.account import get_account_by_id
+from backend.src.config import Currencies
 from backend.src.exceptions import NoDataForUpdateException
 from backend.src.utils import update_sql_entity, apply_query_params_to_select_sql_query, \
     convert_amount_to_another_currency
@@ -21,8 +22,8 @@ async def get_incomes_db(
         session: AsyncSession,
         replenishment_account_id: Optional[int] = None
 ) -> list[Income]:
-    select_query = sa.select(Income).\
-        where(Income.user_id == user_id).\
+    select_query = sa.select(Income). \
+        where(Income.user_id == user_id). \
         order_by(Income.created_at.desc()). \
         order_by(Income.id.desc()). \
         options(joinedload(Income.replenishment_account))
@@ -37,10 +38,15 @@ async def get_incomes_db(
     return incomes
 
 
-async def create_income_db(income_data: IncomeSchemaIn, session: AsyncSession) -> Income:
+async def create_income_db(
+        income_data: IncomeSchemaIn,
+        replenishment_account: Account,
+        session: AsyncSession
+) -> Income:
     new_income = Income(**income_data.dict())
     amount_in_account_currency = await _add_income_amount_to_account_balance(
-        amount=Decimal(new_income.amount), income=new_income, session=session
+        amount=Decimal(new_income.amount), replenishment_account=replenishment_account,
+        income_currency=new_income.currency, session=session
     )
     new_income.amount_in_account_currency_at_creation = amount_in_account_currency
     session.add(new_income)
@@ -60,8 +66,12 @@ async def get_certain_income_by_id(income_id: int, session: AsyncSession) -> Inc
 
 
 async def delete_income_db(income: Income, session: AsyncSession) -> None:
+    replenishment_account = await get_account_by_id(income.replenishment_account_id, session)
     await _add_income_amount_to_account_balance(
-        amount=Decimal(-income.amount_in_account_currency_at_creation), income=income, session=session
+        amount=Decimal(-income.amount_in_account_currency_at_creation),
+        income_currency=income.currency,
+        replenishment_account=replenishment_account,
+        session=session
     )
 
     await session.delete(income)
@@ -79,12 +89,12 @@ async def patch_income_db(
         raise NoDataForUpdateException()
 
     if income_data.amount and income_data.amount != stored_income.amount:
-        new_and_stored_income_amount_difference = Decimal(income_data.amount).quantize(Decimal('.01')) \
-                                                  - Decimal(stored_income.amount).quantize(Decimal('.01'))
-        amount_in_account_currency = await _add_income_amount_to_account_balance(
-            amount=new_and_stored_income_amount_difference, income=stored_income, session=session
+        income_data_dict = await _change_amount_in_income_data(
+            stored_income=stored_income,
+            income_data=income_data,
+            income_data_dict=income_data_dict,
+            session=session
         )
-        income_data_dict['amount_in_account_currency_at_creation'] = amount_in_account_currency
 
     updated_income = await update_sql_entity(stored_income, income_data_dict)
 
@@ -108,10 +118,41 @@ async def _get_income_by_id_with_joined_replenishment_account(
     return income
 
 
-async def _add_income_amount_to_account_balance(amount: Decimal, income: Income, session: AsyncSession) -> Decimal:
-    replenishment_account = await get_account_by_id(account_id=income.replenishment_account_id, session=session)
+async def _change_amount_in_income_data(
+        stored_income: Income,
+        income_data: IncomeSchemaPatch,
+        income_data_dict: dict,
+        session: AsyncSession
+) -> dict:
+    replenishment_account = await get_account_by_id(stored_income.replenishment_account_id, session)
+    new_and_stored_income_amount_difference = \
+        Decimal(income_data.amount).quantize(Decimal('.01')) - \
+        Decimal(stored_income.amount).quantize(Decimal('.01'))
+    incomes_difference_in_account_currency = await _add_income_amount_to_account_balance(
+        amount=new_and_stored_income_amount_difference,
+        income_currency=stored_income.currency,
+        replenishment_account=replenishment_account,
+        session=session
+    )
+    if stored_income.currency != replenishment_account.currency:
+        income_data_dict['amount_in_account_currency_at_creation'] = \
+            Decimal(stored_income.amount_in_account_currency_at_creation).quantize(Decimal('.01')) + \
+            incomes_difference_in_account_currency
+    else:
+        income_data_dict['amount_in_account_currency_at_creation'] = income_data.amount
+
+    return income_data_dict
+
+
+async def _add_income_amount_to_account_balance(
+        amount: Decimal,
+        income_currency: Currencies,
+        replenishment_account: Account,
+        session: AsyncSession
+) -> Decimal:
+    replenishment_account = await get_account_by_id(account_id=replenishment_account.id, session=session)
     amount_in_account_currency = await convert_amount_to_another_currency(
-        amount=amount, currency=income.currency, desired_currency=replenishment_account.currency
+        amount=amount, currency=income_currency, desired_currency=replenishment_account.currency
     )
 
     replenishment_account.balance += amount_in_account_currency

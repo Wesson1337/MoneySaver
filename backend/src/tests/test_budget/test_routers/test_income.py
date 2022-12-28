@@ -454,6 +454,9 @@ async def test_create_income_auth(
         assert response.json()['detail'] == response_detail
 
 
+@pytest.mark.parametrize(
+    'income_data', []
+)
 async def test_income_patch(client: AsyncClient):
     income_data = {
         "name": "test_income",

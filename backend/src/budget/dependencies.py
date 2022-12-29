@@ -21,3 +21,8 @@ class IncomeQueryParams(BaseQueryParams):
         example="2022-11-20T00:00:00.000",
         description="Filters incomes created before this datetime"
     )
+
+
+@dataclass
+class AccountQueryParams(BaseQueryParams):
+    active: Optional[bool] = Query(default=None)

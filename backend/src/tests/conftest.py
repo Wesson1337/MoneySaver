@@ -86,7 +86,7 @@ PRELOAD_DATA = {
             "name": "test_income_2",
             "user_id": 1,
             "currency": Currencies.RUB,
-            "amount": Decimal(1.5),
+            "amount": Decimal(6),
             "replenishment_account_id": 1,
             "amount_in_account_currency_at_creation": Decimal(0.3)
         }
@@ -99,7 +99,7 @@ PRELOAD_DATA = {
             "currency": Currencies.USD,
             "amount": Decimal(2),
             "replenishment_account_id": 1,
-            "amount_in_account_currency_at_creation": Decimal(2)
+            "amount_in_account_currency_at_creation": Decimal(9999)
         }
     },
     "income_4": {

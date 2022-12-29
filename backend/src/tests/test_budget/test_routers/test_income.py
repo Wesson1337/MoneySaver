@@ -7,7 +7,8 @@ from httpx import AsyncClient
 from pytest_lazyfixture import lazy_fixture
 
 from backend.src.budget.exceptions import IncomeNotFoundException, AccountNotFoundException, \
-    ReplenishmentAccountNotBelongsToUserException, ReplenishmentAccountNotExistsException
+    ReplenishmentAccountNotBelongsToUserException, ReplenishmentAccountNotExistsException, \
+    AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Income, Account
 from backend.src.config import Currencies, DEFAULT_API_PREFIX
 from backend.src.tests.conftest import PRELOAD_DATA
@@ -60,8 +61,8 @@ async def test_get_all_incomes_with_suitable_query(
     preloaded_incomes_with_us_currency = [
         PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]['model'] == Income
-           and PRELOAD_DATA[name]['data']['user_id'] == 1
-           and PRELOAD_DATA[name]['data']['currency'] == Currencies.USD
+        and PRELOAD_DATA[name]['data']['user_id'] == 1
+        and PRELOAD_DATA[name]['data']['currency'] == Currencies.USD
     ]
     preloaded_incomes_with_us_currency.reverse()
 
@@ -158,7 +159,7 @@ async def test_get_all_incomes_by_account(
     preloaded_incomes = [
         PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]['model'] == Income
-           and PRELOAD_DATA[name]['data']['replenishment_account_id'] == replenishment_account_id
+        and PRELOAD_DATA[name]['data']['replenishment_account_id'] == replenishment_account_id
     ]
     response_incomes = response.json()
 
@@ -219,7 +220,7 @@ async def test_get_certain_income(
     preloaded_income = [
         PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]['model'] == Income
-           and name.endswith(f'_{income_id}')
+        and name.endswith(f'_{income_id}')
     ]
 
     response_income = response.json()
@@ -292,7 +293,6 @@ async def test_create_income(
         headers=[auth_headers_superuser],
         json=income_data
     )
-    print(response.json())
     assert response.status_code == 201
 
     income_json = response.json()
@@ -307,7 +307,7 @@ async def test_create_income(
     preloaded_account = [
         PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]['model'] == Account
-           and name.endswith(f'_{income_data["replenishment_account_id"]}')
+        and name.endswith(f'_{income_data["replenishment_account_id"]}')
     ][0]
 
     preloaded_account_balance = preloaded_account['balance']
@@ -474,7 +474,6 @@ async def test_income_patch(
         json=income_data,
         headers=[auth_headers_superuser]
     )
-    print(response.json())
 
     assert response.status_code == 200
 
@@ -588,30 +587,93 @@ async def test_income_patch_auth(
         assert response.json()['detail'] == response_detail
 
 
-async def test_income_delete(client: AsyncClient):
-    get_income_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
+async def test_income_delete(
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+        client: AsyncClient
+):
+    get_income_response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/2/',
+        headers=[auth_headers_superuser]
+    )
     stored_income = get_income_response.json()
 
-    delete_response = await client.delete(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
+    delete_response = await client.delete(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/2/',
+        headers=[auth_headers_superuser]
+    )
     assert delete_response.status_code == 200
     assert delete_response.json() == {'message': 'success'}
 
-    deleted_income_get_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/1/')
+    deleted_income_get_response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/2/',
+        headers=[auth_headers_superuser]
+    )
     assert deleted_income_get_response.status_code == 404
 
-    get_second_income_response = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/2/')
+    get_second_income_response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/1/',
+        headers=[auth_headers_superuser]
+    )
     updated_account = get_second_income_response.json()['replenishment_account']
 
     assert Decimal(stored_income['replenishment_account']['balance']).quantize(Decimal('.01')) == \
            Decimal(updated_account['balance']).quantize(Decimal('.01')) + \
-           Decimal(stored_income['amount']).quantize(Decimal('.01'))
+           Decimal(stored_income['amount_in_account_currency_at_creation']).quantize(Decimal('.01'))
 
 
-async def test_delete_nonexistent_income(client: AsyncClient):
-    all_incomes_response_before_deletion = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/')
+async def test_delete_nonexistent_income(
+        client: AsyncClient,
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+):
+    all_incomes_response_before_deletion = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/',
+        headers=[auth_headers_superuser]
+    )
 
-    response = await client.delete(f'{DEFAULT_API_PREFIX}/budget/incomes/999/')
+    response = await client.delete(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/999/',
+        headers=[auth_headers_superuser]
+    )
     assert response.status_code == 404
 
-    all_incomes_response_after_deletion = await client.get(f'{DEFAULT_API_PREFIX}/budget/incomes/')
+    all_incomes_response_after_deletion = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/',
+        headers=[auth_headers_superuser]
+    )
     assert all_incomes_response_before_deletion.json() == all_incomes_response_after_deletion.json()
+
+
+async def test_income_delete_with_greater_amount_than_account_balance(
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+        client: AsyncClient
+):
+    response = await client.delete(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/3/',
+        headers=[auth_headers_superuser]
+    )
+    assert response.status_code == 400
+    assert response.json()['detail'] == AccountBalanceWillGoNegativeException().detail
+
+
+@pytest.mark.parametrize(
+    'auth_headers, income_id, status_code, response_detail', [
+        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
+        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
+        [lazy_fixture('auth_headers_ordinary_user'), 4, 200, None],
+        [lazy_fixture('auth_headers_superuser'), 4, 200, None]
+    ]
+)
+async def test_income_delete_auth(
+        auth_headers: tuple,
+        income_id: int,
+        status_code: int,
+        response_detail: str,
+        client: AsyncClient
+):
+    response = await client.delete(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/',
+        headers=[auth_headers]
+    )
+    assert response.status_code == status_code
+    if response_detail:
+        assert response.json()['detail'] == response_detail

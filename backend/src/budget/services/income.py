@@ -46,7 +46,7 @@ async def create_income_db(
     new_income = Income(**income_data.dict())
     amount_in_account_currency = await _add_income_amount_to_account_balance(
         amount=Decimal(new_income.amount), replenishment_account=replenishment_account,
-        income_currency=new_income.currency, session=session
+        income_currency=new_income.currency
     )
     new_income.amount_in_account_currency_at_creation = amount_in_account_currency
     session.add(new_income)
@@ -67,12 +67,10 @@ async def get_certain_income_by_id(income_id: int, session: AsyncSession) -> Inc
 
 async def delete_income_db(income: Income, session: AsyncSession) -> None:
     replenishment_account = await get_account_by_id(income.replenishment_account_id, session)
-    await _add_income_amount_to_account_balance(
-        amount=Decimal(-income.amount_in_account_currency_at_creation),
-        income_currency=income.currency,
-        replenishment_account=replenishment_account,
-        session=session
-    )
+    replenishment_account.balance -= income.amount_in_account_currency_at_creation
+    if replenishment_account.balance < 0:
+        # We can get negative Decimal in func param, so we have to raise exception in that case
+        raise AccountBalanceWillGoNegativeException()
 
     await session.delete(income)
     await session.commit()
@@ -132,7 +130,6 @@ async def _change_amount_in_income_data(
         amount=new_and_stored_income_amount_difference,
         income_currency=stored_income.currency,
         replenishment_account=replenishment_account,
-        session=session
     )
     if stored_income.currency != replenishment_account.currency:
         income_data_dict['amount_in_account_currency_at_creation'] = \
@@ -147,10 +144,8 @@ async def _change_amount_in_income_data(
 async def _add_income_amount_to_account_balance(
         amount: Decimal,
         income_currency: Currencies,
-        replenishment_account: Account,
-        session: AsyncSession
+        replenishment_account: Account
 ) -> Decimal:
-    replenishment_account = await get_account_by_id(account_id=replenishment_account.id, session=session)
     amount_in_account_currency = await convert_amount_to_another_currency(
         amount=amount, currency=income_currency, desired_currency=replenishment_account.currency
     )

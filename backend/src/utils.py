@@ -101,7 +101,6 @@ async def convert_amount_to_another_currency(
         return amount
 
     amount = Decimal(amount)
-
     async with AsyncClient(base_url='https://api.freecurrencyapi.com/v1/latest') as client:
         query_params = [('apikey', os.getenv('CURRENCY_API_KEY')),
                         ('base_currency', currency)]

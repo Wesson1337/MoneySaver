@@ -25,4 +25,4 @@ class IncomeQueryParams(BaseQueryParams):
 
 @dataclass
 class AccountQueryParams(BaseQueryParams):
-    active: Optional[bool] = Query(default=None)
+    is_active: Optional[bool] = Query(default=None)

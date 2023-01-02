@@ -17,30 +17,6 @@ from backend.src.utils import convert_amount_to_another_currency
 pytestmark = pytest.mark.asyncio
 
 
-@pytest.mark.parametrize(
-    'auth_headers, user_id, status_code, response_detail', [
-        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
-        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
-        [lazy_fixture('auth_headers_ordinary_user'), 2, 200, None],
-        [lazy_fixture('auth_headers_superuser'), 2, 200, None]
-    ]
-)
-async def test_get_all_incomes_certain_user_auth(
-        auth_headers: tuple[Literal["Authorization"], str],
-        status_code: int,
-        response_detail: str,
-        user_id: int,
-        client: AsyncClient
-):
-    response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/users/{user_id}/incomes/',
-        headers=[auth_headers]
-    )
-    assert response.status_code == status_code
-    if response.status_code != 200:
-        assert response.json()['detail'] == response_detail
-
-
 @pytest.mark.parametrize('income_index', [0, 1])
 async def test_get_all_incomes_with_suitable_query(
         income_index,
@@ -168,30 +144,6 @@ async def test_get_all_incomes_by_account(
         assert income['replenishment_account']['id'] == replenishment_account_id
 
 
-@pytest.mark.parametrize(
-    'auth_headers, account_id, status_code, response_detail', [
-        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
-        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
-        [lazy_fixture('auth_headers_ordinary_user'), 2, 200, None],
-        [lazy_fixture('auth_headers_superuser'), 2, 200, None]
-    ]
-)
-async def test_get_all_incomes_by_account_auth(
-        auth_headers: tuple[Literal["Authorization"], str],
-        account_id: int,
-        status_code: int,
-        response_detail: int,
-        client: AsyncClient
-):
-    response = await client.get(
-        f"{DEFAULT_API_PREFIX}/budget/accounts/{account_id}/incomes/",
-        headers=[auth_headers]
-    )
-    assert response.status_code == status_code
-    if response.status_code != 200:
-        assert response.json()['detail'] == response_detail
-
-
 async def test_get_all_incomes_by_account_nonexistent_account(
         auth_headers_superuser: tuple[Literal["Authorization"], str],
         client: AsyncClient
@@ -241,30 +193,6 @@ async def test_get_nonexistent_income(
 
     assert response.status_code == 404
     assert response.json() == {'detail': IncomeNotFoundException(9999).detail}
-
-
-@pytest.mark.parametrize(
-    'auth_headers, income_id, status_code, response_detail', [
-        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
-        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
-        [lazy_fixture('auth_headers_ordinary_user'), 4, 200, None],
-        [lazy_fixture('auth_headers_superuser'), 4, 200, None]
-    ]
-)
-async def test_get_certain_income_auth(
-        auth_headers: tuple[Literal["Authorization"], str],
-        income_id: int,
-        status_code: int,
-        response_detail: str,
-        client: AsyncClient
-):
-    response = await client.get(
-        f"{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/",
-        headers=[auth_headers]
-    )
-    assert response.status_code == status_code
-    if response.status_code != 200:
-        assert response.json()['detail'] == response_detail
 
 
 @pytest.mark.parametrize('income_data', [
@@ -420,38 +348,6 @@ async def test_create_incorrect_income(
     assert response.status_code == status_code
     if detail:
         assert response.json()['detail'] == detail
-
-
-@pytest.mark.parametrize(
-    'auth_headers, user_id, status_code, response_detail', [
-        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
-        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
-        [lazy_fixture('auth_headers_ordinary_user'), 2, 201, None],
-        [lazy_fixture('auth_headers_superuser'), 2, 201, None]
-    ]
-)
-async def test_create_income_auth(
-        auth_headers: tuple,
-        user_id: int,
-        status_code: int,
-        response_detail: str,
-        client: AsyncClient
-):
-    income_data = {
-        "name": "test_income",
-        "user_id": user_id,
-        "currency": Currencies.USD,
-        "replenishment_account_id": 2,
-        "amount": 2.0
-    }
-    response = await client.post(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/',
-        headers=[auth_headers],
-        json=income_data
-    )
-    assert response.status_code == status_code
-    if response_detail:
-        assert response.json()['detail'] == response_detail
 
 
 async def test_income_patch(

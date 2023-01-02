@@ -42,7 +42,7 @@ async def get_certain_account(
     return account
 
 
-@router.post('/accounts/', response_model=AccountSchemaOut)
+@router.post('/accounts/', status_code=201, response_model=AccountSchemaOut)
 async def create_account(
         account_data: AccountSchemaIn,
         current_user: User = Depends(get_current_active_user),

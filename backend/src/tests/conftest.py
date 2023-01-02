@@ -27,7 +27,8 @@ PRELOAD_DATA = {
             "email": "testmail@example.com",
             # plain password = test_password
             "hashed_password": "$2b$12$Ql7XTNhMhDbIEHlYnBxQeOi1MMPS.yxx3cWt4j1FILtJ.VkMubnJy",
-            "is_superuser": True
+            "is_superuser": True,
+            "is_active": True
         }
     },
     "user_2": {
@@ -36,7 +37,8 @@ PRELOAD_DATA = {
             "email": "test@example.com",
             # plain password = test_password
             "hashed_password": "$2b$12$kYRIvRY4vySCrR10hhZaVuRQCjU.78x2zaGpo2TsuSOjJVoVEBIyG",
-            "is_superuser": False
+            "is_superuser": False,
+            "is_active": True
         }
     },
     "user_3": {
@@ -56,7 +58,8 @@ PRELOAD_DATA = {
             "user_id": 1,
             "type": AccountTypes.BANK_ACCOUNT,
             "balance": Decimal(3),
-            "currency": Currencies.USD
+            "currency": Currencies.USD,
+            "is_active": True
         }
     },
     "account_2": {
@@ -66,7 +69,8 @@ PRELOAD_DATA = {
             "user_id": 2,
             "type": AccountTypes.BANK_ACCOUNT,
             "balance": Decimal(1000),
-            "currency": Currencies.RUB
+            "currency": Currencies.RUB,
+            "is_active": True
         }
     },
     "income_1": {

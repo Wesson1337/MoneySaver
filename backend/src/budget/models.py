@@ -29,7 +29,7 @@ class Account(Base):
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255), nullable=False)
     type = sa.Column(sa.String(12), nullable=False)
-    balance = sa.Column(sa.DECIMAL, nullable=False)
+    balance = sa.Column(sa.DECIMAL, default=Decimal(0), nullable=False)
     currency = sa.Column(sa.String(3), nullable=False)
     is_active = sa.Column(sa.Boolean, default=True, nullable=False)
     user_id = sa.Column(sa.ForeignKey('user.id'), nullable=False)

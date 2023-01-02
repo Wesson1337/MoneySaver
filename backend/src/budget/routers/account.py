@@ -6,8 +6,9 @@ from backend.src.auth.models import User
 from backend.src.budget.dependencies import AccountQueryParams
 from backend.src.budget.exceptions import AccountNotFoundException
 from backend.src.budget.models import Account
-from backend.src.budget.schemas.account import AccountSchemaOut, AccountSchemaIn
-from backend.src.budget.services.account import get_all_accounts_by_user_db, get_account_by_id, create_account_db
+from backend.src.budget.schemas.account import AccountSchemaOut, AccountSchemaIn, AccountSchemaPatch
+from backend.src.budget.services.account import get_all_accounts_by_user_db, get_account_by_id, create_account_db, \
+    patch_account_db
 from backend.src.dependencies import get_async_session
 from backend.src.exceptions import NotSuperUserException
 
@@ -47,4 +48,23 @@ async def create_account(
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> Account:
-    account = create_account_db()
+    if account_data.user_id != current_user.id and not current_user.is_superuser:
+        raise NotSuperUserException()
+    account = await create_account_db(account_data, session)
+    return account
+
+
+@router.patch('/accounts/{account_id}/', response_model=AccountSchemaOut)
+async def patch_account(
+        account_id: int,
+        account_data: AccountSchemaPatch,
+        current_user: User = Depends(get_current_active_user),
+        session: AsyncSession = Depends(get_async_session)
+) -> Account:
+    stored_account = await get_account_by_id(account_id, session)
+    if not stored_account:
+        raise AccountNotFoundException(account_id=account_id)
+    if stored_account.user_id != current_user.id and not current_user.is_superuser:
+        raise NotSuperUserException()
+    updated_account = await patch_account_db(stored_account, account_data, session)
+    return updated_account

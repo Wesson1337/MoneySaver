@@ -28,7 +28,7 @@ async def update_sql_entity(sql_entity: Type[Base], data_to_update: dict) -> Typ
         if key not in dir(sql_entity):
             raise WrongDataForUpdateException()
 
-        if key and value:
+        if key is not None and value is not None:
             setattr(sql_entity, key, value)
 
     return sql_entity

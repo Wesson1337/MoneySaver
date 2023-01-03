@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
 import backend.src.auth.router as auth
-from backend.src.budget.routers import income
 from backend.src.budget.routers import account
+from backend.src.budget.routers import income
 from backend.src.config import DEFAULT_API_PREFIX
 
 app = FastAPI()

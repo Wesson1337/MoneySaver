@@ -2,7 +2,6 @@ from typing import Literal
 
 import pytest
 from httpx import AsyncClient
-from pytest_lazyfixture import lazy_fixture
 
 from backend.src.budget.models import Account
 from backend.src.config import DEFAULT_API_PREFIX

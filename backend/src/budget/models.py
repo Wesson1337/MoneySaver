@@ -85,5 +85,5 @@ class Goal(Base):
     user = relationship('User', back_populates='goals')
     spendings = relationship('Spending', back_populates='goal')
 
-    async def get_the_rest_amount(self) -> Decimal:
-        return Decimal(self.target_amount) - Decimal(self.balance)
+    def get_the_rest_amount(self) -> Decimal:
+        return (Decimal(self.target_amount) - Decimal(self.balance)).quantize(Decimal('.01'))

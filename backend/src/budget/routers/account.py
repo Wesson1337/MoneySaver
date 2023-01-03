@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.auth.dependencies import get_current_active_user
 from backend.src.auth.models import User
 from backend.src.budget.dependencies import AccountQueryParams
-from backend.src.budget.exceptions import AccountNotFoundException
+from backend.src.budget.exceptions import AccountNotFoundException, UserNotExistsException
 from backend.src.budget.models import Account
 from backend.src.budget.schemas.account import AccountSchemaOut, AccountSchemaIn, AccountSchemaPatch
 from backend.src.budget.services.account import get_all_accounts_by_user_db, get_account_by_id, create_account_db, \
@@ -50,7 +51,10 @@ async def create_account(
 ) -> Account:
     if account_data.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
-    account = await create_account_db(account_data, session)
+    try:
+        account = await create_account_db(account_data, session)
+    except IntegrityError as e:
+        raise UserNotExistsException(account_data.user_id)
     return account
 
 

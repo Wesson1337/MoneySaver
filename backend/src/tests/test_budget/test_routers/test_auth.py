@@ -36,9 +36,11 @@ async def test_get_by_user_auth(
         assert response.json()['detail'] == response_detail
 
 
-@pytest.mark.parametrize('url', [
-    '{DEFAULT_API_PREFIX}/budget/accounts/{account_id}/',
-    '{DEFAULT_API_PREFIX}/budget/accounts/{account_id}/incomes/'
+@pytest.mark.parametrize('url, data', [
+    ('{DEFAULT_API_PREFIX}/budget/accounts/{account_id}/', {
+        "is_active": True
+    }),
+    ('{DEFAULT_API_PREFIX}/budget/accounts/{account_id}/incomes/', None)
 ])
 @pytest.mark.parametrize(
     'auth_headers, account_id, status_code, response_detail', [
@@ -48,9 +50,10 @@ async def test_get_by_user_auth(
         [lazy_fixture('auth_headers_superuser'), 2, 200, None]
     ]
 )
-async def test_get_by_account_auth(
+async def test_certain_account_auth(
         auth_headers: tuple[Literal["Authorization"], str],
         url: str,
+        data: dict,
         account_id: int,
         status_code: int,
         response_detail: int,
@@ -63,6 +66,13 @@ async def test_get_by_account_auth(
     assert response.status_code == status_code
     if response.status_code != 200:
         assert response.json()['detail'] == response_detail
+
+    if data:
+        response = await client.patch(
+            url.format(DEFAULT_API_PREFIX=DEFAULT_API_PREFIX, account_id=account_id),
+            headers=[auth_headers],
+            json=data
+        )
 
 
 @pytest.mark.parametrize(
@@ -83,6 +93,18 @@ async def test_certain_income_auth(
     response = await client.get(
         f"{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/",
         headers=[auth_headers]
+    )
+    assert response.status_code == status_code
+    if response_detail:
+        assert response.json()['detail'] == response_detail
+
+    income_data = {
+        "amount": 1
+    }
+    response = await client.patch(
+        f'{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/',
+        headers=[auth_headers],
+        json=income_data
     )
     assert response.status_code == status_code
     if response_detail:

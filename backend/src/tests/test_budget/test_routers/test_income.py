@@ -455,32 +455,17 @@ async def test_income_patch_with_incorrect_data(
     assert response.status_code == status_code
 
 
-@pytest.mark.parametrize(
-    'auth_headers, income_id, status_code, response_detail', [
-        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
-        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
-        [lazy_fixture('auth_headers_ordinary_user'), 4, 200, None],
-        [lazy_fixture('auth_headers_superuser'), 4, 200, None]
-    ]
-)
-async def test_income_patch_auth(
-        auth_headers: tuple,
-        income_id: int,
-        status_code: int,
-        response_detail: str,
+async def test_patch_nonexistent_income(
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
         client: AsyncClient
 ):
-    income_data = {
-        "amount": 1
-    }
     response = await client.patch(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/',
-        headers=[auth_headers],
-        json=income_data
+        f'{DEFAULT_API_PREFIX}/budget/incomes/9999/',
+        headers=[auth_headers_superuser],
+        json={}
     )
-    assert response.status_code == status_code
-    if response_detail:
-        assert response.json()['detail'] == response_detail
+    assert response.status_code == 404
+    assert response.json()['detail'] == IncomeNotFoundException(9999).detail
 
 
 async def test_income_delete(
@@ -550,26 +535,3 @@ async def test_income_delete_with_greater_amount_than_account_balance(
     assert response.status_code == 400
     assert response.json()['detail'] == AccountBalanceWillGoNegativeException().detail
 
-
-@pytest.mark.parametrize(
-    'auth_headers, income_id, status_code, response_detail', [
-        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
-        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
-        [lazy_fixture('auth_headers_ordinary_user'), 4, 200, None],
-        [lazy_fixture('auth_headers_superuser'), 4, 200, None]
-    ]
-)
-async def test_income_delete_auth(
-        auth_headers: tuple,
-        income_id: int,
-        status_code: int,
-        response_detail: str,
-        client: AsyncClient
-):
-    response = await client.delete(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/',
-        headers=[auth_headers]
-    )
-    assert response.status_code == status_code
-    if response_detail:
-        assert response.json()['detail'] == response_detail

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import constr, conint, condecimal
 
 from backend.src.config import AccountTypes, Currencies
@@ -6,7 +8,7 @@ from backend.src.utils import BaseORMSchema
 
 class AccountSchemaIn(BaseORMSchema):
     name: constr(max_length=255)
-    user_id: conint(gt=0)
+    user_id: conint(ge=1)
     type: AccountTypes
     currency: Currencies
 
@@ -22,6 +24,6 @@ class AccountSchemaOut(BaseORMSchema):
 
 
 class AccountSchemaPatch(BaseORMSchema):
-    name: constr(max_length=255)
-    type: AccountTypes
-    is_active: bool
+    name: Optional[constr(max_length=255)]
+    type: Optional[AccountTypes]
+    is_active: Optional[bool]

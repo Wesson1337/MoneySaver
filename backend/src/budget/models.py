@@ -64,11 +64,7 @@ class SpendingCategory(Base):
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255), nullable=False)
-    spending_limit = sa.Column(sa.DECIMAL)
-    spent_in_month = sa.Column(sa.DECIMAL)
-    user_id = sa.Column(sa.ForeignKey('user.id'), nullable=False)
 
-    user = relationship('User', back_populates='spending_categories')
     spendings = relationship('Spending', back_populates='category')
 
 

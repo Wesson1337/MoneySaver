@@ -25,4 +25,22 @@ class IncomeQueryParams(BaseQueryParams):
 
 @dataclass
 class AccountQueryParams(BaseQueryParams):
+    currency: Optional[Currencies] = Query(default=None)
     is_active: Optional[bool] = Query(default=None)
+
+
+@dataclass
+class SpendingQueryParams(BaseQueryParams):
+    currency: Optional[Currencies] = Query(default=None)
+    created_at_ge: Optional[datetime.datetime] = Query(
+        default=None,
+        example="2022-11-19T11:49:27.702655",
+        description="Filters spendings created after this datetime"
+    )
+    created_at_le: Optional[datetime.datetime] = Query(
+        default=None,
+        example="2022-11-20T00:00:00.000",
+        description="Filters spendings created before this datetime"
+    )
+
+

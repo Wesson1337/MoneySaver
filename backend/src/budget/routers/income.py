@@ -49,6 +49,21 @@ async def get_all_incomes_by_account(
     return incomes
 
 
+@router.get('/incomes/{income_id}/', response_model=IncomeSchemaOut)
+async def get_certain_income(
+        income_id: int,
+        current_user: User = Depends(get_current_active_user),
+        session: AsyncSession = Depends(get_async_session)
+) -> Income:
+    income = await get_certain_income_by_id(income_id, session)
+    if not income:
+        raise IncomeNotFoundException(income_id)
+    if income.user_id != current_user.id and not current_user.is_superuser:
+        raise NotSuperUserException()
+
+    return income
+
+
 @router.post('/incomes/', response_model=IncomeSchemaOut, status_code=201)
 async def create_income(
         income_data: IncomeSchemaIn,
@@ -67,21 +82,6 @@ async def create_income(
     new_income = await create_income_db(income_data, replenishment_account, session)
 
     return new_income
-
-
-@router.get('/incomes/{income_id}/', response_model=IncomeSchemaOut)
-async def get_certain_income(
-        income_id: int,
-        current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
-) -> Income:
-    income = await get_certain_income_by_id(income_id, session)
-    if not income:
-        raise IncomeNotFoundException(income_id)
-    if income.user_id != current_user.id and not current_user.is_superuser:
-        raise NotSuperUserException()
-
-    return income
 
 
 @router.delete('/incomes/{income_id}/')

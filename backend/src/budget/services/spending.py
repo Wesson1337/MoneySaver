@@ -59,7 +59,7 @@ async def create_spending_db(
     session.add(new_spending)
     await session.commit()
 
-    spending = get_spending_by_id_with_joined_receipt_account(new_spending.id, session)
+    spending = await get_spending_by_id_with_joined_receipt_account(new_spending.id, session)
     return spending
 
 

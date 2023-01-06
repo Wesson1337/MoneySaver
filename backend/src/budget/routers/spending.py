@@ -81,12 +81,7 @@ async def create_spending(
     if receipt_account.user_id != spending_data.user_id:
         raise AccountNotBelongsToUserException(spending_data.receipt_account_id, spending_data.user_id)
 
-    try:
-        spending = await create_spending_db(spending_data, receipt_account, session)
-    except IntegrityError as e:
-        exc_detail = str(e.orig).split('\n')
-        print(exc_detail)
-        raise
+    spending = await create_spending_db(spending_data, receipt_account, session)
 
     return spending
 

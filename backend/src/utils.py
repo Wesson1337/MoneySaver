@@ -8,7 +8,7 @@ from httpx import AsyncClient
 from pydantic import BaseModel
 from sqlalchemy.sql import Select
 
-from backend.src.config import Currencies
+from backend.src.budget.config import Currencies
 from backend.src.database import Base
 from backend.src.dependencies import BaseQueryParams
 from backend.src.exceptions import NoDataForUpdateException, WrongDataForUpdateException, CurrencyNotSupportedException

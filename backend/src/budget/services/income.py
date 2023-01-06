@@ -9,11 +9,9 @@ from backend.src.budget.dependencies import IncomeQueryParams
 from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Income, Account
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch
-from backend.src.budget.services.account import get_account_by_id
-from backend.src.config import Currencies
+from backend.src.budget.services.account import get_account_by_id, add_amount_to_account_balance
 from backend.src.exceptions import NoDataForUpdateException
-from backend.src.utils import update_sql_entity, apply_query_params_to_select_sql_query, \
-    convert_amount_to_another_currency
+from backend.src.utils import update_sql_entity, apply_query_params_to_select_sql_query
 
 
 async def get_incomes_db(
@@ -44,9 +42,9 @@ async def create_income_db(
         session: AsyncSession
 ) -> Income:
     new_income = Income(**income_data.dict())
-    amount_in_account_currency = await _add_income_amount_to_account_balance(
-        amount=Decimal(new_income.amount), replenishment_account=replenishment_account,
-        income_currency=new_income.currency
+    amount_in_account_currency = await add_amount_to_account_balance(
+        amount=Decimal(new_income.amount), account=replenishment_account,
+        currency=new_income.currency
     )
     new_income.amount_in_account_currency_at_creation = amount_in_account_currency
     session.add(new_income)
@@ -126,10 +124,10 @@ async def _change_amount_in_income_data(
     new_and_stored_income_amount_difference = \
         Decimal(income_data.amount).quantize(Decimal('.01')) - \
         Decimal(stored_income.amount).quantize(Decimal('.01'))
-    incomes_difference_in_account_currency = await _add_income_amount_to_account_balance(
+    incomes_difference_in_account_currency = await add_amount_to_account_balance(
         amount=new_and_stored_income_amount_difference,
-        income_currency=stored_income.currency,
-        replenishment_account=replenishment_account,
+        currency=stored_income.currency,
+        account=replenishment_account,
     )
     if stored_income.currency != replenishment_account.currency:
         income_data_dict['amount_in_account_currency_at_creation'] = \
@@ -139,19 +137,3 @@ async def _change_amount_in_income_data(
         income_data_dict['amount_in_account_currency_at_creation'] = income_data.amount
 
     return income_data_dict
-
-
-async def _add_income_amount_to_account_balance(
-        amount: Decimal,
-        income_currency: Currencies,
-        replenishment_account: Account
-) -> Decimal:
-    amount_in_account_currency = await convert_amount_to_another_currency(
-        amount=amount, currency=income_currency, desired_currency=replenishment_account.currency
-    )
-
-    replenishment_account.balance += amount_in_account_currency
-    if replenishment_account.balance < 0:
-        # We can get negative Decimal in func param, so we have to raise exception in that case
-        raise AccountBalanceWillGoNegativeException()
-    return amount_in_account_currency

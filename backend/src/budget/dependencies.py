@@ -4,7 +4,7 @@ from typing import Optional
 
 from fastapi import Query
 
-from backend.src.config import Currencies
+from backend.src.budget.config import Currencies
 from backend.src.dependencies import BaseQueryParams
 
 

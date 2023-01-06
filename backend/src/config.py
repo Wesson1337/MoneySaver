@@ -1,5 +1,4 @@
 import os
-from enum import Enum
 
 DEFAULT_API_PREFIX = "/api/v1"
 
@@ -21,27 +20,3 @@ def get_db_url(test: bool = False) -> str:
 
 
 DATABASE_URL = get_db_url()
-
-
-class Currencies(str, Enum):
-    """
-    Enum type of currencies supported in app.
-    """
-
-    def __str__(self):
-        return self.value
-
-    USD = 'USD'
-    RUB = 'RUB'
-    CNY = 'CNY'
-
-
-class AccountTypes(str, Enum):
-    """
-    Enum type of account types supported in app.
-    """
-    def __str__(self):
-        return self.value
-
-    WALLET = 'WALLET'
-    BANK_ACCOUNT = 'BANK_ACCOUNT'

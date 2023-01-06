@@ -19,6 +19,4 @@ class User(Base):
     incomes = relationship('Income', back_populates='user')
     accounts = relationship('Account', back_populates='user')
     spendings = relationship('Spending', back_populates='user')
-    spending_categories = relationship('SpendingCategory', back_populates='user')
-    goals = relationship('Goal', back_populates='user')
 

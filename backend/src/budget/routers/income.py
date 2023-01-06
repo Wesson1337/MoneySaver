@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.src.auth.dependencies import get_current_active_user
 from backend.src.auth.models import User
 from backend.src.budget.dependencies import IncomeQueryParams
-from backend.src.budget.exceptions import ReplenishmentAccountNotExistsException, IncomeNotFoundException, \
-    AccountNotFoundException, ReplenishmentAccountNotBelongsToUserException
+from backend.src.budget.exceptions import AccountNotExistsException, IncomeNotFoundException, \
+    AccountNotFoundException, AccountNotBelongsToUserException
 from backend.src.budget.models import Income
 from backend.src.budget.schemas.income import IncomeSchemaOut, IncomeSchemaIn, IncomeSchemaPatch
 from backend.src.budget.services.account import get_account_by_id
@@ -75,9 +75,9 @@ async def create_income(
 
     replenishment_account = await get_account_by_id(income_data.replenishment_account_id, session)
     if not replenishment_account:
-        raise ReplenishmentAccountNotExistsException(income_data.replenishment_account_id)
+        raise AccountNotExistsException(income_data.replenishment_account_id)
     if replenishment_account.user_id != income_data.user_id:
-        raise ReplenishmentAccountNotBelongsToUserException(income_data.replenishment_account_id, income_data.user_id)
+        raise AccountNotBelongsToUserException(income_data.replenishment_account_id, income_data.user_id)
 
     new_income = await create_income_db(income_data, replenishment_account, session)
 

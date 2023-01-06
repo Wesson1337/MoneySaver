@@ -44,42 +44,12 @@ class Spending(Base):
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255), nullable=False)
-    category_id = sa.Column(sa.ForeignKey('spending_category.id'), nullable=False)
     receipt_account_id = sa.Column(sa.ForeignKey('account.id'), nullable=False)
     amount = sa.Column(sa.DECIMAL, nullable=False)
     amount_in_account_currency_at_creation = sa.Column(sa.DECIMAL, nullable=False)
     currency = sa.Column(sa.String(3), nullable=False)
-    goal_id = sa.Column(sa.Integer, sa.ForeignKey('goal.id'))
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.now(), nullable=False)
     user_id = sa.Column(sa.ForeignKey('user.id'), nullable=False)
 
     user = relationship('User', back_populates='spendings')
     receipt_account = relationship('Account', back_populates='spendings')
-    category = relationship('SpendingCategory', back_populates='spendings')
-    goal = relationship('Goal', back_populates='spendings')
-
-
-class SpendingCategory(Base):
-    __tablename__ = 'spending_category'
-
-    id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
-    name = sa.Column(sa.String(255), nullable=False)
-
-    spendings = relationship('Spending', back_populates='category')
-
-
-class Goal(Base):
-    __tablename__ = 'goal'
-
-    id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
-    name = sa.Column(sa.String(255), nullable=False)
-    target_amount = sa.Column(sa.DECIMAL, nullable=False)
-    balance = sa.Column(sa.DECIMAL, nullable=False)
-    currency = sa.Column(sa.String(3), nullable=False)
-    user_id = sa.Column(sa.ForeignKey('user.id'), nullable=False)
-
-    user = relationship('User', back_populates='goals')
-    spendings = relationship('Spending', back_populates='goal')
-
-    def get_the_rest_amount(self) -> Decimal:
-        return (Decimal(self.target_amount) - Decimal(self.balance)).quantize(Decimal('.01'))

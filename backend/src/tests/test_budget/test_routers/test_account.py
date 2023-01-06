@@ -5,7 +5,8 @@ from httpx import AsyncClient
 
 from backend.src.budget.exceptions import AccountNotFoundException, UserNotExistsException
 from backend.src.budget.models import Account
-from backend.src.config import DEFAULT_API_PREFIX, AccountTypes, Currencies
+from backend.src.config import DEFAULT_API_PREFIX
+from backend.src.budget.config import Currencies, AccountTypes
 from backend.src.tests.conftest import PRELOAD_DATA
 
 pytestmark = pytest.mark.asyncio

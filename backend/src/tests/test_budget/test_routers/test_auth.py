@@ -4,7 +4,8 @@ import pytest
 from httpx import AsyncClient
 from pytest_lazyfixture import lazy_fixture
 
-from backend.src.config import DEFAULT_API_PREFIX, Currencies, AccountTypes
+from backend.src.config import DEFAULT_API_PREFIX
+from backend.src.budget.config import Currencies, AccountTypes
 
 pytestmark = pytest.mark.asyncio
 

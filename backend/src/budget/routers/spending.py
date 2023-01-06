@@ -1,16 +1,19 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.auth.dependencies import get_current_active_user
 from backend.src.auth.models import User
 from backend.src.budget.dependencies import SpendingQueryParams
-from backend.src.budget.exceptions import AccountNotFoundException
+from backend.src.budget.exceptions import AccountNotFoundException, SpendingNotFoundException, \
+    AccountNotBelongsToUserException, AccountNotExistsException
 from backend.src.budget.models import Spending
-from backend.src.budget.schemas.spending import SpendingSchemaOut
+from backend.src.budget.schemas.spending import SpendingSchemaOut, SpendingSchemaIn
 from backend.src.budget.services.account import get_account_by_id
-from backend.src.budget.services.spending import get_all_spendings_db
+from backend.src.budget.services.spending import get_all_spendings_db, \
+    get_spending_by_id_with_joined_receipt_account, create_spending_db
 from backend.src.dependencies import get_async_session
 from backend.src.exceptions import NotSuperUserException
 
@@ -48,4 +51,42 @@ async def get_all_spendings_by_account(
         receipt_account_id=account_id, query_params=query_params, session=session
     )
     return spendings
+
+
+@router.get('/spendings/{spending_id}/', response_model=SpendingSchemaOut)
+async def get_certain_spending(
+        spending_id: int,
+        current_user: User = Depends(get_current_active_user),
+        session: AsyncSession = Depends(get_async_session)
+) -> Spending:
+    spending = await get_spending_by_id_with_joined_receipt_account(spending_id, session)
+    if not spending:
+        raise SpendingNotFoundException(spending_id)
+    if spending.user_id != current_user.id and not current_user.is_superuser:
+        raise NotSuperUserException()
+    return spending
+
+
+@router.post('/spendings/', response_model=SpendingSchemaOut)
+async def create_spending(
+        spending_data: SpendingSchemaIn,
+        current_user: User = Depends(get_current_active_user),
+        session: AsyncSession = Depends(get_async_session)
+) -> Spending:
+    if spending_data.user_id != current_user.id and not current_user.is_superuser:
+        raise NotSuperUserException()
+    receipt_account = await get_account_by_id(spending_data.receipt_account_id, session)
+    if not receipt_account:
+        raise AccountNotExistsException(spending_data.receipt_account_id)
+    if receipt_account.user_id != spending_data.user_id:
+        raise AccountNotBelongsToUserException(spending_data.receipt_account_id, spending_data.user_id)
+
+    try:
+        spending = await create_spending_db(spending_data, receipt_account, session)
+    except IntegrityError as e:
+        exc_detail = str(e.orig).split('\n')
+        print(exc_detail)
+        raise
+
+    return spending
 

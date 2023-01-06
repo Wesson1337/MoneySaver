@@ -7,10 +7,11 @@ from httpx import AsyncClient
 from pytest_lazyfixture import lazy_fixture
 
 from backend.src.budget.exceptions import IncomeNotFoundException, AccountNotFoundException, \
-    ReplenishmentAccountNotBelongsToUserException, ReplenishmentAccountNotExistsException, \
+    AccountNotBelongsToUserException, AccountNotExistsException, \
     AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Income, Account
-from backend.src.config import Currencies, DEFAULT_API_PREFIX
+from backend.src.config import DEFAULT_API_PREFIX
+from backend.src.budget.config import Currencies
 from backend.src.tests.conftest import PRELOAD_DATA
 from backend.src.utils import convert_amount_to_another_currency
 
@@ -316,21 +317,21 @@ async def test_create_income_with_different_currency_from_account(
          "currency": "USD",
          "replenishment_account_id": 2,
          "amount": 2.33
-     }, 400, ReplenishmentAccountNotBelongsToUserException(2, 1).detail),
+     }, 400, AccountNotBelongsToUserException(2, 1).detail),
     ({
          "name": "test_income",
          "user_id": 1,
          "currency": "USD",
          "replenishment_account_id": 999,
          "amount": 2.33
-     }, 400, ReplenishmentAccountNotExistsException(999).detail),
+     }, 400, AccountNotExistsException(999).detail),
     ({
          "name": "test_income",
          "user_id": 999,
          "currency": "USD",
          "replenishment_account_id": 1,
          "amount": 2.33
-     }, 400, ReplenishmentAccountNotBelongsToUserException(1, 999).detail),
+     }, 400, AccountNotBelongsToUserException(1, 999).detail),
     ({}, 422, None)
 ])
 async def test_create_incorrect_income(

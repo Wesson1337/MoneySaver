@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import constr, conint, condecimal
 
-from backend.src.config import AccountTypes, Currencies
+from backend.src.budget.config import Currencies, AccountTypes
 from backend.src.utils import BaseORMSchema
 
 

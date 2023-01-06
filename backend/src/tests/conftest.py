@@ -14,7 +14,8 @@ from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM
 # noinspection PyUnresolvedReferences
 from backend.src.auth.models import Base, User
 from backend.src.budget.models import Base, Account, Income
-from backend.src.config import get_db_url, Currencies, AccountTypes
+from backend.src.config import get_db_url
+from backend.src.budget.config import Currencies, AccountTypes
 from backend.src.dependencies import get_async_session
 from backend.src.main import app
 

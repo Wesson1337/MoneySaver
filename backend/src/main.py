@@ -10,8 +10,3 @@ app.include_router(auth.router, prefix=f'{DEFAULT_API_PREFIX}', tags=['Users'])
 app.include_router(income.router, prefix=f'{DEFAULT_API_PREFIX}/budget', tags=['Incomes'])
 app.include_router(account.router, prefix=f'{DEFAULT_API_PREFIX}/budget', tags=['Accounts'])
 app.include_router(spending.router, prefix=f'{DEFAULT_API_PREFIX}/budget', tags=['Spendings'])
-
-
-@app.get("/")
-async def hello_world():
-    return {'Hello': 'world'}

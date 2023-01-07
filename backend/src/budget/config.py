@@ -1,5 +1,8 @@
 from enum import Enum
 
+# Intentionally did not normalize the database for these next enums, since I do not plan to change them in the future.
+# If you need to change these values, take care to normalize the database and change the logic in the application
+
 
 class Currencies(str, Enum):
     """

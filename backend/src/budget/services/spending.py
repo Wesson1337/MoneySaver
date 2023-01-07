@@ -1,14 +1,16 @@
 from decimal import Decimal
 from typing import Optional
+
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from backend.src.budget.dependencies import SpendingQueryParams
 from backend.src.budget.models import Spending, Account
-from backend.src.budget.schemas.spending import SpendingSchemaIn
+from backend.src.budget.schemas.spending import SpendingSchemaIn, SpendingSchemaPatch
 from backend.src.budget.services.account import add_amount_to_account_balance
-from backend.src.utils import apply_query_params_to_select_sql_query
+from backend.src.exceptions import NoDataForUpdateException
+from backend.src.utils import apply_query_params_to_select_sql_query, update_sql_entity
 
 
 async def get_all_spendings_db(
@@ -54,7 +56,7 @@ async def create_spending_db(
         account=receipt_account,
         currency=new_spending.currency
     )
-    new_spending.amount_in_account_currency_at_creation = amount_in_account_currency
+    new_spending.amount_in_account_currency_at_creation = -amount_in_account_currency
 
     session.add(new_spending)
     await session.commit()
@@ -63,3 +65,41 @@ async def create_spending_db(
     return spending
 
 
+async def patch_spending_db(
+        stored_spending: Spending,
+        spending_data: SpendingSchemaPatch,
+        session: AsyncSession
+) -> Spending:
+    spending_data = spending_data.dict(exclude_unset=True)
+
+    if not spending_data:
+        raise NoDataForUpdateException()
+
+    if spending_data.get('amount') and stored_spending.amount != spending_data['amount']:
+        spending_data = await _change_amount_in_spending_data(stored_spending, spending_data)
+
+    updated_spending = await update_sql_entity(stored_spending, spending_data)
+    await session.commit()
+
+    return updated_spending
+
+
+async def _change_amount_in_spending_data(
+        stored_spending: Spending,
+        spending_data: dict
+) -> dict:
+    new_and_stored_spending_amount_difference = \
+        Decimal(spending_data['amount'] - stored_spending.amount).quantize(Decimal('.01'))
+    spending_difference_in_account_currency = await add_amount_to_account_balance(
+        amount=new_and_stored_spending_amount_difference,
+        currency=stored_spending.currency,
+        account=stored_spending.receipt_account,
+    )
+    if stored_spending.currency != stored_spending.receipt_account.currency:
+        spending_data['amount_in_account_currency_at_creation'] = \
+            Decimal(stored_spending.amount_in_account_currency_at_creation).quantize('.01') + \
+            spending_difference_in_account_currency
+    else:
+        spending_data['amount_in_account_currency_at_creation'] = spending_data['amount']
+
+    return spending_data

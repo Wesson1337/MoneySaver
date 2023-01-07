@@ -1,10 +1,11 @@
 import datetime
-from typing import Optional
 from decimal import Decimal
+from typing import Optional
+
 from pydantic import constr, conint, condecimal
 
-from backend.src.budget.schemas.account import AccountSchemaOut
 from backend.src.budget.config import Currencies, SpendingCategories
+from backend.src.budget.schemas.account import AccountSchemaOut
 from backend.src.utils import BaseORMSchema
 
 

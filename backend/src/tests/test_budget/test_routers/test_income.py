@@ -4,14 +4,13 @@ from typing import Literal
 
 import pytest
 from httpx import AsyncClient
-from pytest_lazyfixture import lazy_fixture
 
+from backend.src.budget.config import Currencies
 from backend.src.budget.exceptions import IncomeNotFoundException, AccountNotFoundException, \
     AccountNotBelongsToUserException, AccountNotExistsException, \
     AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Income, Account
 from backend.src.config import DEFAULT_API_PREFIX
-from backend.src.budget.config import Currencies
 from backend.src.tests.conftest import PRELOAD_DATA
 from backend.src.utils import convert_amount_to_another_currency
 

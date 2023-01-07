@@ -4,11 +4,11 @@ from typing import Optional
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.src.budget.config import Currencies
 from backend.src.budget.dependencies import AccountQueryParams
 from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Account
 from backend.src.budget.schemas.account import AccountSchemaIn, AccountSchemaPatch
-from backend.src.budget.config import Currencies
 from backend.src.exceptions import NoDataForUpdateException
 from backend.src.utils import apply_query_params_to_select_sql_query, update_sql_entity, \
     convert_amount_to_another_currency

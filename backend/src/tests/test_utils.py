@@ -6,9 +6,9 @@ import sqlalchemy as sa
 from sqlalchemy.sql import Select
 
 from backend.src.auth.models import User
+from backend.src.budget.config import Currencies
 from backend.src.budget.dependencies import IncomeQueryParams
 from backend.src.budget.models import Income
-from backend.src.budget.config import Currencies
 from backend.src.exceptions import WrongDataForUpdateException, NoDataForUpdateException, CurrencyNotSupportedException
 from backend.src.utils import convert_amount_to_another_currency, update_sql_entity, \
     apply_query_params_to_select_sql_query

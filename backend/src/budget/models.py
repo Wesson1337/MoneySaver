@@ -45,6 +45,7 @@ class Spending(Base):
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     name = sa.Column(sa.String(255), nullable=False)
     receipt_account_id = sa.Column(sa.ForeignKey('account.id'), nullable=False)
+    category = sa.Column(sa.String(255), nullable=False)
     amount = sa.Column(sa.DECIMAL, nullable=False)
     amount_in_account_currency_at_creation = sa.Column(sa.DECIMAL, nullable=False)
     currency = sa.Column(sa.String(3), nullable=False)

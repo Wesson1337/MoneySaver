@@ -67,7 +67,6 @@ async def delete_income_db(income: Income, session: AsyncSession) -> None:
     replenishment_account = await get_account_by_id(income.replenishment_account_id, session)
     replenishment_account.balance -= income.amount_in_account_currency_at_creation
     if replenishment_account.balance < 0:
-        # We can get negative Decimal in func param, so we have to raise exception in that case
         raise AccountBalanceWillGoNegativeException()
 
     await session.delete(income)

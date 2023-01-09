@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from backend.src.budget.dependencies import SpendingQueryParams
+from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Spending, Account
 from backend.src.budget.schemas.spending import SpendingSchemaIn, SpendingSchemaPatch
 from backend.src.budget.services.account import add_amount_to_account_balance
@@ -91,15 +92,24 @@ async def _change_amount_in_spending_data(
     new_and_stored_spending_amount_difference = \
         Decimal(spending_data['amount'] - stored_spending.amount).quantize(Decimal('.01'))
     spending_difference_in_account_currency = await add_amount_to_account_balance(
-        amount=new_and_stored_spending_amount_difference,
+        amount=-new_and_stored_spending_amount_difference,
         currency=stored_spending.currency,
         account=stored_spending.receipt_account,
     )
     if stored_spending.currency != stored_spending.receipt_account.currency:
         spending_data['amount_in_account_currency_at_creation'] = \
-            Decimal(stored_spending.amount_in_account_currency_at_creation).quantize('.01') + \
+            Decimal(stored_spending.amount_in_account_currency_at_creation).quantize('.01') - \
             spending_difference_in_account_currency
     else:
         spending_data['amount_in_account_currency_at_creation'] = spending_data['amount']
 
     return spending_data
+
+
+async def delete_spending_db(
+        spending: Spending,
+        session: AsyncSession
+) -> None:
+    spending.receipt_account.balance += spending.amount_in_account_currency_at_creation
+    await session.delete(spending)
+    await session.commit()

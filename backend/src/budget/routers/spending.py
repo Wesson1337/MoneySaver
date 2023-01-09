@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Literal
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,10 +9,10 @@ from backend.src.budget.dependencies import SpendingQueryParams
 from backend.src.budget.exceptions import AccountNotFoundException, SpendingNotFoundException, \
     AccountNotBelongsToUserException, AccountNotExistsException
 from backend.src.budget.models import Spending
-from backend.src.budget.schemas.spending import SpendingSchemaOut, SpendingSchemaIn
+from backend.src.budget.schemas.spending import SpendingSchemaOut, SpendingSchemaIn, SpendingSchemaPatch
 from backend.src.budget.services.account import get_account_by_id
 from backend.src.budget.services.spending import get_all_spendings_db, \
-    get_spending_by_id_with_joined_receipt_account, create_spending_db, patch_spending_db
+    get_spending_by_id_with_joined_receipt_account, create_spending_db, patch_spending_db, delete_spending_db
 from backend.src.dependencies import get_async_session
 from backend.src.exceptions import NotSuperUserException
 
@@ -88,7 +88,7 @@ async def create_spending(
 @router.patch('/spendings/{spending_id}/', response_model=SpendingSchemaOut)
 async def patch_spending(
         spending_id: int,
-        spending_data: SpendingSchemaIn,
+        spending_data: SpendingSchemaPatch,
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> Spending:
@@ -97,5 +97,20 @@ async def patch_spending(
         raise SpendingNotFoundException(spending_id)
     if spending.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
-    updated_spending = patch_spending_db(spending, spending_data, session)
+    updated_spending = await patch_spending_db(spending, spending_data, session)
     return updated_spending
+
+
+@router.delete('/spendings/{spending_id}/')
+async def delete_spending(
+        spending_id: int,
+        current_user: User = Depends(get_current_active_user),
+        session: AsyncSession = Depends(get_async_session)
+) -> dict[Literal["message"], str]:
+    spending = await get_spending_by_id_with_joined_receipt_account(spending_id, session)
+    if not spending:
+        raise SpendingNotFoundException(spending_id)
+    if spending.user_id != current_user.id and not current_user.is_superuser:
+        raise NotSuperUserException()
+    await delete_spending_db(spending, session)
+    return {"message": "success"}

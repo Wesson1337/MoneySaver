@@ -13,8 +13,8 @@ from sqlalchemy.orm import sessionmaker
 from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM
 # noinspection PyUnresolvedReferences
 from backend.src.auth.models import Base, User
-from backend.src.budget.config import Currencies, AccountTypes
-from backend.src.budget.models import Base, Account, Income
+from backend.src.budget.config import Currencies, AccountTypes, SpendingCategories
+from backend.src.budget.models import Base, Account, Income, Spending
 from backend.src.config import get_db_url
 from backend.src.dependencies import get_async_session
 from backend.src.main import app
@@ -116,6 +116,54 @@ PRELOAD_DATA = {
             "amount": Decimal(3.0),
             "replenishment_account_id": 2,
             "amount_in_account_currency_at_creation": Decimal(3.0)
+        }
+    },
+    "spending_1": {
+        "model": Spending,
+        "data": {
+            "name": "test_spending_1",
+            "user_id": 1,
+            "currency": Currencies.USD,
+            "amount": Decimal(1.0),
+            "receipt_account_id": 1,
+            "amount_in_account_currency_at_creation": Decimal(3.0),
+            "category": SpendingCategories.TAXI
+        }
+    },
+    "spending_2": {
+        "model": Spending,
+        "data": {
+            "name": "test_spending_2",
+            "user_id": 2,
+            "currency": Currencies.RUB,
+            "amount": Decimal(1.0),
+            "receipt_account_id": 2,
+            "amount_in_account_currency_at_creation": Decimal(1.0),
+            "category": SpendingCategories.OTHER
+        }
+    },
+    "spending_3": {
+        "model": Spending,
+        "data": {
+            "name": "test_spending_3",
+            "user_id": 1,
+            "currency": Currencies.RUB,
+            "amount": Decimal(60.0),
+            "receipt_account_id": 1,
+            "amount_in_account_currency_at_creation": Decimal(1.0),
+            "category": SpendingCategories.OTHER
+        }
+    },
+    "spending_4": {
+        "model": Spending,
+        "data": {
+            "name": "test_spending_4",
+            "user_id": 2,
+            "currency": Currencies.USD,
+            "amount": Decimal(1.0),
+            "receipt_account_id": 2,
+            "amount_in_account_currency_at_creation": Decimal(60.0),
+            "category": SpendingCategories.TAXI
         }
     }
 }

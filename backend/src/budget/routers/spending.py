@@ -106,7 +106,7 @@ async def delete_spending(
         spending_id: int,
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
-) -> dict[Literal["message"], str]:
+) -> dict[Literal["message"], Literal["success"]]:
     spending = await get_spending_by_id_with_joined_receipt_account(spending_id, session)
     if not spending:
         raise SpendingNotFoundException(spending_id)

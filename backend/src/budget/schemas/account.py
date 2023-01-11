@@ -16,7 +16,7 @@ class AccountSchemaIn(BaseORMSchema):
 class AccountSchemaOut(BaseORMSchema):
     id: int
     name: constr(max_length=255)
-    user_id: conint(gt=0)
+    user_id: conint(ge=1)
     type: AccountTypes
     is_active: bool
     balance: condecimal(ge=0)

@@ -4,7 +4,7 @@ from typing import Optional
 
 from fastapi import Query
 
-from backend.src.budget.config import Currencies
+from backend.src.budget.config import Currencies, SpendingCategories
 from backend.src.dependencies import BaseQueryParams
 
 
@@ -42,5 +42,6 @@ class SpendingQueryParams(BaseQueryParams):
         example="2022-11-20T00:00:00.000",
         description="Filters spendings created before this datetime"
     )
+    category: Optional[SpendingCategories] = Query(default=None)
 
 

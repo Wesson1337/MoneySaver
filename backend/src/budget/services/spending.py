@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from backend.src.budget.dependencies import SpendingQueryParams
-from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Spending, Account
 from backend.src.budget.schemas.spending import SpendingSchemaIn, SpendingSchemaPatch
 from backend.src.budget.services.account import add_amount_to_account_balance

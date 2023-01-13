@@ -66,7 +66,7 @@ async def get_certain_spending(
     return spending
 
 
-@router.post('/spendings/', response_model=SpendingSchemaOut)
+@router.post('/spendings/', status_code=201, response_model=SpendingSchemaOut)
 async def create_spending(
         spending_data: SpendingSchemaIn,
         current_user: User = Depends(get_current_active_user),

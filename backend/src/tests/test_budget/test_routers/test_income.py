@@ -511,7 +511,7 @@ async def test_delete_nonexistent_income(
         headers=[auth_headers_superuser]
     )
     assert response.status_code == 404
-    assert response.json()['detail'] == IncomeNotFoundException(999)
+    assert response.json()['detail'] == IncomeNotFoundException(999).detail
 
 
 async def test_income_delete_with_greater_amount_than_account_balance(

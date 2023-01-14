@@ -517,8 +517,8 @@ async def test_delete_nonexistent_spending(
         auth_headers_superuser: tuple[Literal["Authorization"], str],
 ):
     response = await client.delete(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/9999',
+        f'{DEFAULT_API_PREFIX}/budget/spendings/9999/',
         headers=[auth_headers_superuser]
     )
     assert response.status_code == 404
-    assert response.json()['detail'] == SpendingNotFoundException(9999)
+    assert response.json()['detail'] == SpendingNotFoundException(9999).detail

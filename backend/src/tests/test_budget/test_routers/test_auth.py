@@ -4,7 +4,7 @@ import pytest
 from httpx import AsyncClient
 from pytest_lazyfixture import lazy_fixture
 
-from backend.src.budget.config import Currencies, AccountTypes
+from backend.src.budget.config import Currencies, AccountTypes, SpendingCategories
 from backend.src.config import DEFAULT_API_PREFIX
 
 pytestmark = pytest.mark.asyncio
@@ -13,6 +13,7 @@ pytestmark = pytest.mark.asyncio
 @pytest.mark.parametrize('url', [
     '{DEFAULT_API_PREFIX}/budget/users/{user_id}/incomes/',
     '{DEFAULT_API_PREFIX}/budget/users/{user_id}/accounts/',
+    '{DEFAULT_API_PREFIX}/budget/users/{user_id}/spendings/'
 ])
 @pytest.mark.parametrize('auth_headers, user_id, status_code, response_detail', [
     [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
@@ -20,7 +21,7 @@ pytestmark = pytest.mark.asyncio
     [lazy_fixture('auth_headers_ordinary_user'), 2, 200, None],
     [lazy_fixture('auth_headers_superuser'), 2, 200, None]
 ])
-async def test_get_by_user_auth(
+async def test_certain_user_auth(
         auth_headers: tuple[Literal["Authorization"], str],
         url: str,
         status_code: int,
@@ -41,7 +42,8 @@ async def test_get_by_user_auth(
     ('{DEFAULT_API_PREFIX}/budget/accounts/{account_id}/', {
         "is_active": True
     }),
-    ('{DEFAULT_API_PREFIX}/budget/accounts/{account_id}/incomes/', None)
+    ('{DEFAULT_API_PREFIX}/budget/accounts/{account_id}/incomes/', None),
+    ('{DEFAULT_API_PREFIX}/budget/accounts/{account_id}/spendings/', None)
 ])
 @pytest.mark.parametrize(
     'auth_headers, account_id, status_code, response_detail', [
@@ -74,6 +76,9 @@ async def test_certain_account_auth(
             headers=[auth_headers],
             json=data
         )
+        assert response.status_code == status_code
+        if response_detail:
+            assert response.json()['detail'] == response_detail
 
 
 @pytest.mark.parametrize(
@@ -120,6 +125,50 @@ async def test_certain_income_auth(
         assert response.json()['detail'] == response_detail
 
 
+@pytest.mark.parametrize(
+    'auth_headers, spending_id, status_code, response_detail', [
+        [lazy_fixture('auth_headers_ordinary_user'), 1, 403, "You don't have permission to do this"],
+        [('Authorization', "Bearer"), 1, 401, "Could not validate credentials"],
+        [lazy_fixture('auth_headers_ordinary_user'), 4, 200, None],
+        [lazy_fixture('auth_headers_superuser'), 4, 200, None]
+    ]
+)
+async def test_certain_spending_auth(
+        auth_headers: tuple[Literal["Authorization"], str],
+        spending_id: int,
+        status_code: int,
+        response_detail: str,
+        client: AsyncClient
+):
+    response = await client.get(
+        f"{DEFAULT_API_PREFIX}/budget/spendings/{spending_id}/",
+        headers=[auth_headers]
+    )
+    assert response.status_code == status_code
+    if response_detail:
+        assert response.json()['detail'] == response_detail
+
+    spending_data = {
+        "amount": 2
+    }
+    response = await client.patch(
+        f'{DEFAULT_API_PREFIX}/budget/spendings/{spending_id}/',
+        headers=[auth_headers],
+        json=spending_data
+    )
+    assert response.status_code == status_code
+    if response_detail:
+        assert response.json()['detail'] == response_detail
+
+    response = await client.delete(
+        f"{DEFAULT_API_PREFIX}/budget/spendings/{spending_id}/",
+        headers=[auth_headers]
+    )
+    assert response.status_code == status_code
+    if response_detail:
+        assert response.json()['detail'] == response_detail
+
+
 @pytest.mark.parametrize('url, data', [
     (f'{DEFAULT_API_PREFIX}/budget/incomes/', {
         "name": "test_income",
@@ -131,6 +180,13 @@ async def test_certain_income_auth(
         "name": "test_account",
         "type": AccountTypes.BANK_ACCOUNT,
         "currency": Currencies.USD
+    }),
+    (f'{DEFAULT_API_PREFIX}/budget/spendings/', {
+        "name": "test_account",
+        "currency": Currencies.USD,
+        "receipt_account_id": 2,
+        "amount": 2.0,
+        "category": SpendingCategories.TAXI
     })
 ])
 @pytest.mark.parametrize(

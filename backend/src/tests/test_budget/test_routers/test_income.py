@@ -506,22 +506,12 @@ async def test_delete_nonexistent_income(
         client: AsyncClient,
         auth_headers_superuser: tuple[Literal["Authorization"], str],
 ):
-    all_incomes_response_before_deletion = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/',
-        headers=[auth_headers_superuser]
-    )
-
     response = await client.delete(
         f'{DEFAULT_API_PREFIX}/budget/incomes/999/',
         headers=[auth_headers_superuser]
     )
     assert response.status_code == 404
-
-    all_incomes_response_after_deletion = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/',
-        headers=[auth_headers_superuser]
-    )
-    assert all_incomes_response_before_deletion.json() == all_incomes_response_after_deletion.json()
+    assert response.json()['detail'] == IncomeNotFoundException(999)
 
 
 async def test_income_delete_with_greater_amount_than_account_balance(
@@ -534,4 +524,3 @@ async def test_income_delete_with_greater_amount_than_account_balance(
     )
     assert response.status_code == 400
     assert response.json()['detail'] == AccountBalanceWillGoNegativeException().detail
-

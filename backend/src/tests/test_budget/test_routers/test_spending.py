@@ -34,9 +34,9 @@ async def test_get_all_spendings_with_suitable_query(
     preloaded_spendings = [
         PRELOAD_DATA[name]["data"] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]["model"] == Spending
-           and PRELOAD_DATA[name]["data"]["user_id"] == 1
-           and PRELOAD_DATA[name]["data"]["currency"] == Currencies.USD
-           and PRELOAD_DATA[name]["data"]["category"] == SpendingCategories.TAXI
+        and PRELOAD_DATA[name]["data"]["user_id"] == 1
+        and PRELOAD_DATA[name]["data"]["currency"] == Currencies.USD
+        and PRELOAD_DATA[name]["data"]["category"] == SpendingCategories.TAXI
     ]
     preloaded_spendings.reverse()
 
@@ -129,7 +129,7 @@ async def test_get_all_spendings_by_account(
     preloaded_spendings = [
         PRELOAD_DATA[name]["data"] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]["model"] == Spending
-           and PRELOAD_DATA[name]["data"]['receipt_account_id'] == receipt_account_id
+        and PRELOAD_DATA[name]["data"]['receipt_account_id'] == receipt_account_id
     ]
     response_spendings = response.json()
 
@@ -166,7 +166,7 @@ async def test_get_certain_spending(
     preloaded_spending = [
         PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]['model'] == Spending
-           and name.endswith(f'_{spending_id}')
+        and name.endswith(f'_{spending_id}')
     ][0]
     response_spending = response.json()
 
@@ -230,7 +230,7 @@ async def test_create_spending(
     preloaded_account = [
         PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
         if PRELOAD_DATA[name]['model'] == Account
-           and name.endswith(f'_{spending_data["receipt_account_id"]}')
+        and name.endswith(f'_{spending_data["receipt_account_id"]}')
     ][0]
 
     sum_of_spending_amount_and_preloaded_account_balance = \
@@ -477,3 +477,48 @@ async def test_patch_nonexistent_spending(
     )
     assert response.status_code == 404
     assert response.json()['detail'] == SpendingNotFoundException(9999).detail
+
+
+async def test_delete_spending(
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+        client: AsyncClient
+):
+    get_response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/spendings/1/',
+        headers=[auth_headers_superuser]
+    )
+    stored_spending = get_response.json()
+
+    delete_response = await client.delete(
+        f'{DEFAULT_API_PREFIX}/budget/spendings/1/',
+        headers=[auth_headers_superuser]
+    )
+    assert delete_response.status_code == 200
+    assert delete_response.json() == {"message": "success"}
+
+    deleted_spending_get_response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/spendings/1/',
+        headers=[auth_headers_superuser]
+    )
+    assert deleted_spending_get_response.status_code == 404
+
+    get_second_spending_response = await client.get(
+        f'{DEFAULT_API_PREFIX}/budget/spendings/3/',
+        headers=[auth_headers_superuser]
+    )
+    updated_account = get_second_spending_response.json()['receipt_account']
+    assert Decimal(stored_spending['receipt_account']['balance']).quantize(Decimal('.01')) == \
+           (Decimal(updated_account['balance']) -
+            stored_spending['amount_in_account_currency_at_creation']).quantize(Decimal('.01'))
+
+
+async def test_delete_nonexistent_spending(
+        client: AsyncClient,
+        auth_headers_superuser: tuple[Literal["Authorization"], str],
+):
+    response = await client.delete(
+        f'{DEFAULT_API_PREFIX}/budget/spendings/9999',
+        headers=[auth_headers_superuser]
+    )
+    assert response.status_code == 404
+    assert response.json()['detail'] == SpendingNotFoundException(9999)

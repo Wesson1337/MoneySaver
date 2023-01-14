@@ -97,7 +97,7 @@ async def _change_amount_in_spending_data(
     )
     if stored_spending.currency != stored_spending.receipt_account.currency:
         spending_data['amount_in_account_currency_at_creation'] = \
-            Decimal(stored_spending.amount_in_account_currency_at_creation).quantize('.01') - \
+            Decimal(stored_spending.amount_in_account_currency_at_creation).quantize(Decimal('.01')) - \
             spending_difference_in_account_currency
     else:
         spending_data['amount_in_account_currency_at_creation'] = spending_data['amount']

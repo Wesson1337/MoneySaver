@@ -1,6 +1,12 @@
+import logging
 import os
 
 DEFAULT_API_PREFIX = "/api/v1"
+
+DEBUG = os.getenv("DEBUG")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def get_db_url(test: bool = False) -> str:

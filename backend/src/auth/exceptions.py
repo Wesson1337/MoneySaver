@@ -29,10 +29,10 @@ class IncorrectEmailOrPasswordException(HTTPException):
 
 
 class EmailAlreadyExistsException(HTTPException):
-    def __init__(self):
+    def __init__(self, email):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This email already exists"
+            detail=f"Email {email} already exists"
         )
 
 

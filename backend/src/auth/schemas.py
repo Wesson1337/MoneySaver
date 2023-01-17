@@ -14,7 +14,7 @@ class UserSchemaIn(BaseORMSchema):
     @validator('password2')
     def password_match(cls, v, values):
         if 'password1' in values and v != values['password1']:
-            raise ValueError("passwords doesn't match")
+            raise ValueError("passwords do not match")
 
 
 class UserSchemaPatch(BaseORMSchema):

@@ -38,10 +38,7 @@ async def create_user(new_user_data: UserSchemaIn, session: AsyncSession) -> Use
     new_user_dict = _change_user_password_to_hashed_password(new_user_data)
     new_user = User(**new_user_dict)
     session.add(new_user)
-    try:
-        await session.commit()
-    except (UniqueViolationError, IntegrityError):
-        raise EmailAlreadyExistsException()
+    await session.commit()
 
     return new_user
 

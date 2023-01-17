@@ -38,7 +38,8 @@ services:
     expose:
       - "9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_volume:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
 
@@ -46,7 +47,8 @@ services:
     image: grafana/grafana:latest
     restart: unless-stopped
     volumes:
-      - ./datasource.yml:/etc/grafana/provisioning/datasource.yml
+      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasource.yml
+      - grafana_volume:/var/lib/grafana
     env_file:
       - .env
     depends_on:
@@ -57,3 +59,5 @@ services:
 
 volumes:
   db_volume:
+  prometheus_volume:
+  grafana_volume:

@@ -8,7 +8,7 @@ import backend.src.auth.utils as auth_utils
 from backend.src.auth import service
 from backend.src.auth.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from backend.src.auth.dependencies import get_current_active_user
-from backend.src.auth.exceptions import IncorrectEmailOrPasswordException
+from backend.src.auth.exceptions import IncorrectEmailOrPasswordException, EmailAlreadyExistsException
 from backend.src.auth.models import User
 from backend.src.auth.schemas import Token, UserSchemaOut, UserSchemaIn
 from backend.src.dependencies import get_async_session
@@ -49,8 +49,14 @@ async def get_certain_user(
 
 
 @router.post('/users/', response_model=UserSchemaOut)
-async def create_new_user(new_user_data: UserSchemaIn,
-                          session: AsyncSession = Depends(get_async_session)):
-    new_user = await service.create_user(new_user_data=new_user_data, session=session)
+async def create_new_user(
+        new_user_data: UserSchemaIn,
+        session: AsyncSession = Depends(get_async_session)
+) -> User:
+    user_with_email_from_new_user_data = await service.get_user_by_email(new_user_data.email, session)
+    if user_with_email_from_new_user_data is not None:
+        raise EmailAlreadyExistsException(new_user_data.email)
+
+    new_user = await service.create_user(new_user_data, session)
     return new_user
 

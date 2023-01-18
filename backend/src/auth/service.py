@@ -1,14 +1,11 @@
 from typing import Optional
-
 import sqlalchemy as sa
-from asyncpg import UniqueViolationError
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import backend.src.auth.utils as auth_utils
-from backend.src.auth.exceptions import EmailAlreadyExistsException, UserNotFoundException
 from backend.src.auth.models import User
 from backend.src.auth.schemas import UserSchemaIn
+from backend.src import redis
 
 
 async def get_user_by_email(email: str, session: AsyncSession) -> User | None:
@@ -26,11 +23,15 @@ async def authenticate_user(email: str, password: str, session: AsyncSession) ->
     return user
 
 
-async def get_user_by_id(user_id: int, session: AsyncSession) -> User:
+async def get_cached_user_by_id(user_id: int) -> User:
+    user_key_name = redis.Keys(sql_model=User).sql_model_key_by_id(user_id)
+    user = await redis.get_cache(user_key_name)
+    return User(**user)
+
+
+async def get_user_by_id_db(user_id: int, session) -> User:
     result = await session.execute(sa.select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
-    if not user:
-        raise UserNotFoundException()
     return user
 
 

@@ -14,3 +14,4 @@ pydantic[email]==1.10.2
 pytest-lazy-fixture==0.6.3
 prometheus_fastapi_instrumentator==5.9.1
 fastapi_utils==0.2.1
+aioredis==2.0.1

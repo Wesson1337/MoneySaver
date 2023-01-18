@@ -37,8 +37,8 @@ class EmailAlreadyExistsException(HTTPException):
 
 
 class UserNotFoundException(HTTPException):
-    def __init__(self):
+    def __init__(self, user_id):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            detail=f"User with id {user_id} is not found"
         )

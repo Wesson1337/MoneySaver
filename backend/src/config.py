@@ -3,7 +3,7 @@ import os
 
 DEFAULT_API_PREFIX = "/api/v1"
 
-DEBUG = os.getenv("DEBUG")
+DEBUG = bool(os.getenv("DEBUG"))
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,3 +26,6 @@ def get_db_url(test: bool = False) -> str:
 
 
 DATABASE_URL = get_db_url()
+
+REDIS_URL = f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}"
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')

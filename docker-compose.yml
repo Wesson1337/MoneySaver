@@ -10,6 +10,8 @@ services:
       - .env
     volumes:
       - db_volume:/var/lib/postgres/data
+    environment:
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
 
   db-test:
     image: postgres:15-alpine
@@ -18,6 +20,8 @@ services:
       - .env
     ports:
       - "8001:5432"
+    environment:
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
 
   backend:
       build:
@@ -31,6 +35,7 @@ services:
         - ./backend:/home/app/MoneySaver/backend
       depends_on:
         - db
+        - redis
 
   prometheus:
     image: prom/prometheus:latest
@@ -56,8 +61,20 @@ services:
     ports:
       - "3000:3000"
 
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    env_file:
+      - .env
+    volumes:
+      - redis_volume:/data
+
 
 volumes:
   db_volume:
   prometheus_volume:
   grafana_volume:
+  redis_volume:

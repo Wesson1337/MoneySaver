@@ -7,6 +7,7 @@ from jose import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM, pwd_context
+from backend.src.auth.exceptions import EmailAlreadyExistsException
 from backend.src.auth.models import User
 from backend.src.config import DEFAULT_API_PREFIX
 from backend.src.tests.conftest import PRELOAD_DATA
@@ -175,4 +176,4 @@ async def test_create_user_wrong_data(client: AsyncClient):
     response = await client.post(f'{DEFAULT_API_PREFIX}/users/', json=user_data)
     print(response.json())
     assert response.status_code == 400
-    assert response.json()['detail'] == "This email already exists"
+    assert response.json()['detail'] == EmailAlreadyExistsException(user_data['email']).detail

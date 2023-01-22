@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional
 
-from pydantic import EmailStr, constr, validator, BaseModel
+from pydantic import EmailStr, constr, validator, BaseModel, conint
 
 from backend.src.utils import BaseORMSchema
 
@@ -38,4 +38,4 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    email: EmailStr
+    id: conint(ge=1)

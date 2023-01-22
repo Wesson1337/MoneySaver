@@ -1,3 +1,4 @@
+import datetime
 import os
 from dataclasses import fields
 from decimal import Decimal
@@ -108,3 +109,13 @@ async def convert_amount_to_another_currency(
         desired_currency_rate = response.json()['data'][desired_currency]
         amount_in_desired_currency = amount * Decimal(desired_currency_rate)
         return Decimal(amount_in_desired_currency).quantize(Decimal('.01'))
+
+
+def datetime_parser(data: dict):
+    for k, v in data.items():
+        if isinstance(v, str) and v.endswith('+00:00'):
+            # try:
+                data[k] = datetime.datetime.fromisoformat(v)
+            # except:
+            #     pass
+    return data

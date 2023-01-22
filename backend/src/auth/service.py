@@ -26,7 +26,8 @@ async def authenticate_user(email: str, password: str, session: AsyncSession) ->
 async def get_cached_user_by_id(user_id: int) -> User:
     user_key_name = redis.Keys(sql_model=User).sql_model_key_by_id(user_id)
     user = await redis.get_cache(user_key_name)
-    return User(**user)
+    if user:
+        return User(**user)
 
 
 async def get_user_by_id_db(user_id: int, session) -> User:

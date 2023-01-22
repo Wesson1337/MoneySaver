@@ -29,7 +29,7 @@ async def login_for_access_token(
         raise IncorrectEmailOrPasswordException()
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth_utils.create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
+        data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -57,7 +57,11 @@ async def get_certain_user(
     if not user:
         raise UserNotFoundException(user_id)
 
-    background_tasks.add_task(redis.set_cache(UserSchemaOut.from_orm(user).json()))
+    background_tasks.add_task(
+        redis.set_cache,
+        redis.Keys(sql_model=User).sql_model_key_by_id(user_id),
+        UserSchemaOut.from_orm(user).json()
+    )
     return user
 
 

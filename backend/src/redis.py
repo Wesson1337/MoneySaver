@@ -1,9 +1,13 @@
+import json
+from datetime import datetime
 from typing import Type, Optional
 
 import aioredis
 
-from backend.src import config
+from backend.src import config, utils
 from backend.src.database import Base
+
+ONE_DAY = 60 * 60 * 24
 
 redis = aioredis.from_url(
     config.REDIS_URL, password=config.REDIS_PASSWORD, decode_responses=True
@@ -39,4 +43,18 @@ class Keys:
         return f"{self.model.__tablename__}:{model_id}"
 
 
-# TODO create get_cache and set_cache
+async def set_cache(key: Keys, data: dict):
+    def serialize_dates(v):
+        return v.isoformat() if isinstance(v, datetime) else v
+
+    await redis.set(
+        key,
+        json.dumps(data, default=serialize_dates),
+        ex=ONE_DAY
+    )
+
+
+async def get_cache(key: Keys):
+    data = await redis.get(key)
+    if data:
+        return json.loads(json.loads(data), object_hook=utils.datetime_parser)

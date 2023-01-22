@@ -8,7 +8,7 @@ from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM
 from backend.src.auth.exceptions import CredentialsException, InactiveUserException
 from backend.src.auth.models import User
 from backend.src.auth.schemas import TokenData
-from backend.src.auth.service import get_user_by_email
+from backend.src.auth.service import get_user_by_email, get_cached_user_by_id, get_user_by_id_db
 from backend.src.config import DEFAULT_API_PREFIX
 from backend.src.dependencies import get_async_session
 
@@ -19,14 +19,18 @@ async def get_current_user(token: str = Depends(oauth2_scheme),
                            session: AsyncSession = Depends(get_async_session)) -> User:
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-        email = payload.get("sub")
-        if email is None:
+        user_id = int(payload.get("sub"))
+        if user_id is None:
             raise CredentialsException()
-        token_data = TokenData(email=email)
+        token_data = TokenData(id=user_id)
     except (JWTError, ValidationError):
         raise CredentialsException()
 
-    user = await get_user_by_email(token_data.email, session)
+    cached_user = await get_cached_user_by_id(user_id)
+    if cached_user:
+        return cached_user
+
+    user = await get_user_by_id_db(user_id, session)
     if user is None:
         raise CredentialsException()
     return user

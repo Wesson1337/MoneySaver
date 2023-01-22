@@ -11,6 +11,7 @@ from backend.src.tests.conftest import PRELOAD_DATA
 pytestmark = pytest.mark.asyncio
 
 
+# TODO rewrite tests for auth with id instead of email
 async def test_get_current_user(
         ordinary_user_encoded_jwt_token: str,
         superuser_encoded_jwt_token: str,

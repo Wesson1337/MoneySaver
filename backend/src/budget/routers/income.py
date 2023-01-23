@@ -10,7 +10,7 @@ from backend.src.budget.exceptions import AccountNotExistsException, IncomeNotFo
     AccountNotFoundException, AccountNotBelongsToUserException
 from backend.src.budget.models import Income
 from backend.src.budget.schemas.income import IncomeSchemaOut, IncomeSchemaIn, IncomeSchemaPatch
-from backend.src.budget.services.account import get_account_by_id
+from backend.src.budget.services.account import get_account_by_id_db
 from backend.src.budget.services.income import create_income_db, delete_income_db, \
     get_certain_income_by_id, patch_income_db, get_incomes_db
 from backend.src.dependencies import get_async_session
@@ -39,7 +39,7 @@ async def get_all_incomes_by_account(
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> List[Income]:
-    account = await get_account_by_id(account_id, session)
+    account = await get_account_by_id_db(account_id, session)
     if not account:
         raise AccountNotFoundException(account_id)
     if account.user_id != current_user.id and not current_user.is_superuser:
@@ -73,7 +73,7 @@ async def create_income(
     if income_data.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
 
-    replenishment_account = await get_account_by_id(income_data.replenishment_account_id, session)
+    replenishment_account = await get_account_by_id_db(income_data.replenishment_account_id, session)
     if not replenishment_account:
         raise AccountNotExistsException(income_data.replenishment_account_id)
     if replenishment_account.user_id != income_data.user_id:

@@ -4,6 +4,7 @@ from typing import Optional
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.src import redis
 from backend.src.budget.config import Currencies
 from backend.src.budget.dependencies import AccountQueryParams
 from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
@@ -28,7 +29,14 @@ async def get_all_accounts_by_user_db(
     return accounts
 
 
-async def get_account_by_id(account_id: int, session: AsyncSession) -> Optional[Account]:
+async def get_cached_account_by_id(account_id: int) -> Optional[Account]:
+    key = redis.Keys(sql_model=Account).sql_model_key_by_id(account_id)
+    cached_account = await redis.get_cache(key)
+    if cached_account:
+        return Account(**cached_account)
+
+
+async def get_account_by_id_db(account_id: int, session: AsyncSession) -> Optional[Account]:
     result = await session.execute(sa.select(Account).where(Account.id == account_id))
     account = result.scalar_one_or_none()
     return account

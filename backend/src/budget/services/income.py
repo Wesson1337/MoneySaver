@@ -9,7 +9,7 @@ from backend.src.budget.dependencies import IncomeQueryParams
 from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Income, Account
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch
-from backend.src.budget.services.account import get_account_by_id, add_amount_to_account_balance
+from backend.src.budget.services.account import get_account_by_id_db, add_amount_to_account_balance
 from backend.src.exceptions import NoDataForUpdateException
 from backend.src.utils import update_sql_entity, apply_query_params_to_select_sql_query
 
@@ -64,7 +64,7 @@ async def get_certain_income_by_id(income_id: int, session: AsyncSession) -> Inc
 
 
 async def delete_income_db(income: Income, session: AsyncSession) -> None:
-    replenishment_account = await get_account_by_id(income.replenishment_account_id, session)
+    replenishment_account = await get_account_by_id_db(income.replenishment_account_id, session)
     replenishment_account.balance -= income.amount_in_account_currency_at_creation
     if replenishment_account.balance < 0:
         raise AccountBalanceWillGoNegativeException()
@@ -119,7 +119,7 @@ async def _change_amount_in_income_data(
         income_data_dict: dict,
         session: AsyncSession
 ) -> dict:
-    replenishment_account = await get_account_by_id(stored_income.replenishment_account_id, session)
+    replenishment_account = await get_account_by_id_db(stored_income.replenishment_account_id, session)
     new_and_stored_income_amount_difference = \
         Decimal(income_data.amount).quantize(Decimal('.01')) - \
         Decimal(stored_income.amount).quantize(Decimal('.01'))

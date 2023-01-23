@@ -11,7 +11,6 @@ from backend.src.tests.conftest import PRELOAD_DATA
 pytestmark = pytest.mark.asyncio
 
 
-# TODO rewrite tests for auth with id instead of email
 async def test_get_current_user(
         ordinary_user_encoded_jwt_token: str,
         superuser_encoded_jwt_token: str,
@@ -69,3 +68,5 @@ async def test_get_current_active_user_not_active_user(seed_db, session: AsyncSe
     with pytest.raises(InactiveUserException):
         await get_current_active_user(inactive_user)
 
+
+# TODO rewrite tests for auth with id instead of email

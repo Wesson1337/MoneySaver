@@ -10,16 +10,16 @@ from jose import jwt
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
+from backend.src import config
 from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM
 # noinspection PyUnresolvedReferences
 from backend.src.auth.models import Base, User
 from backend.src.budget.config import Currencies, AccountTypes, SpendingCategories
 from backend.src.budget.models import Base, Account, Income, Spending
-from backend.src.config import get_db_url
 from backend.src.dependencies import get_async_session
 from backend.src.main import app
 
-TEST_DATABASE_URL = "postgresql+asyncpg://" + get_db_url(test=True)
+TEST_DATABASE_URL = "postgresql+asyncpg://" + config.TEST_DATABASE_URL
 
 PRELOAD_DATA = {
     "user_1": {

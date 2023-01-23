@@ -7,7 +7,6 @@ import aioredis
 from backend.src import config, utils
 from backend.src.database import Base
 
-ONE_DAY = 60 * 60 * 24
 
 redis = aioredis.from_url(
     config.REDIS_URL, password=config.REDIS_PASSWORD, decode_responses=True
@@ -50,7 +49,7 @@ async def set_cache(key: Keys, data: dict):
     await redis.set(
         key,
         json.dumps(data, default=serialize_dates),
-        ex=ONE_DAY
+        ex=config.REDIS_CACHING_DURATION_SECONDS
     )
 
 

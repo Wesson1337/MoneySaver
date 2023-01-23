@@ -10,7 +10,7 @@ from backend.src.budget.exceptions import AccountNotFoundException, SpendingNotF
     AccountNotBelongsToUserException, AccountNotExistsException
 from backend.src.budget.models import Spending
 from backend.src.budget.schemas.spending import SpendingSchemaOut, SpendingSchemaIn, SpendingSchemaPatch
-from backend.src.budget.services.account import get_account_by_id
+from backend.src.budget.services.account import get_account_by_id_db
 from backend.src.budget.services.spending import get_all_spendings_db, \
     get_spending_by_id_with_joined_receipt_account, create_spending_db, patch_spending_db, delete_spending_db
 from backend.src.dependencies import get_async_session
@@ -41,7 +41,7 @@ async def get_all_spendings_by_account(
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> list[Optional[Spending]]:
-    account = await get_account_by_id(account_id, session)
+    account = await get_account_by_id_db(account_id, session)
     if not account:
         raise AccountNotFoundException(account_id)
     if account.user_id != current_user.id and not current_user.is_superuser:
@@ -74,7 +74,7 @@ async def create_spending(
 ) -> Spending:
     if spending_data.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
-    receipt_account = await get_account_by_id(spending_data.receipt_account_id, session)
+    receipt_account = await get_account_by_id_db(spending_data.receipt_account_id, session)
     if not receipt_account:
         raise AccountNotExistsException(spending_data.receipt_account_id)
     if receipt_account.user_id != spending_data.user_id:

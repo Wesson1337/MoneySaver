@@ -1,6 +1,6 @@
 import datetime
 import os
-from dataclasses import fields
+from dataclasses import fields, Field
 from decimal import Decimal
 from operator import methodcaller
 from typing import Type, Any
@@ -13,6 +13,9 @@ from backend.src.budget.config import Currencies
 from backend.src.database import Base
 from backend.src.dependencies import BaseQueryParams
 from backend.src.exceptions import NoDataForUpdateException, WrongDataForUpdateException, CurrencyNotSupportedException
+
+
+PREFIXES_AND_METHODS = {"_ge": "__ge__", "_le": "__le__", "_ne": "__ne__"}
 
 
 class BaseORMSchema(BaseModel):
@@ -49,22 +52,19 @@ async def apply_query_params_to_select_sql_query(
 
     example: created_at_ge
     """
-    prefixes_and_methods = {"_ge": "__ge__", "_le": "__le__", "_ne": "__ne__"}
 
     for query_field in fields(query_params):
         query_field_name = query_field.name
         query_field_value = getattr(query_params, query_field_name)
-        query_param_is_specific = False
 
-        if query_field_value:
-            for prefix, method in prefixes_and_methods.items():
-                if query_field_name.endswith(prefix):
-                    select_sql_query = await _apply_specific_param_to_select_query(
-                        query_field_name, query_field_value, prefix, method, select_sql_query, sql_table
-                    )
-                    query_param_is_specific = True
-                    break
-            if not query_param_is_specific:
+        if query_field_value is not None:
+            prefix_and_method = _get_method_for_specific_field(query_field)
+            if prefix_and_method:
+                select_sql_query = await _apply_specific_param_to_select_query(
+                    query_field_name, query_field_value, prefix_and_method[0],
+                    prefix_and_method[1], select_sql_query, sql_table
+                )
+            else:
                 table_attr = getattr(sql_table, query_field_name)
                 select_sql_query = select_sql_query.filter(table_attr == query_field_value)
 
@@ -111,11 +111,38 @@ async def convert_amount_to_another_currency(
         return Decimal(amount_in_desired_currency).quantize(Decimal('.01'))
 
 
-def datetime_parser(data: dict):
-    for k, v in data.items():
-        if isinstance(v, str) and v.endswith('+00:00'):
-            # try:
-                data[k] = datetime.datetime.fromisoformat(v)
-            # except:
-            #     pass
+def apply_query_params_to_list(
+        query_params: Type[BaseQueryParams],
+        data: list[dict]
+):
+    """Same as apply_query_params_to_select_sql_query, but for dicts list"""
+    for field in fields(query_params):
+        field_value = getattr(query_params, field.name)
+        if field_value is not None:
+            prefix_and_method_for_specific_field = _get_method_for_specific_field(field)
+            if prefix_and_method_for_specific_field:
+                data = _apply_specific_field_to_list(
+                    field.name, field_value, data, prefix_and_method_for_specific_field
+                )
+            else:
+                data = [dct for dct in data if dct.get(field.name) == field_value]
     return data
+
+
+def _get_method_for_specific_field(field: Field) -> tuple[str]:
+    for prefix, method in PREFIXES_AND_METHODS.items():
+        if field.name.endswith(prefix):
+            return prefix, method
+
+
+def _apply_specific_field_to_list(
+        field_name: str,
+        field_value: Any,
+        data: list[dict],
+        prefix_and_method_for_specific_field: tuple[str]
+) -> list[dict]:
+    field_name_without_prefix = field_name[:-len(prefix_and_method_for_specific_field[0])]
+    compare_field_value_with_data = methodcaller(prefix_and_method_for_specific_field[1], field_value)
+    return [dct for dct in data if compare_field_value_with_data(dct.get(field_name_without_prefix))]
+
+

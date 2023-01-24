@@ -14,7 +14,7 @@ class AccountSchemaIn(BaseORMSchema):
 
 
 class AccountSchemaOut(BaseORMSchema):
-    id: int
+    id: conint(ge=1)
     name: constr(max_length=255)
     user_id: conint(ge=1)
     type: AccountTypes

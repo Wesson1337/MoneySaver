@@ -1,10 +1,12 @@
 from _decimal import Decimal
+from dataclasses import fields
 from typing import Optional
 
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src import redis
+from backend.src.auth.models import User
 from backend.src.budget.config import Currencies
 from backend.src.budget.dependencies import AccountQueryParams
 from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
@@ -12,14 +14,29 @@ from backend.src.budget.models import Account
 from backend.src.budget.schemas.account import AccountSchemaIn, AccountSchemaPatch
 from backend.src.exceptions import NoDataForUpdateException
 from backend.src.utils import apply_query_params_to_select_sql_query, update_sql_entity, \
-    convert_amount_to_another_currency
+    convert_amount_to_another_currency, apply_query_params_to_list
+
+
+async def get_all_cached_accounts_by_user(
+        user_id: int,
+        query_params: AccountQueryParams
+) -> list[Optional[Account]]:
+    keys = await redis.redis.keys(f'{Account.__tablename__}:*')
+    cached_accounts = []
+    for key in keys:
+        cached_account = await redis.get_cache(key)
+        if cached_account.get('user_id') == user_id:
+            cached_accounts.append(cached_account)
+    if cached_accounts:
+        filtered_cached_accounts = apply_query_params_to_list(query_params, cached_accounts)
+        return [Account(**account) for account in filtered_cached_accounts]
 
 
 async def get_all_accounts_by_user_db(
         user_id: int,
         query_params: AccountQueryParams,
         session: AsyncSession
-) -> list[Account]:
+) -> list[Optional[Account]]:
     select_query = sa.select(Account).where(Account.user_id == user_id).\
         order_by(Account.id.desc())
     select_query = await apply_query_params_to_select_sql_query(select_query, query_params, Account)

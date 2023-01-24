@@ -1,10 +1,16 @@
 import json
-from datetime import datetime
 from typing import Type, Optional
 
 import aioredis
+import sqlalchemy
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src import config, utils
+from backend.src.auth.models import User
+from backend.src.auth.schemas import UserSchemaOut
+from backend.src.budget.models import Income, Account, Spending
+from backend.src.budget.schemas.account import AccountSchemaOut
+from backend.src.budget.schemas.income import IncomeSchemaOut
 from backend.src.database import Base
 
 
@@ -43,17 +49,41 @@ class Keys:
 
 
 async def set_cache(key: Keys, data: dict):
-    def serialize_dates(v):
-        return v.isoformat() if isinstance(v, datetime) else v
 
     await redis.set(
         key,
-        json.dumps(data, default=serialize_dates),
+        json.dumps(data),
         ex=config.REDIS_CACHING_DURATION_SECONDS
     )
 
 
 async def get_cache(key: Keys):
     data = await redis.get(key)
+    parsed_data = json.loads(data)
     if data:
-        return json.loads(json.loads(data), object_hook=utils.datetime_parser)
+        return json.loads(parsed_data)
+
+
+async def seed_redis_from_db(session: AsyncSession):
+    config.logger.info('seeding redis from db..')
+    result = await session.execute(sqlalchemy.select(User))
+    users = result.scalars().all()
+    for user in users:
+        key = Keys(sql_model=User).sql_model_key_by_id(user.id)
+        await set_cache(key, UserSchemaOut.from_orm(user).json())
+    result = await session.execute(sqlalchemy.select(Income))
+    incomes = result.scalars().all()
+    for income in incomes:
+        key = Keys(sql_model=Income).sql_model_key_by_id(income.id)
+        await set_cache(key, IncomeSchemaOut.from_orm(income).json())
+    result = await session.execute(sqlalchemy.select(Account))
+    accounts = result.scalars().all()
+    for account in accounts:
+        key = Keys(sql_model=Account).sql_model_key_by_id(account.id)
+        await set_cache(key, AccountSchemaOut.from_orm(account).json())
+    result = await session.execute(sqlalchemy.select(Spending))
+    spendings = result.scalars().all()
+    for spending in spendings:
+        key = Keys(sql_model=Spending).sql_model_key_by_id(spending.id)
+        await set_cache(key, spending)
+    config.logger.log('seeding is done')

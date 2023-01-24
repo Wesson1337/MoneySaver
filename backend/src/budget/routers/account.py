@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,22 +12,26 @@ from backend.src.budget.exceptions import AccountNotFoundException, UserNotExist
 from backend.src.budget.models import Account
 from backend.src.budget.schemas.account import AccountSchemaOut, AccountSchemaIn, AccountSchemaPatch
 from backend.src.budget.services.account import get_all_accounts_by_user_db, get_account_by_id_db, create_account_db, \
-    patch_account_db, get_cached_account_by_id
+    patch_account_db, get_cached_account_by_id, get_all_cached_accounts_by_user
 from backend.src.dependencies import get_async_session
 from backend.src.exceptions import NotSuperUserException
 
 router = APIRouter()
 
 
-@router.get('/users/{user_id}/accounts/', response_model=list[AccountSchemaOut])
+@router.get('/users/{user_id}/accounts/', response_model=list[Optional[AccountSchemaOut]])
 async def get_all_accounts_by_user(
         user_id: int,
         query_params: AccountQueryParams = Depends(),
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
-) -> list[Account]:
+) -> list[Optional[Account]]:
     if user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
+    cached_accounts = await get_all_cached_accounts_by_user(user_id, query_params)
+    if cached_accounts is not None:
+        return cached_accounts
+
     accounts = await get_all_accounts_by_user_db(user_id, query_params, session)
     return accounts
 

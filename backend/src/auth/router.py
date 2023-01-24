@@ -49,19 +49,10 @@ async def get_certain_user(
     if user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
 
-    cached_user = await service.get_cached_user_by_id(user_id)
-    if cached_user:
-        return cached_user
-
-    user = await service.get_user_by_id_db(user_id, session)
+    user = await service.get_user_by_id(user_id, session, background_tasks)
     if not user:
         raise UserNotFoundException(user_id)
 
-    background_tasks.add_task(
-        redis.set_cache,
-        redis.Keys(sql_model=User).sql_model_key_by_id(user_id),
-        UserSchemaOut.from_orm(user).json()
-    )
     return user
 
 

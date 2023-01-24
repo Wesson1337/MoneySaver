@@ -86,4 +86,4 @@ async def seed_redis_from_db(session: AsyncSession):
     for spending in spendings:
         key = Keys(sql_model=Spending).sql_model_key_by_id(spending.id)
         await set_cache(key, spending)
-    config.logger.log('seeding is done')
+    config.logger.info('seeding is done')

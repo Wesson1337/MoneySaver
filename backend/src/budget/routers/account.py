@@ -11,8 +11,8 @@ from backend.src.budget.dependencies import AccountQueryParams
 from backend.src.budget.exceptions import AccountNotFoundException, UserNotExistsException
 from backend.src.budget.models import Account
 from backend.src.budget.schemas.account import AccountSchemaOut, AccountSchemaIn, AccountSchemaPatch
-from backend.src.budget.services.account import get_all_accounts_by_user_db, get_account_by_id_db, create_account_db, \
-    patch_account_db, get_cached_account_by_id, get_all_cached_accounts_by_user
+from backend.src.budget.services.account import get_all_accounts_by_user_db, create_account_db, \
+    patch_account_db, get_all_cached_accounts_by_user, get_account_by_id
 from backend.src.dependencies import get_async_session
 from backend.src.exceptions import NotSuperUserException
 
@@ -43,22 +43,11 @@ async def get_certain_account(
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> Account:
-    cached_account = await get_cached_account_by_id(account_id)
-    if cached_account is not None:
-        if cached_account.user_id != current_user.id and not current_user.is_superuser:
-            raise NotSuperUserException()
-        return cached_account
-
-    account = await get_account_by_id_db(account_id, session)
+    account = await get_account_by_id(account_id, session, background_tasks)
     if not account:
         raise AccountNotFoundException(account_id)
     if account.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
-    background_tasks.add_task(
-        redis.set_cache,
-        redis.Keys(sql_model=Account).sql_model_key_by_id(account_id),
-        AccountSchemaOut.from_orm(account).json()
-    )
     return account
 
 
@@ -91,7 +80,7 @@ async def patch_account(
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> Account:
-    stored_account = await get_account_by_id_db(account_id, session)
+    stored_account = await get_account_by_id(account_id, session)
     if not stored_account:
         raise AccountNotFoundException(account_id=account_id)
     if stored_account.user_id != current_user.id and not current_user.is_superuser:

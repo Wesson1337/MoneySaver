@@ -11,11 +11,11 @@ from backend.src.budget.config import Currencies
 from backend.src.budget.dependencies import AccountQueryParams
 from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Account
-from backend.src.budget.schemas.account import AccountSchemaIn, AccountSchemaPatch
+from backend.src.budget.schemas.account import AccountSchemaIn, AccountSchemaPatch, AccountSchemaOut
 from backend.src.exceptions import NoDataForUpdateException
 from backend.src.utils import apply_query_params_to_select_sql_query, update_sql_entity, \
     convert_amount_to_another_currency, apply_query_params_to_list
-
+from fastapi import BackgroundTasks
 
 async def get_all_cached_accounts_by_user(
         user_id: int,
@@ -56,6 +56,25 @@ async def get_cached_account_by_id(account_id: int) -> Optional[Account]:
 async def get_account_by_id_db(account_id: int, session: AsyncSession) -> Optional[Account]:
     result = await session.execute(sa.select(Account).where(Account.id == account_id))
     account = result.scalar_one_or_none()
+    return account
+
+
+async def get_account_by_id(
+        account_id: int,
+        session: AsyncSession,
+        background_tasks: Optional[BackgroundTasks] = None
+) -> Optional[Account]:
+    cached_account = await get_cached_account_by_id(account_id)
+    if cached_account is not None:
+        return cached_account
+
+    account = await get_account_by_id_db(account_id, session)
+    if background_tasks and account:
+        background_tasks.add_task(
+            redis.set_cache,
+            redis.Keys(sql_model=Account).sql_model_key_by_id(account_id),
+            AccountSchemaOut.from_orm(account).json()
+        )
     return account
 
 

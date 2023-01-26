@@ -1,6 +1,5 @@
 from decimal import Decimal
 from typing import Optional
-
 import sqlalchemy as sa
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,25 +12,7 @@ from backend.src.budget.models import Income, Account
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch, IncomeSchemaOut
 from backend.src.budget.services.account import get_account_by_id_db, add_amount_to_account_balance
 from backend.src.exceptions import NoDataForUpdateException
-from backend.src.utils import update_sql_entity, apply_query_params_to_select_sql_query, apply_query_params_to_list
-
-
-async def get_cached_incomes(
-        query_params: IncomeQueryParams,
-        user_id: int,
-        replenishment_account_id: Optional[int] = None
-) -> list[Income]:
-    keys = await redis.redis.keys(f'{Income.__tablename__}:*')
-    cached_incomes = []
-    for key in keys:
-        cached_income = await redis.get_cache(key)
-        if cached_income.get('user_id') == user_id:
-            cached_incomes.append(cached_income)
-        if replenishment_account_id and cached_income.get('replenishment_account_id') == replenishment_account_id:
-            cached_incomes.append(cached_income)
-    if cached_incomes:
-        filtered_cached_incomes = apply_query_params_to_list(query_params, cached_incomes)
-        return [income for income in filtered_cached_incomes]
+from backend.src.utils import update_sql_entity, apply_query_params_to_select_sql_query
 
 
 async def get_incomes_db(
@@ -53,19 +34,6 @@ async def get_incomes_db(
 
     result = await session.execute(select_query_with_filter)
     incomes = result.scalars().all()
-    return incomes
-
-
-async def get_incomes(
-        query_params: IncomeQueryParams,
-        user_id: int,
-        session: AsyncSession,
-        replenishment_account_id: Optional[int] = None
-) -> list[Income]:
-    cached_incomes = await get_cached_incomes(query_params, user_id, replenishment_account_id)
-    if cached_incomes:
-        return cached_incomes
-    incomes = await get_incomes_db(query_params, user_id, session, replenishment_account_id)
     return incomes
 
 
@@ -92,7 +60,12 @@ async def create_income_db(
 async def get_cached_income(income_id: int) -> Optional[Income]:
     income_key = redis.Keys(sql_model=Income).sql_model_key_by_id(income_id)
     cached_income = await redis.get_cache(income_key)
-    return cached_income
+    account = cached_income['replenishment_account']
+    del cached_income['replenishment_account']
+    income = Income(**cached_income)
+    income.replenishment_account = Account(**account)
+    income.replenishment_account_id = account['id']
+    return income
 
 
 async def get_certain_income_by_id(

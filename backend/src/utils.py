@@ -84,6 +84,12 @@ async def _apply_specific_param_to_select_query(
     return select_sql_query
 
 
+def _get_method_for_specific_field(field: Field) -> tuple[str]:
+    for prefix, method in PREFIXES_AND_METHODS.items():
+        if field.name.endswith(prefix):
+            return prefix, method
+
+
 async def convert_amount_to_another_currency(
         amount: Decimal | float | int,
         currency: Currencies | str,
@@ -107,40 +113,5 @@ async def convert_amount_to_another_currency(
         desired_currency_rate = response.json()['data'][desired_currency]
         amount_in_desired_currency = amount * Decimal(desired_currency_rate)
         return Decimal(amount_in_desired_currency).quantize(Decimal('.01'))
-
-
-def apply_query_params_to_list(
-        query_params: Type[BaseQueryParams],
-        data: list[dict]
-):
-    """Same as apply_query_params_to_select_sql_query, but for dicts list"""
-    for field in fields(query_params):
-        field_value = getattr(query_params, field.name)
-        if field_value is not None:
-            prefix_and_method_for_specific_field = _get_method_for_specific_field(field)
-            if prefix_and_method_for_specific_field:
-                data = _apply_specific_field_to_list(
-                    field.name, field_value, data, prefix_and_method_for_specific_field
-                )
-            else:
-                data = [dct for dct in data if dct.get(field.name) == field_value]
-    return data
-
-
-def _get_method_for_specific_field(field: Field) -> tuple[str]:
-    for prefix, method in PREFIXES_AND_METHODS.items():
-        if field.name.endswith(prefix):
-            return prefix, method
-
-
-def _apply_specific_field_to_list(
-        field_name: str,
-        field_value: Any,
-        data: list[dict],
-        prefix_and_method_for_specific_field: tuple[str]
-) -> list[dict]:
-    field_name_without_prefix = field_name[:-len(prefix_and_method_for_specific_field[0])]
-    compare_field_value_with_data = methodcaller(prefix_and_method_for_specific_field[1], field_value)
-    return [dct for dct in data if compare_field_value_with_data(dct.get(field_name_without_prefix))]
 
 

@@ -12,7 +12,7 @@ from backend.src.budget.exceptions import AccountNotFoundException, UserNotExist
 from backend.src.budget.models import Account
 from backend.src.budget.schemas.account import AccountSchemaOut, AccountSchemaIn, AccountSchemaPatch
 from backend.src.budget.services.account import get_all_accounts_by_user_db, create_account_db, \
-    patch_account_db, get_all_cached_accounts_by_user, get_account_by_id
+    patch_account_db, get_account_by_id, get_account_by_id_db
 from backend.src.dependencies import get_async_session
 from backend.src.exceptions import NotSuperUserException
 
@@ -28,9 +28,6 @@ async def get_all_accounts_by_user(
 ) -> list[Optional[Account]]:
     if user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
-    cached_accounts = await get_all_cached_accounts_by_user(user_id, query_params)
-    if cached_accounts:
-        return cached_accounts
 
     accounts = await get_all_accounts_by_user_db(user_id, query_params, session)
     return accounts
@@ -80,7 +77,7 @@ async def patch_account(
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> Account:
-    stored_account = await get_account_by_id(account_id, session)
+    stored_account = await get_account_by_id_db(account_id, session)
     if not stored_account:
         raise AccountNotFoundException(account_id=account_id)
     if stored_account.user_id != current_user.id and not current_user.is_superuser:

@@ -4,6 +4,7 @@ from typing import Optional
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
+from starlette.background import BackgroundTasks
 
 from backend.src.budget.dependencies import SpendingQueryParams
 from backend.src.budget.models import Spending, Account
@@ -48,13 +49,15 @@ async def get_spending_by_id_with_joined_receipt_account(
 async def create_spending_db(
         spending_data: SpendingSchemaIn,
         receipt_account: Account,
-        session: AsyncSession
+        session: AsyncSession,
+        background_tasks: BackgroundTasks
 ) -> Spending:
     new_spending = Spending(**spending_data.dict())
     amount_in_account_currency = await add_amount_to_account_balance(
         amount=-Decimal(new_spending.amount),
         account=receipt_account,
-        currency=new_spending.currency
+        currency=new_spending.currency,
+        background_tasks=background_tasks
     )
     new_spending.amount_in_account_currency_at_creation = -amount_in_account_currency
 
@@ -86,7 +89,8 @@ async def patch_spending_db(
 
 async def _change_amount_in_spending_data(
         stored_spending: Spending,
-        spending_data: dict
+        spending_data: dict,
+        background_tasks: BackgroundTasks
 ) -> dict:
     new_and_stored_spending_amount_difference = \
         Decimal(spending_data['amount'] - stored_spending.amount).quantize(Decimal('.01'))
@@ -94,6 +98,7 @@ async def _change_amount_in_spending_data(
         amount=-new_and_stored_spending_amount_difference,
         currency=stored_spending.currency,
         account=stored_spending.receipt_account,
+        background_tasks=BackgroundTasks
     )
     if stored_spending.currency != stored_spending.receipt_account.currency:
         spending_data['amount_in_account_currency_at_creation'] = \

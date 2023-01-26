@@ -1,12 +1,13 @@
 from typing import Optional
+
 import sqlalchemy as sa
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import BackgroundTasks
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import backend.src.auth.utils as auth_utils
+from backend.src import redis
 from backend.src.auth.models import User
 from backend.src.auth.schemas import UserSchemaIn, UserSchemaOut
-from backend.src import redis
 
 
 async def get_user_by_email(email: str, session: AsyncSession) -> User | None:

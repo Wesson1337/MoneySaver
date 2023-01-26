@@ -1,12 +1,11 @@
 from _decimal import Decimal
-from dataclasses import fields
 from typing import Optional
 
 import sqlalchemy as sa
+from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src import redis
-from backend.src.auth.models import User
 from backend.src.budget.config import Currencies
 from backend.src.budget.dependencies import AccountQueryParams
 from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
@@ -15,7 +14,7 @@ from backend.src.budget.schemas.account import AccountSchemaIn, AccountSchemaPat
 from backend.src.exceptions import NoDataForUpdateException
 from backend.src.utils import apply_query_params_to_select_sql_query, update_sql_entity, \
     convert_amount_to_another_currency, apply_query_params_to_list
-from fastapi import BackgroundTasks
+
 
 async def get_all_cached_accounts_by_user(
         user_id: int,
@@ -101,7 +100,8 @@ async def patch_account_db(
 async def add_amount_to_account_balance(
         amount: Decimal,
         currency: Currencies,
-        account: Account
+        account: Account,
+        background_tasks: BackgroundTasks
 ) -> Decimal:
     amount_in_account_currency = await convert_amount_to_another_currency(
         amount=amount, currency=currency, desired_currency=account.currency
@@ -111,4 +111,9 @@ async def add_amount_to_account_balance(
     if account.balance < 0:
         # We can get negative Decimal in func param, so we have to raise exception in that case
         raise AccountBalanceWillGoNegativeException()
+    background_tasks.add_task(
+        redis.set_cache,
+        redis.Keys(sql_model=Account).sql_model_key_by_id(account.id),
+        AccountSchemaOut.from_orm(account).json()
+    )
     return amount_in_account_currency

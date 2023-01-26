@@ -29,7 +29,7 @@ async def get_all_accounts_by_user(
     if user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
     cached_accounts = await get_all_cached_accounts_by_user(user_id, query_params)
-    if cached_accounts is not None:
+    if cached_accounts:
         return cached_accounts
 
     accounts = await get_all_accounts_by_user_db(user_id, query_params, session)
@@ -62,7 +62,7 @@ async def create_account(
         raise NotSuperUserException()
     try:
         account = await create_account_db(account_data, session)
-    except IntegrityError as e:
+    except IntegrityError:
         raise UserNotExistsException(account_data.user_id)
     background_tasks.add_task(
         redis.set_cache,

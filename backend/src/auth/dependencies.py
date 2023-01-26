@@ -9,7 +9,7 @@ from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM
 from backend.src.auth.exceptions import CredentialsException, InactiveUserException
 from backend.src.auth.models import User
 from backend.src.auth.schemas import TokenData, UserSchemaOut
-from backend.src.auth.service import get_user_by_email, get_cached_user_by_id, get_user_by_id_db
+from backend.src.auth.service import get_cached_user_by_id, get_user_by_id_db
 from backend.src.config import DEFAULT_API_PREFIX
 from backend.src.dependencies import get_async_session
 

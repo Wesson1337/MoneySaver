@@ -1,4 +1,3 @@
-import datetime
 import os
 from dataclasses import fields, Field
 from decimal import Decimal
@@ -13,7 +12,6 @@ from backend.src.budget.config import Currencies
 from backend.src.database import Base
 from backend.src.dependencies import BaseQueryParams
 from backend.src.exceptions import NoDataForUpdateException, WrongDataForUpdateException, CurrencyNotSupportedException
-
 
 PREFIXES_AND_METHODS = {"_ge": "__ge__", "_le": "__le__", "_ne": "__ne__"}
 

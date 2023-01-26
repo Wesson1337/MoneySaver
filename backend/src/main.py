@@ -1,8 +1,9 @@
 from fastapi import FastAPI
-from fastapi_utils.timing import add_timing_middleware
 from fastapi_utils.tasks import repeat_every
-from starlette.middleware.cors import CORSMiddleware
+from fastapi_utils.timing import add_timing_middleware
 from prometheus_fastapi_instrumentator import Instrumentator
+from starlette.middleware.cors import CORSMiddleware
+
 import backend.src.auth.router as auth
 from backend.src.budget.routers import account, income, spending
 from backend.src.config import DEFAULT_API_PREFIX, logger

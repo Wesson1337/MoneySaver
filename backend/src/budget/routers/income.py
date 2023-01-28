@@ -133,5 +133,10 @@ async def patch_income(
         raise NotSuperUserException()
 
     updated_income = await patch_income_db(stored_income, income_data, session, background_tasks)
+    background_tasks.add_task(
+        redis.set_cache,
+        redis.Keys(sql_model=Income).sql_model_key_by_id(income_id),
+        IncomeSchemaOut.from_orm(updated_income).json()
+    )
     return updated_income
 

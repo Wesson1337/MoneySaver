@@ -6,9 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from starlette.background import BackgroundTasks
 
+from backend.src import redis
 from backend.src.budget.dependencies import SpendingQueryParams
 from backend.src.budget.models import Spending, Account
-from backend.src.budget.schemas.spending import SpendingSchemaIn, SpendingSchemaPatch
+from backend.src.budget.schemas.spending import SpendingSchemaIn, SpendingSchemaPatch, SpendingSchemaOut
 from backend.src.budget.services.account import add_amount_to_account_balance
 from backend.src.exceptions import NoDataForUpdateException
 from backend.src.utils import apply_query_params_to_select_sql_query, update_sql_entity
@@ -35,6 +36,19 @@ async def get_all_spendings_db(
     return spendings
 
 
+async def get_cached_spending(spending_id: int) -> Optional[Spending]:
+    spending_key = redis.Keys(sql_model=Spending).sql_model_key_by_id(spending_id)
+    cached_spending = await redis.get_cache(spending_key)
+    if cached_spending:
+        account_key = redis.Keys(sql_model=Account).sql_model_key_by_id(cached_spending['receipt_account']['id'])
+        cached_account = await redis.get_cache(account_key)
+        del cached_spending['receipt_account']
+        spending = Spending(**cached_spending)
+        spending.receipt_account = Account(**cached_account)
+        spending.receipt_account_id = spending.receipt_account.id
+        return spending
+
+
 async def get_spending_by_id_with_joined_receipt_account(
         spending_id: int,
         session: AsyncSession
@@ -43,6 +57,25 @@ async def get_spending_by_id_with_joined_receipt_account(
         options(joinedload(Spending.receipt_account))
     result = await session.execute(select_sql_query)
     spending = result.scalar_one_or_none()
+    return spending
+
+
+async def get_spending_by_id(
+        spending_id: int,
+        session: AsyncSession,
+        background_tasks: BackgroundTasks
+) -> Optional[Spending]:
+    cached_spending = await get_cached_spending(spending_id)
+    if cached_spending is not None:
+        return cached_spending
+
+    spending = await get_spending_by_id_with_joined_receipt_account(spending_id, session)
+    if spending:
+        background_tasks.add_task(
+            redis.set_cache,
+            redis.Keys(sql_model=Spending).sql_model_key_by_id(spending_id),
+            SpendingSchemaOut.from_orm(spending).json()
+        )
     return spending
 
 
@@ -71,7 +104,8 @@ async def create_spending_db(
 async def patch_spending_db(
         stored_spending: Spending,
         spending_data: SpendingSchemaPatch,
-        session: AsyncSession
+        session: AsyncSession,
+        background_tasks: BackgroundTasks
 ) -> Spending:
     spending_data = spending_data.dict(exclude_unset=True)
 
@@ -79,7 +113,7 @@ async def patch_spending_db(
         raise NoDataForUpdateException()
 
     if spending_data.get('amount') and stored_spending.amount != spending_data['amount']:
-        spending_data = await _change_amount_in_spending_data(stored_spending, spending_data)
+        spending_data = await _change_amount_in_spending_data(stored_spending, spending_data, background_tasks)
 
     updated_spending = await update_sql_entity(stored_spending, spending_data)
     await session.commit()
@@ -98,7 +132,7 @@ async def _change_amount_in_spending_data(
         amount=-new_and_stored_spending_amount_difference,
         currency=stored_spending.currency,
         account=stored_spending.receipt_account,
-        background_tasks=BackgroundTasks
+        background_tasks=background_tasks
     )
     if stored_spending.currency != stored_spending.receipt_account.currency:
         spending_data['amount_in_account_currency_at_creation'] = \

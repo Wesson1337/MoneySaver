@@ -2,6 +2,7 @@ from typing import Optional, Literal
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.background import BackgroundTasks
 
 from backend.src.auth.dependencies import get_current_active_user
 from backend.src.auth.models import User
@@ -12,7 +13,8 @@ from backend.src.budget.models import Spending
 from backend.src.budget.schemas.spending import SpendingSchemaOut, SpendingSchemaIn, SpendingSchemaPatch
 from backend.src.budget.services.account import get_account_by_id_db
 from backend.src.budget.services.spending import get_all_spendings_db, \
-    get_spending_by_id_with_joined_receipt_account, create_spending_db, patch_spending_db, delete_spending_db
+    get_spending_by_id_with_joined_receipt_account, create_spending_db, patch_spending_db, delete_spending_db, \
+    get_spending_by_id
 from backend.src.dependencies import get_async_session
 from backend.src.exceptions import NotSuperUserException
 
@@ -55,10 +57,11 @@ async def get_all_spendings_by_account(
 @router.get('/spendings/{spending_id}/', response_model=SpendingSchemaOut)
 async def get_certain_spending(
         spending_id: int,
+        background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> Spending:
-    spending = await get_spending_by_id_with_joined_receipt_account(spending_id, session)
+    spending = await get_spending_by_id(spending_id, session, background_tasks)
     if not spending:
         raise SpendingNotFoundException(spending_id)
     if spending.user_id != current_user.id and not current_user.is_superuser:

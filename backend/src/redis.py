@@ -59,8 +59,8 @@ async def set_cache(key: Keys, data: dict):
 
 async def get_cache(key: Keys):
     data = await redis.get(key)
-    parsed_data = json.loads(data)
     if data:
+        parsed_data = json.loads(data)
         return json.loads(parsed_data)
 
 

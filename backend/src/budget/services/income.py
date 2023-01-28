@@ -60,12 +60,14 @@ async def create_income_db(
 async def get_cached_income(income_id: int) -> Optional[Income]:
     income_key = redis.Keys(sql_model=Income).sql_model_key_by_id(income_id)
     cached_income = await redis.get_cache(income_key)
-    account = cached_income['replenishment_account']
-    del cached_income['replenishment_account']
-    income = Income(**cached_income)
-    income.replenishment_account = Account(**account)
-    income.replenishment_account_id = account['id']
-    return income
+    if cached_income:
+        account_key = redis.Keys(sql_model=Account).sql_model_key_by_id(cached_income['replenishment_account']['id'])
+        cached_account = await redis.get_cache(account_key)
+        del cached_income['replenishment_account']
+        income = Income(**cached_income)
+        income.replenishment_account = Account(**cached_account)
+        income.replenishment_account_id = income.replenishment_account.id
+        return income
 
 
 async def get_certain_income_by_id(

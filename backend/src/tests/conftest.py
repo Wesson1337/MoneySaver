@@ -1,9 +1,12 @@
 import asyncio
+import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Generator, Callable, Literal
 
+import aioredis
 import pytest_asyncio
+from aioredis import Redis
 from fastapi import FastAPI
 from httpx import AsyncClient
 from jose import jwt
@@ -18,6 +21,7 @@ from backend.src.budget.config import Currencies, AccountTypes, SpendingCategori
 from backend.src.budget.models import Base, Account, Income, Spending
 from backend.src.dependencies import get_async_session
 from backend.src.main import app
+from backend.src.redis import init_redis_pool
 
 TEST_DATABASE_URL = "postgresql+asyncpg://" + config.TEST_DATABASE_URL
 
@@ -210,8 +214,24 @@ def override_get_async_session(session: AsyncSession) -> Callable:
 
 
 @pytest_asyncio.fixture(scope="function")
-def test_app(override_get_async_session: Callable) -> FastAPI:
+async def redis() -> Redis:
+    redis = aioredis.from_url(config.TEST_REDIS_URL, password=config.TEST_REDIS_PASSWORD, decode_responses=True)
+    yield redis
+    await redis.close()
+
+
+@pytest_asyncio.fixture(scope="function")
+def override_init_redis_pool(redis: Redis):
+    async def _override_init_redis_pool():
+        yield redis
+
+    return _override_init_redis_pool
+
+
+@pytest_asyncio.fixture(scope="function")
+def test_app(override_get_async_session: Callable, override_init_redis_pool: Callable) -> FastAPI:
     app.dependency_overrides[get_async_session] = override_get_async_session
+    app.dependency_overrides[init_redis_pool] = override_init_redis_pool
     return app
 
 
@@ -223,8 +243,8 @@ async def client(seed_db, test_app: FastAPI) -> AsyncClient:
 
 @pytest_asyncio.fixture(scope="function")
 async def superuser_encoded_jwt_token(seed_db) -> str:
-    user_email = PRELOAD_DATA['user_1']['data']['email']
-    data_to_encode = {"sub": user_email, "exp": datetime.utcnow() + timedelta(minutes=300)}
+    user_id = "1"
+    data_to_encode = {"sub": user_id, "exp": datetime.utcnow() + timedelta(minutes=300)}
     encoded_jwt_token = jwt.encode(data_to_encode, JWT_SECRET_KEY, JWT_ALGORITHM)
     return encoded_jwt_token
 
@@ -237,8 +257,8 @@ async def auth_headers_superuser(superuser_encoded_jwt_token: str) -> tuple[Lite
 
 @pytest_asyncio.fixture(scope="function")
 async def ordinary_user_encoded_jwt_token(seed_db) -> str:
-    user_email = PRELOAD_DATA['user_2']['data']['email']
-    data_to_encode = {"sub": user_email, "exp": datetime.utcnow() + timedelta(minutes=300)}
+    user_id = "2"
+    data_to_encode = {"sub": user_id, "exp": datetime.utcnow() + timedelta(minutes=300)}
     encoded_jwt_token = jwt.encode(data_to_encode, JWT_SECRET_KEY, JWT_ALGORITHM)
     return encoded_jwt_token
 

@@ -2,16 +2,17 @@ from _decimal import Decimal
 from typing import Optional
 
 import sqlalchemy as sa
+from aioredis import Redis
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src import redis
 from backend.src.budget.config import Currencies
 from backend.src.budget.dependencies import AccountQueryParams
 from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Account
 from backend.src.budget.schemas.account import AccountSchemaIn, AccountSchemaPatch, AccountSchemaOut
 from backend.src.exceptions import NoDataForUpdateException
+from backend.src.redis import RedisService, Keys
 from backend.src.utils import apply_query_params_to_select_sql_query, update_sql_entity, \
     convert_amount_to_another_currency
 
@@ -30,9 +31,9 @@ async def get_all_accounts_by_user_db(
     return accounts
 
 
-async def get_cached_account_by_id(account_id: int) -> Optional[Account]:
-    key = redis.Keys(sql_model=Account).sql_model_key_by_id(account_id)
-    cached_account = await redis.get_cache(key)
+async def get_cached_account_by_id(account_id: int, redis: Redis) -> Optional[Account]:
+    key = Keys(sql_model=Account).sql_model_key_by_id(account_id)
+    cached_account = await RedisService(redis).get_cache(key)
     if cached_account:
         return Account(**cached_account)
 
@@ -46,17 +47,18 @@ async def get_account_by_id_db(account_id: int, session: AsyncSession) -> Option
 async def get_account_by_id(
         account_id: int,
         session: AsyncSession,
-        background_tasks: Optional[BackgroundTasks] = None
+        redis: Redis,
+        background_tasks: BackgroundTasks
 ) -> Optional[Account]:
-    cached_account = await get_cached_account_by_id(account_id)
+    cached_account = await get_cached_account_by_id(account_id, redis)
     if cached_account is not None:
         return cached_account
 
     account = await get_account_by_id_db(account_id, session)
-    if background_tasks and account:
+    if account:
         background_tasks.add_task(
-            redis.set_cache,
-            redis.Keys(sql_model=Account).sql_model_key_by_id(account_id),
+            RedisService(redis).set_cache,
+            Keys(sql_model=Account).sql_model_key_by_id(account_id),
             AccountSchemaOut.from_orm(account).json()
         )
     return account
@@ -86,7 +88,8 @@ async def add_amount_to_account_balance(
         amount: Decimal,
         currency: Currencies,
         account: Account,
-        background_tasks: BackgroundTasks
+        background_tasks: BackgroundTasks,
+        redis: Redis
 ) -> Decimal:
     amount_in_account_currency = await convert_amount_to_another_currency(
         amount=amount, currency=currency, desired_currency=account.currency
@@ -97,8 +100,8 @@ async def add_amount_to_account_balance(
         # We can get negative Decimal in func param, so we have to raise exception in that case
         raise AccountBalanceWillGoNegativeException()
     background_tasks.add_task(
-        redis.set_cache,
-        redis.Keys(sql_model=Account).sql_model_key_by_id(account.id),
+        RedisService(redis).set_cache,
+        Keys(sql_model=Account).sql_model_key_by_id(account.id),
         AccountSchemaOut.from_orm(account).json()
     )
     return amount_in_account_currency

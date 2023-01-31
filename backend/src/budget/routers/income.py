@@ -1,10 +1,10 @@
 from typing import List, Literal
 
+from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src import redis
 from backend.src.auth.dependencies import get_current_active_user
 from backend.src.auth.models import User
 from backend.src.budget.dependencies import IncomeQueryParams
@@ -18,6 +18,7 @@ from backend.src.budget.services.income import create_income_db, delete_income_d
     get_incomes_db
 from backend.src.dependencies import get_async_session
 from backend.src.exceptions import NotSuperUserException
+from backend.src.redis import init_redis_pool, RedisService, Keys
 
 router = APIRouter()
 
@@ -57,9 +58,10 @@ async def get_certain_income(
         income_id: int,
         background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
+        redis: Redis = Depends(init_redis_pool)
 ) -> Income:
-    income = await get_certain_income_by_id(income_id, session, background_tasks)
+    income = await get_certain_income_by_id(income_id, session, background_tasks, redis)
     if not income:
         raise IncomeNotFoundException(income_id)
     if income.user_id != current_user.id and not current_user.is_superuser:
@@ -73,7 +75,8 @@ async def create_income(
         income_data: IncomeSchemaIn,
         background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
+        redis: Redis = Depends(init_redis_pool)
 ) -> Income:
     if income_data.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
@@ -84,10 +87,10 @@ async def create_income(
     if replenishment_account.user_id != income_data.user_id:
         raise AccountNotBelongsToUserException(income_data.replenishment_account_id, income_data.user_id)
 
-    new_income = await create_income_db(income_data, replenishment_account, session, background_tasks)
+    new_income = await create_income_db(income_data, replenishment_account, session, background_tasks, redis)
     background_tasks.add_task(
-        redis.set_cache,
-        redis.Keys(sql_model=Income).sql_model_key_by_id(new_income.id),
+        RedisService(redis).set_cache,
+        Keys(sql_model=Income).sql_model_key_by_id(new_income.id),
         IncomeSchemaOut.from_orm(new_income).json()
     )
 
@@ -99,7 +102,8 @@ async def delete_income(
         income_id: int,
         background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
+        redis: Redis = Depends(init_redis_pool)
 ) -> dict[Literal["message"], Literal["success"]]:
     income = await get_income_by_id_with_joined_replenishment_account(income_id, session)
 
@@ -109,10 +113,10 @@ async def delete_income(
     if income.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
 
-    await delete_income_db(income, session)
+    await delete_income_db(income, session, background_tasks, redis)
     background_tasks.add_task(
-        redis.redis.delete,
-        redis.Keys(sql_model=Income).sql_model_key_by_id(income_id)
+        redis.delete,
+        Keys(sql_model=Income).sql_model_key_by_id(income_id)
     )
     return {"message": "success"}
 
@@ -123,7 +127,8 @@ async def patch_income(
         income_data: IncomeSchemaPatch,
         background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
+        redis: Redis = Depends(init_redis_pool)
 ) -> Income:
     stored_income = await get_income_by_id_with_joined_replenishment_account(income_id, session)
     if not stored_income:
@@ -132,10 +137,10 @@ async def patch_income(
     if stored_income.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
 
-    updated_income = await patch_income_db(stored_income, income_data, session, background_tasks)
+    updated_income = await patch_income_db(stored_income, income_data, session, background_tasks, redis)
     background_tasks.add_task(
-        redis.set_cache,
-        redis.Keys(sql_model=Income).sql_model_key_by_id(income_id),
+        RedisService(redis).set_cache,
+        Keys(sql_model=Income).sql_model_key_by_id(income_id),
         IncomeSchemaOut.from_orm(updated_income).json()
     )
     return updated_income

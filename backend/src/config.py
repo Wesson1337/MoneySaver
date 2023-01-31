@@ -30,4 +30,6 @@ TEST_DATABASE_URL = get_db_url(test=True)
 
 REDIS_URL = f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}"
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
+TEST_REDIS_URL = f"redis://{os.getenv('TEST_REDIS_HOST')}:{os.getenv('TEST_REDIS_PORT')}"
+TEST_REDIS_PASSWORD = os.getenv('TEST_REDIS_PASSWORD')
 REDIS_CACHING_DURATION_SECONDS = 60 * 60 * 12  # 12 hours

@@ -1,13 +1,14 @@
 from typing import Optional
 
 import sqlalchemy as sa
+from aioredis import Redis
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import backend.src.auth.utils as auth_utils
-from backend.src import redis
 from backend.src.auth.models import User
 from backend.src.auth.schemas import UserSchemaIn, UserSchemaOut
+from backend.src.redis import Keys, RedisService
 
 
 async def get_user_by_email(email: str, session: AsyncSession) -> User | None:
@@ -25,9 +26,9 @@ async def authenticate_user(email: str, password: str, session: AsyncSession) ->
     return user
 
 
-async def get_cached_user_by_id(user_id: int) -> Optional[User]:
-    user_key_name = redis.Keys(sql_model=User).sql_model_key_by_id(user_id)
-    user = await redis.get_cache(user_key_name)
+async def get_cached_user_by_id(user_id: int, redis: Redis) -> Optional[User]:
+    user_key_name = Keys(sql_model=User).sql_model_key_by_id(user_id)
+    user = await RedisService(redis).get_cache(user_key_name)
     if user:
         return User(**user)
 
@@ -41,17 +42,18 @@ async def get_user_by_id_db(user_id: int, session) -> Optional[User]:
 async def get_user_by_id(
         user_id: int,
         session: AsyncSession,
-        background_tasks: Optional[BackgroundTasks] = None
+        background_tasks: BackgroundTasks,
+        redis: Redis
 ) -> Optional[User]:
-    cached_user = await get_cached_user_by_id(user_id)
+    cached_user = await get_cached_user_by_id(user_id, redis)
     if cached_user is not None:
         return cached_user
 
     user = await get_user_by_id_db(user_id, session)
-    if background_tasks and user:
+    if user:
         background_tasks.add_task(
-            redis.set_cache,
-            redis.Keys(sql_model=User).sql_model_key_by_id(user_id),
+            RedisService(redis).set_cache,
+            Keys(sql_model=User).sql_model_key_by_id(user_id),
             UserSchemaOut.from_orm(user).json()
         )
     return user

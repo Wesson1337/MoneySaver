@@ -3,6 +3,7 @@ from typing import Type, Optional
 
 import aioredis
 import sqlalchemy
+from aioredis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src import config
@@ -14,9 +15,11 @@ from backend.src.budget.schemas.income import IncomeSchemaOut
 from backend.src.budget.schemas.spending import SpendingSchemaOut
 from backend.src.database import Base
 
-redis = aioredis.from_url(
-    config.REDIS_URL, password=config.REDIS_PASSWORD, decode_responses=True
-)
+
+async def init_redis_pool():
+    redis = aioredis.from_url(config.REDIS_URL, password=config.REDIS_PASSWORD, decode_reponses=True)
+    yield redis
+    await redis.close()
 
 
 def prefixed_key(f):
@@ -39,7 +42,7 @@ def prefixed_key(f):
 
 class Keys:
     """Methods to generate key names for Redis data structures."""
-    def __init__(self, prefix: Optional[str] = None, sql_model: Optional[Type[Base]] = None):
+    def __init__(self, prefix: Optional[str] = None, sql_model: Optional[Type[Base]] = None) -> object:
         self.prefix = prefix
         self.model = sql_model
 
@@ -48,52 +51,55 @@ class Keys:
         return f"{self.model.__tablename__}:{model_id}"
 
 
-async def set_cache(key: Keys, data: dict):
+class RedisService:
+    def __init__(self, redis: Redis):
+        self._redis = redis
 
-    await redis.set(
-        key,
-        json.dumps(data),
-        ex=config.REDIS_CACHING_DURATION_SECONDS
-    )
+    async def set_cache(self, key: Keys, data: dict):
+        await self._redis.set(
+            key,
+            json.dumps(data),
+            ex=config.REDIS_CACHING_DURATION_SECONDS
+        )
 
-
-async def get_cache(key: Keys):
-    data = await redis.get(key)
-    if data:
-        parsed_data = json.loads(data)
-        return json.loads(parsed_data)
+    async def get_cache(self, key: Keys):
+        data = await self._redis.get(key)
+        if data:
+            parsed_data = json.loads(data)
+            return json.loads(parsed_data)
 
 
 async def seed_redis_from_db(session: AsyncSession):
     config.logger.info('seeding redis from db..')
+    service = RedisService(init_redis_pool())
 
     result = await session.execute(sqlalchemy.select(User))
     users = result.scalars().all()
     for user in users:
         key = Keys(sql_model=User).sql_model_key_by_id(user.id)
-        await set_cache(key, UserSchemaOut.from_orm(user).json())
+        await service.set_cache(key, UserSchemaOut.from_orm(user).json())
 
     result = await session.execute(sqlalchemy.select(Account))
     accounts = result.scalars().all()
     for account in accounts:
         key = Keys(sql_model=Account).sql_model_key_by_id(account.id)
-        await set_cache(key, AccountSchemaOut.from_orm(account).json())
+        await service.set_cache(key, AccountSchemaOut.from_orm(account).json())
 
     result = await session.execute(sqlalchemy.select(Income))
     incomes = result.scalars().all()
     for income in incomes:
         key = Keys(sql_model=Account).sql_model_key_by_id(income.replenishment_account_id)
-        cached_account = await get_cache(key)
+        cached_account = await service.get_cache(key)
         income.replenishment_account = Account(**cached_account)
         key = Keys(sql_model=Income).sql_model_key_by_id(income.id)
-        await set_cache(key, IncomeSchemaOut.from_orm(income).json())
+        await service.set_cache(key, IncomeSchemaOut.from_orm(income).json())
 
     result = await session.execute(sqlalchemy.select(Spending))
     spendings = result.scalars().all()
     for spending in spendings:
         key = Keys(sql_model=Account).sql_model_key_by_id(spending.replenishment_account_id)
-        cached_account = await get_cache(key)
+        cached_account = await service.get_cache(key)
         spending.replenishment_account = Account(**cached_account)
         key = Keys(sql_model=Spending).sql_model_key_by_id(spending.id)
-        await set_cache(key, SpendingSchemaOut.from_orm(spending).json())
+        await service.set_cache(key, SpendingSchemaOut.from_orm(spending).json())
     config.logger.info('seeding is done')

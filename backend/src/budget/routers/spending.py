@@ -1,5 +1,6 @@
 from typing import Optional, Literal
 
+from aioredis import Redis
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.background import BackgroundTasks
@@ -17,6 +18,7 @@ from backend.src.budget.services.spending import get_all_spendings_db, \
     get_spending_by_id
 from backend.src.dependencies import get_async_session
 from backend.src.exceptions import NotSuperUserException
+from backend.src.redis import RedisService, Keys, init_redis_pool
 
 router = APIRouter()
 
@@ -59,9 +61,10 @@ async def get_certain_spending(
         spending_id: int,
         background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
+        redis: Redis = Depends(init_redis_pool)
 ) -> Spending:
-    spending = await get_spending_by_id(spending_id, session, background_tasks)
+    spending = await get_spending_by_id(spending_id, session, background_tasks, redis)
     if not spending:
         raise SpendingNotFoundException(spending_id)
     if spending.user_id != current_user.id and not current_user.is_superuser:
@@ -72,8 +75,10 @@ async def get_certain_spending(
 @router.post('/spendings/', status_code=201, response_model=SpendingSchemaOut)
 async def create_spending(
         spending_data: SpendingSchemaIn,
+        background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
+        redis: Redis = Depends(init_redis_pool)
 ) -> Spending:
     if spending_data.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
@@ -83,7 +88,12 @@ async def create_spending(
     if receipt_account.user_id != spending_data.user_id:
         raise AccountNotBelongsToUserException(spending_data.receipt_account_id, spending_data.user_id)
 
-    spending = await create_spending_db(spending_data, receipt_account, session)
+    spending = await create_spending_db(spending_data, receipt_account, session, background_tasks, redis)
+    background_tasks.add_task(
+        RedisService(redis).set_cache,
+        Keys(sql_model=Spending).sql_model_key_by_id(spending.id),
+        SpendingSchemaOut.from_orm(spending).json()
+    )
 
     return spending
 
@@ -92,28 +102,41 @@ async def create_spending(
 async def patch_spending(
         spending_id: int,
         spending_data: SpendingSchemaPatch,
+        background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
+        redis: Redis = Depends(init_redis_pool)
 ) -> Spending:
     spending = await get_spending_by_id_with_joined_receipt_account(spending_id, session)
     if not spending:
         raise SpendingNotFoundException(spending_id)
     if spending.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
-    updated_spending = await patch_spending_db(spending, spending_data, session)
+    updated_spending = await patch_spending_db(spending, spending_data, session, background_tasks, redis)
+    background_tasks.add_task(
+        RedisService(redis).set_cache,
+        Keys(sql_model=Spending).sql_model_key_by_id(spending_id),
+        SpendingSchemaOut.from_orm(updated_spending).json()
+    )
     return updated_spending
 
 
 @router.delete('/spendings/{spending_id}/')
 async def delete_spending(
         spending_id: int,
+        background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
+        redis: Redis = Depends(init_redis_pool)
 ) -> dict[Literal["message"], Literal["success"]]:
     spending = await get_spending_by_id_with_joined_receipt_account(spending_id, session)
     if not spending:
         raise SpendingNotFoundException(spending_id)
     if spending.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
-    await delete_spending_db(spending, session)
+    await delete_spending_db(spending, session, background_tasks, redis)
+    background_tasks.add_task(
+        redis.delete,
+        Keys(sql_model=Spending).sql_model_key_by_id(spending_id)
+    )
     return {"message": "success"}

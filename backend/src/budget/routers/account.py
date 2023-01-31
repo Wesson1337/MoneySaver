@@ -1,10 +1,10 @@
 from typing import Optional
 
+from aioredis import Redis
 from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src import redis
 from backend.src.auth.dependencies import get_current_active_user
 from backend.src.auth.models import User
 from backend.src.budget.dependencies import AccountQueryParams
@@ -15,6 +15,7 @@ from backend.src.budget.services.account import get_all_accounts_by_user_db, cre
     patch_account_db, get_account_by_id, get_account_by_id_db
 from backend.src.dependencies import get_async_session
 from backend.src.exceptions import NotSuperUserException
+from backend.src.redis import RedisService, init_redis_pool, Keys
 
 router = APIRouter()
 
@@ -38,9 +39,10 @@ async def get_certain_account(
         account_id: int,
         background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
+        redis: Redis = Depends(init_redis_pool)
 ) -> Account:
-    account = await get_account_by_id(account_id, session, background_tasks)
+    account = await get_account_by_id(account_id, session, redis, background_tasks)
     if not account:
         raise AccountNotFoundException(account_id)
     if account.user_id != current_user.id and not current_user.is_superuser:
@@ -53,7 +55,8 @@ async def create_account(
         account_data: AccountSchemaIn,
         background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
+        redis: Redis = Depends(init_redis_pool)
 ) -> Account:
     if account_data.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
@@ -62,8 +65,8 @@ async def create_account(
     except IntegrityError:
         raise UserNotExistsException(account_data.user_id)
     background_tasks.add_task(
-        redis.set_cache,
-        redis.Keys(sql_model=Account).sql_model_key_by_id(account.id),
+        RedisService(redis).set_cache,
+        Keys(sql_model=Account).sql_model_key_by_id(account.id),
         AccountSchemaOut.from_orm(account).json()
     )
     return account
@@ -75,7 +78,8 @@ async def patch_account(
         account_data: AccountSchemaPatch,
         background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_active_user),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
+        redis: Redis = Depends(init_redis_pool)
 ) -> Account:
     stored_account = await get_account_by_id_db(account_id, session)
     if not stored_account:
@@ -84,8 +88,8 @@ async def patch_account(
         raise NotSuperUserException()
     updated_account = await patch_account_db(stored_account, account_data, session)
     background_tasks.add_task(
-        redis.set_cache,
-        redis.Keys(sql_model=Account).sql_model_key_by_id(updated_account.id),
+        RedisService(redis).set_cache,
+        Keys(sql_model=Account).sql_model_key_by_id(updated_account.id),
         AccountSchemaOut.from_orm(updated_account).json()
     )
     return updated_account

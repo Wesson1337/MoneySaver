@@ -1,17 +1,19 @@
 from decimal import Decimal
 from typing import Optional
 import sqlalchemy as sa
+from aioredis import Redis
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from backend.src import redis
 from backend.src.budget.dependencies import IncomeQueryParams
 from backend.src.budget.exceptions import AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Income, Account
+from backend.src.budget.schemas.account import AccountSchemaOut
 from backend.src.budget.schemas.income import IncomeSchemaIn, IncomeSchemaPatch, IncomeSchemaOut
 from backend.src.budget.services.account import get_account_by_id_db, add_amount_to_account_balance
 from backend.src.exceptions import NoDataForUpdateException
+from backend.src.redis import Keys, RedisService
 from backend.src.utils import update_sql_entity, apply_query_params_to_select_sql_query
 
 
@@ -41,12 +43,13 @@ async def create_income_db(
         income_data: IncomeSchemaIn,
         replenishment_account: Account,
         session: AsyncSession,
-        background_tasks: BackgroundTasks
+        background_tasks: BackgroundTasks,
+        redis: Redis
 ) -> Income:
     new_income = Income(**income_data.dict())
     amount_in_account_currency = await add_amount_to_account_balance(
         amount=Decimal(new_income.amount), account=replenishment_account,
-        currency=new_income.currency, background_tasks=background_tasks
+        currency=new_income.currency, background_tasks=background_tasks, redis=redis
     )
     new_income.amount_in_account_currency_at_creation = amount_in_account_currency
     session.add(new_income)
@@ -57,12 +60,12 @@ async def create_income_db(
     return new_income
 
 
-async def get_cached_income(income_id: int) -> Optional[Income]:
-    income_key = redis.Keys(sql_model=Income).sql_model_key_by_id(income_id)
-    cached_income = await redis.get_cache(income_key)
+async def get_cached_income(income_id: int, redis: Redis) -> Optional[Income]:
+    income_key = Keys(sql_model=Income).sql_model_key_by_id(income_id)
+    cached_income = await RedisService(redis).get_cache(income_key)
     if cached_income:
-        account_key = redis.Keys(sql_model=Account).sql_model_key_by_id(cached_income['replenishment_account']['id'])
-        cached_account = await redis.get_cache(account_key)
+        account_key = Keys(sql_model=Account).sql_model_key_by_id(cached_income['replenishment_account']['id'])
+        cached_account = await RedisService(redis).get_cache(account_key)
         del cached_income['replenishment_account']
         income = Income(**cached_income)
         income.replenishment_account = Account(**cached_account)
@@ -73,37 +76,49 @@ async def get_cached_income(income_id: int) -> Optional[Income]:
 async def get_certain_income_by_id(
         income_id: int,
         session: AsyncSession,
-        background_tasks: Optional[BackgroundTasks] = None
+        background_tasks: BackgroundTasks,
+        redis: Redis
 ) -> Income:
-    cached_income = await get_cached_income(income_id)
+    cached_income = await get_cached_income(income_id, redis)
     if cached_income is not None:
         return cached_income
 
     income = await get_income_by_id_with_joined_replenishment_account(income_id, session)
-    if income and background_tasks:
+    if income:
         background_tasks.add_task(
-            redis.set_cache,
-            redis.Keys(sql_model=Income).sql_model_key_by_id(income.id),
+            RedisService(redis).set_cache,
+            Keys(sql_model=Income).sql_model_key_by_id(income.id),
             IncomeSchemaOut.from_orm(income).json()
         )
     return income
 
 
-async def delete_income_db(income: Income, session: AsyncSession) -> None:
-    replenishment_account = await get_account_by_id_db(income.replenishment_account_id, session)
+async def delete_income_db(
+        income: Income,
+        session: AsyncSession,
+        background_tasks: BackgroundTasks,
+        redis: Redis
+) -> None:
+    replenishment_account = income.replenishment_account
     replenishment_account.balance -= income.amount_in_account_currency_at_creation
     if replenishment_account.balance < 0:
         raise AccountBalanceWillGoNegativeException()
 
     await session.delete(income)
     await session.commit()
+    background_tasks.add_task(
+        RedisService(redis).set_cache,
+        Keys(sql_model=Account).sql_model_key_by_id(replenishment_account.id),
+        AccountSchemaOut.from_orm(replenishment_account).json()
+    )
 
 
 async def patch_income_db(
         stored_income: Income,
         income_data: IncomeSchemaPatch,
         session: AsyncSession,
-        background_tasks: BackgroundTasks
+        background_tasks: BackgroundTasks,
+        redis: Redis
 ) -> Income:
     income_data_dict = income_data.dict(exclude_unset=True)
 
@@ -116,7 +131,8 @@ async def patch_income_db(
             income_data=income_data,
             income_data_dict=income_data_dict,
             session=session,
-            background_tasks=background_tasks
+            background_tasks=background_tasks,
+            redis=redis
         )
 
     updated_income = await update_sql_entity(stored_income, income_data_dict)
@@ -146,7 +162,8 @@ async def _change_amount_in_income_data(
         income_data: IncomeSchemaPatch,
         income_data_dict: dict,
         session: AsyncSession,
-        background_tasks: BackgroundTasks
+        background_tasks: BackgroundTasks,
+        redis: Redis
 ) -> dict:
     replenishment_account = await get_account_by_id_db(stored_income.replenishment_account_id, session)
     new_and_stored_income_amount_difference = \
@@ -156,7 +173,8 @@ async def _change_amount_in_income_data(
         amount=new_and_stored_income_amount_difference,
         currency=stored_income.currency,
         account=replenishment_account,
-        background_tasks=background_tasks
+        background_tasks=background_tasks,
+        redis=redis
     )
     if stored_income.currency != replenishment_account.currency:
         income_data_dict['amount_in_account_currency_at_creation'] = \

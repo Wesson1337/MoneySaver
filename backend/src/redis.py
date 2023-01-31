@@ -17,7 +17,7 @@ from backend.src.database import Base
 
 
 async def init_redis_pool():
-    redis = aioredis.from_url(config.REDIS_URL, password=config.REDIS_PASSWORD, decode_reponses=True)
+    redis = aioredis.from_url(config.REDIS_URL, password=config.REDIS_PASSWORD, decode_responses=True)
     yield redis
     await redis.close()
 

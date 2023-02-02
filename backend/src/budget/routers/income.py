@@ -114,10 +114,7 @@ async def delete_income(
         raise NotSuperUserException()
 
     await delete_income_db(income, session, background_tasks, redis)
-    background_tasks.add_task(
-        redis.delete,
-        Keys(sql_model=Income).sql_model_key_by_id(income_id)
-    )
+    await redis.delete(Keys(sql_model=Income).sql_model_key_by_id(income_id))
     return {"message": "success"}
 
 

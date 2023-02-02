@@ -25,10 +25,8 @@ async def get_current_user(
 ) -> User:
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-        user_id = int(payload.get("sub"))
-        if user_id is None:
-            raise CredentialsException()
-        token_data = TokenData(id=user_id)
+        token_data = TokenData(id=payload.get("sub"))
+        user_id = int(token_data.id)
     except (JWTError, ValidationError):
         raise CredentialsException()
 
@@ -39,11 +37,12 @@ async def get_current_user(
     user = await get_user_by_id_db(user_id, session)
     if user is None:
         raise CredentialsException()
-    background_tasks.add_task(
-        RedisService(redis).set_cache,
-        Keys(sql_model=User).sql_model_key_by_id(user.id),
-        UserSchemaOut.from_orm(user).json()
-    )
+    if background_tasks:
+        background_tasks.add_task(
+            RedisService(redis).set_cache,
+            Keys(sql_model=User).sql_model_key_by_id(user.id),
+            UserSchemaOut.from_orm(user).json()
+        )
     return user
 
 

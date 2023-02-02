@@ -1,5 +1,7 @@
 import pytest
 import sqlalchemy as sa
+from aioredis import Redis
+from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.auth.config import pwd_context
@@ -14,45 +16,58 @@ pytestmark = pytest.mark.asyncio
 async def test_get_current_user(
         ordinary_user_encoded_jwt_token: str,
         superuser_encoded_jwt_token: str,
-        session: AsyncSession
+        session: AsyncSession,
+        redis: Redis
 ):
-    user = await get_current_user(ordinary_user_encoded_jwt_token, session)
-    assert isinstance(user, User)
+    cached_user = await get_current_user(
+        token=ordinary_user_encoded_jwt_token, session=session, redis=redis, background_tasks=None
+    )
+    assert isinstance(cached_user, User)
+    result = await session.execute(sa.select(User).where(User.id == cached_user.id))
+    user_from_db = result.scalar_one()
+    assert isinstance(user_from_db, User)
     preload_user_data = PRELOAD_DATA['user_2']['data']
-    assert user.is_superuser is preload_user_data['is_superuser']
-    assert pwd_context.verify('test_password', user.hashed_password)
+    assert cached_user.is_superuser is preload_user_data['is_superuser']
+    assert pwd_context.verify('test_password', user_from_db.hashed_password)
 
-    user = await get_current_user(superuser_encoded_jwt_token, session)
-    assert isinstance(user, User)
+    cached_user = await get_current_user(
+        token=superuser_encoded_jwt_token, session=session, redis=redis, background_tasks=None
+    )
+    assert isinstance(cached_user, User)
+    result = await session.execute(sa.select(User).where(User.id == cached_user.id))
+    user_from_db = result.scalar_one()
+    assert isinstance(user_from_db, User)
     preload_user_data = PRELOAD_DATA['user_1']['data']
-    assert user.is_superuser is preload_user_data['is_superuser']
-    assert pwd_context.verify('test_password', user.hashed_password)
+    assert cached_user.is_superuser is preload_user_data['is_superuser']
+    assert pwd_context.verify('test_password', user_from_db.hashed_password)
 
 
-async def test_get_current_user_wrong_data(seed_db, session: AsyncSession):
+@pytest.mark.parametrize('wrong_token', [
     # expired_token
-    test_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wb" \
-                 "GUuY29tIiwiZXhwIjoxNTE2MjM5MDIyfQ.5m4TnaDPUPOPQbS9WyT26GBmdRuofYfMfpyWjE6W3Z0"
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNTE2MjM5MDIyfQ."
+    "-6YUdFgOUkQBqfWx8DmFYVEEvJ0QHCtZ9H9HaPDNuCY",
+    # incorrect id
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZmFmZHNmYWZkYWZkcyIsImV4cCI6MjUwMDAwMDAwMH0."
+    "tVbH8Ujk75CA7MvgGZWXLi_GB_J0ug9AP-sUkitvRYY",
+    # id doesn't exists in db
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMTExMTExMSIsImV4cCI6MjUwMDAwMDAwMH0."
+    "rHpSFcN-9MVMwXVzZ_GfGhU8dmV481Xw4g9Jzzyz87c",
+    # id not in token
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjI1MDAwMDAwMDB9.4GqxpcvTZBaeRDKtlaxoGgd9PNQpKxFSajNsfuh7wWU"
+])
+async def test_get_current_user_wrong_data(
+        wrong_token: str,
+        ordinary_user_encoded_jwt_token: str,
+        session: AsyncSession,
+        redis: Redis
+):
+    # checking token didn't change
+    user = await get_current_user(
+        token=ordinary_user_encoded_jwt_token, background_tasks=None, session=session, redis=redis
+    )
+    assert isinstance(user, User)
     with pytest.raises(CredentialsException):
-        await get_current_user(test_token, session)
-
-    # incorrect email
-    test_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyOTE2MjM5MDIyfQ" \
-                 ".AzjIT55WveIpV9x-sFidG1JmTOJoSrkECJPk_roeh7I"
-    with pytest.raises(CredentialsException):
-        await get_current_user(test_token, session)
-
-    # email doesn't exists in db
-    test_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJub3RfZXhpc3RpbmdfZW1haWxAZXhhbXBsZS5jb20iLCJl" \
-                 "eHAiOjI5MTYyMzkwMjJ9.8V5cfUt0z78qa3UkkmjJBULlmRQTjErA_kAAbyUekgE"
-    with pytest.raises(CredentialsException):
-        await get_current_user(test_token, session)
-
-    # email not in token
-    test_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjI5MTYyMzkw" \
-                 "MjJ9.hKkJBZ-hyqOeKsOga1kCzSHFnbZDsuWhzH40gkKa6_c"
-    with pytest.raises(CredentialsException):
-        await get_current_user(test_token, session)
+        await get_current_user(token=wrong_token, background_tasks=None, session=session, redis=redis)
 
 
 async def test_get_current_active_user(seed_db, session: AsyncSession):
@@ -67,6 +82,3 @@ async def test_get_current_active_user_not_active_user(seed_db, session: AsyncSe
     inactive_user = result.scalar_one()
     with pytest.raises(InactiveUserException):
         await get_current_active_user(inactive_user)
-
-
-# TODO rewrite tests for auth with id instead of email

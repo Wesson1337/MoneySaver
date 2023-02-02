@@ -5,6 +5,7 @@ import aioredis
 import sqlalchemy
 from aioredis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from backend.src import config
 from backend.src.auth.models import User
@@ -48,7 +49,7 @@ class Keys:
 
     @prefixed_key
     def sql_model_key_by_id(self, model_id: int):
-        return f"{self.model.__tablename__}:{model_id}"
+        return f"cache:{self.model.__tablename__}:{model_id}"
 
 
 class RedisService:
@@ -69,9 +70,12 @@ class RedisService:
             return json.loads(parsed_data)
 
 
-async def seed_redis_from_db(session: AsyncSession):
+async def seed_redis_from_db(session: AsyncSession, redis: Redis):
     config.logger.info('seeding redis from db..')
-    service = RedisService(init_redis_pool())
+    service = RedisService(redis)
+    cache_keys = await redis.keys('*')
+    for key in cache_keys:
+        await redis.delete(key)
 
     result = await session.execute(sqlalchemy.select(User))
     users = result.scalars().all()
@@ -85,21 +89,15 @@ async def seed_redis_from_db(session: AsyncSession):
         key = Keys(sql_model=Account).sql_model_key_by_id(account.id)
         await service.set_cache(key, AccountSchemaOut.from_orm(account).json())
 
-    result = await session.execute(sqlalchemy.select(Income))
+    result = await session.execute(sqlalchemy.select(Income).options(joinedload(Income.replenishment_account)))
     incomes = result.scalars().all()
     for income in incomes:
-        key = Keys(sql_model=Account).sql_model_key_by_id(income.replenishment_account_id)
-        cached_account = await service.get_cache(key)
-        income.replenishment_account = Account(**cached_account)
         key = Keys(sql_model=Income).sql_model_key_by_id(income.id)
         await service.set_cache(key, IncomeSchemaOut.from_orm(income).json())
 
-    result = await session.execute(sqlalchemy.select(Spending))
+    result = await session.execute(sqlalchemy.select(Spending).options(joinedload(Spending.receipt_account)))
     spendings = result.scalars().all()
     for spending in spendings:
-        key = Keys(sql_model=Account).sql_model_key_by_id(spending.replenishment_account_id)
-        cached_account = await service.get_cache(key)
-        spending.replenishment_account = Account(**cached_account)
         key = Keys(sql_model=Spending).sql_model_key_by_id(spending.id)
         await service.set_cache(key, SpendingSchemaOut.from_orm(spending).json())
     config.logger.info('seeding is done')

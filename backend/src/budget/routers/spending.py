@@ -135,8 +135,5 @@ async def delete_spending(
     if spending.user_id != current_user.id and not current_user.is_superuser:
         raise NotSuperUserException()
     await delete_spending_db(spending, session, background_tasks, redis)
-    background_tasks.add_task(
-        redis.delete,
-        Keys(sql_model=Spending).sql_model_key_by_id(spending_id)
-    )
+    await redis.delete(Keys(sql_model=Spending).sql_model_key_by_id(spending_id))
     return {"message": "success"}

@@ -15,7 +15,7 @@ from backend.src.tests.conftest import PRELOAD_DATA
 pytestmark = pytest.mark.asyncio
 
 
-async def test_login_for_access_token(client: AsyncClient):
+async def test_login_for_access_token(client: AsyncClient, session: AsyncSession):
     login_data = {
         "username": "testmail@example.com",
         "password": "test_password"
@@ -27,7 +27,10 @@ async def test_login_for_access_token(client: AsyncClient):
 
     jwt_token = response.json()['access_token']
     jwt_token_decoded = jwt.decode(jwt_token, JWT_SECRET_KEY, JWT_ALGORITHM)
-    assert jwt_token_decoded['sub'] == login_data['username']
+
+    result = await session.execute(sa.select(User).where(User.email == login_data['username']))
+    user = result.scalar_one()
+    assert jwt_token_decoded['sub'] == str(user.id)
 
 
 async def test_login_for_access_token_wrong_data(client: AsyncClient):

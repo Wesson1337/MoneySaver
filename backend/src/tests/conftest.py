@@ -21,7 +21,7 @@ from backend.src.budget.config import Currencies, AccountTypes, SpendingCategori
 from backend.src.budget.models import Base, Account, Income, Spending
 from backend.src.dependencies import get_async_session
 from backend.src.main import app
-from backend.src.redis import init_redis_pool
+from backend.src.redis import init_redis_pool, seed_redis_from_db
 
 TEST_DATABASE_URL = "postgresql+asyncpg://" + config.TEST_DATABASE_URL
 
@@ -217,7 +217,13 @@ def override_get_async_session(session: AsyncSession) -> Callable:
 async def redis() -> Redis:
     redis = aioredis.from_url(config.TEST_REDIS_URL, password=config.TEST_REDIS_PASSWORD, decode_responses=True)
     yield redis
+    keys = await redis.keys('*')
     await redis.close()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def seed_test_redis_from_test_db(session: AsyncSession, redis: Redis):
+    await seed_redis_from_db(session, redis)
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -236,13 +242,13 @@ def test_app(override_get_async_session: Callable, override_init_redis_pool: Cal
 
 
 @pytest_asyncio.fixture(scope="function")
-async def client(seed_db, test_app: FastAPI) -> AsyncClient:
+async def client(seed_db, test_app: FastAPI, seed_test_redis_from_test_db) -> AsyncClient:
     async with AsyncClient(app=app, base_url="http://localhost:8000") as ac:
         yield ac
 
 
 @pytest_asyncio.fixture(scope="function")
-async def superuser_encoded_jwt_token(seed_db) -> str:
+async def superuser_encoded_jwt_token(seed_db, seed_test_redis_from_test_db) -> str:
     user_id = "1"
     data_to_encode = {"sub": user_id, "exp": datetime.utcnow() + timedelta(minutes=300)}
     encoded_jwt_token = jwt.encode(data_to_encode, JWT_SECRET_KEY, JWT_ALGORITHM)
@@ -256,7 +262,7 @@ async def auth_headers_superuser(superuser_encoded_jwt_token: str) -> tuple[Lite
 
 
 @pytest_asyncio.fixture(scope="function")
-async def ordinary_user_encoded_jwt_token(seed_db) -> str:
+async def ordinary_user_encoded_jwt_token(seed_db, seed_test_redis_from_test_db) -> str:
     user_id = "2"
     data_to_encode = {"sub": user_id, "exp": datetime.utcnow() + timedelta(minutes=300)}
     encoded_jwt_token = jwt.encode(data_to_encode, JWT_SECRET_KEY, JWT_ALGORITHM)

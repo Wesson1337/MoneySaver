@@ -1,3 +1,4 @@
+import aioredis
 from fastapi import FastAPI
 from fastapi_utils.tasks import repeat_every
 from fastapi_utils.timing import add_timing_middleware
@@ -5,6 +6,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.middleware.cors import CORSMiddleware
 
 import backend.src.auth.router as auth
+from backend.src import config
 from backend.src.budget.routers import account, income, spending
 from backend.src.config import DEFAULT_API_PREFIX, logger
 from backend.src.database import async_session
@@ -40,5 +42,7 @@ async def prometheus_instrumentator():
 @app.on_event("startup")
 @repeat_every(seconds=60 * 60)
 async def refresh_redis():
+    redis = aioredis.from_url(config.REDIS_URL, password=config.REDIS_PASSWORD, decode_responses=True)
     async with async_session() as session:
-        await seed_redis_from_db(session)
+        await seed_redis_from_db(session, redis)
+    await redis.close()

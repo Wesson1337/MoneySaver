@@ -36,6 +36,8 @@ services:
       depends_on:
         - db
         - redis
+        - prometheus
+        - grafana
 
   prometheus:
     image: prom/prometheus:latest
@@ -80,6 +82,20 @@ services:
     command: redis-server --save 20 1 --loglevel warning --requirepass ${TEST_REDIS_PASSWORD}
     env_file:
       - .env
+
+  frontend:
+    build:
+      context:
+        frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8080:3000"
+    volumes:
+      - ./frontend:/home/app/MoneySaver/frontend
+    depends_on:
+      - backend
 
 
 

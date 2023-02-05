@@ -1,4 +1,5 @@
 import aioredis
+import sentry_sdk
 from fastapi import FastAPI
 from fastapi_utils.tasks import repeat_every
 from fastapi_utils.timing import add_timing_middleware
@@ -11,7 +12,6 @@ from backend.src.budget.routers import account, income, spending
 from backend.src.config import DEFAULT_API_PREFIX, logger
 from backend.src.database import async_session
 from backend.src.redis import seed_redis_from_db
-import sentry_sdk
 
 sentry_sdk.init(
     dsn=config.SENTRY_SDK_DSN,

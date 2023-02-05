@@ -1,7 +1,6 @@
 import pytest
 import sqlalchemy as sa
 from aioredis import Redis
-from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.auth.config import pwd_context

@@ -1,5 +1,6 @@
 from decimal import Decimal
 from typing import Optional
+
 import sqlalchemy as sa
 from aioredis import Redis
 from fastapi import BackgroundTasks

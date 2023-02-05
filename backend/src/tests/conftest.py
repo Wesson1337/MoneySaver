@@ -1,5 +1,4 @@
 import asyncio
-import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Generator, Callable, Literal

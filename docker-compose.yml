@@ -61,7 +61,7 @@ services:
     depends_on:
       - prometheus
     ports:
-      - "3000:3000"
+      - "8080:3000"
 
   redis:
     image: redis:latest
@@ -91,7 +91,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8080:3000"
+      - "3000:3000"
     volumes:
       - ./frontend:/home/app/MoneySaver/frontend
     depends_on:

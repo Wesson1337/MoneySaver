@@ -1,4 +1,4 @@
-FROM node:19-alpine
+FROM node:current-alpine3.16
 
 WORKDIR /home/app/MoneySaver/frontend
 

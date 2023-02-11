@@ -1,10 +1,9 @@
 import React from 'react';
+import {authRoutes, publicRoutes} from "../routes";
 
 const AppRouter = () => {
     return (
-        <div>
-            
-        </div>
+        <div>Hello world</div>
     );
 };
 

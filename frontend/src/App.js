@@ -9,7 +9,6 @@ function App() {
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<Auth />}/>
       </Routes>
-  //   TODO: https://blog.logrocket.com/complete-guide-authentication-with-react-router-v6/ finish routes
   );
 }
 

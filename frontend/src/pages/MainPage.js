@@ -6,6 +6,7 @@ const MainPage = () => {
     console.log(user)
     return (
         <div>
+            <h1>{user}</h1>
             MAIN PAGE
         </div>
     );

@@ -7,8 +7,8 @@ const Auth = () => {
     const {user, setUser} = useAuth()
     const navigate = useNavigate()
 
-    const login = () => {
-        setUser('fsdjadfsjsfj')
+    const login = (user_id) => {
+        setUser('test_user' + {user_id})
         console.log(user)
     }
 
@@ -19,6 +19,7 @@ const Auth = () => {
 
     return (
         <div>
+            <h1>{user}</h1>
             AUTH
             <button onClick={login}>dfjasjdf</button>
             <button onClick={goToMain}>main</button>

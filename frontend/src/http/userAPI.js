@@ -5,7 +5,11 @@ export const registration = async (email, password1, password2) => {
 }
 
 export const login = async (email, password) => {
-    return await $host.post('/api/v1/token/', {email, password})
+    const loginFormData = new FormData();
+    loginFormData.append('username', email)
+    loginFormData.append('password', password)
+    console.log(loginFormData)
+    return await $host.post('/api/v1/token/', loginFormData)
 }
 
 export const check = async () => {

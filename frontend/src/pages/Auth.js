@@ -1,27 +1,65 @@
 import React, {useState} from 'react';
 import {useAuth} from "../context/Auth";
-import {NavLink, useLocation} from "react-router-dom";
-import {LOGIN_ROUTE, REGISTRATION_ROUTE} from "../utils/consts";
+import {NavLink, useLocation, useNavigate} from "react-router-dom";
+import {LOGIN_ROUTE, MAIN_PAGE_ROUTE, REGISTRATION_ROUTE} from "../utils/consts";
 import {login, registration} from "../http/userAPI";
 import {Button, Card, Container, Form, Row} from "react-bootstrap";
 
 const Auth = () => {
     const location = useLocation()
+    const navigate = useNavigate()
     const isLogin = location.pathname === LOGIN_ROUTE
     const [email, setEmail] = useState('')
     const [password1, setPassword1] = useState('')
     const [password2, setPassword2] = useState('')
-    const {user, setUser} = useAuth()
+    const {setUser} = useAuth()
+
+    const isValidEmail = () => {
+        return /\S+@\S+\.\S+/.test(email)
+    }
+
+    const checkEmailAndPassword = () => {
+        if (!isValidEmail()) {
+            alert('Email is incorrect')
+            return
+        }
+        if (password1.length < 6) {
+            alert('Password should be more than 6 symbols')
+            return
+        }
+        if (!isLogin && (password1 !== password2)) {
+            alert("Passwords don't match")
+            return
+        }
+        return (isLogin && password1) || (password1 && password2)
+    }
 
     const loginClick = async () => {
-        const response = await login(email, password1)
-        console.log(response)
+        if (checkEmailAndPassword()) {
+            try {
+            const response = await login(email, password1)
+            console.log(response)
+            setUser(email)
+            navigate(MAIN_PAGE_ROUTE)
+            } catch (e) {
+                alert(e.response.data.detail)
+            }
+        }
     }
 
     const registrationClick = async () => {
-        const response = await registration(email, password1, password2)
-        console.log(response)
+        if (checkEmailAndPassword()) {
+            try {
+                const response = await registration(email, password1, password2)
+                console.log(response)
+                setUser(email)
+                navigate(MAIN_PAGE_ROUTE)
+            } catch (e) {
+                alert(e.response.data.detail[0].msg)
+            }
+        }
     }
+
 
 
     return (

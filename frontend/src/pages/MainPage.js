@@ -3,7 +3,6 @@ import {useAuth} from "../context/Auth";
 
 const MainPage = () => {
     const {user} = useAuth()
-    console.log(user)
     return (
         <div>
             <h1>{user}</h1>

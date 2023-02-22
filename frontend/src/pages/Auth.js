@@ -3,7 +3,7 @@ import {useAuth} from "../context/Auth";
 import {NavLink, useLocation, useNavigate} from "react-router-dom";
 import {LOGIN_ROUTE, MAIN_PAGE_ROUTE, REGISTRATION_ROUTE} from "../utils/consts";
 import {login, registration} from "../http/userAPI";
-import {Button, Card, Container, Form, Row} from "react-bootstrap";
+import {Button, Card, Container, Form, Row, Spinner} from "react-bootstrap";
 import {ErrorComponent} from "../components/ErrorComponent";
 
 const Auth = () => {
@@ -15,6 +15,7 @@ const Auth = () => {
     const [password2, setPassword2] = useState('')
     const {setUser} = useAuth()
     const [errorMsg, setErrorMsg] = useState(null)
+    const [loading, setLoading] = useState(false)
 
     const isValidEmail = () => {
         return /\S+@\S+\.\S+/.test(email)
@@ -37,29 +38,31 @@ const Auth = () => {
     }
 
     const loginClick = async () => {
+        setLoading(true)
         if (checkEmailAndPassword()) {
             try {
             const response = await login(email, password1)
-            console.log(response)
             setUser(email)
             navigate(MAIN_PAGE_ROUTE)
             } catch (e) {
                 setErrorMsg(e.response.data.detail)
             }
         }
+        setLoading(false)
     }
 
     const registrationClick = async () => {
+        setLoading(true)
         if (checkEmailAndPassword()) {
             try {
                 const response = await registration(email, password1, password2)
-                console.log(response)
                 setUser(email)
                 navigate(MAIN_PAGE_ROUTE)
             } catch (e) {
                 setErrorMsg(e.response.data.detail[0].msg)
             }
         }
+        setLoading(false)
     }
 
 
@@ -75,6 +78,7 @@ const Auth = () => {
             />
             <Card style={{width: 600}} className="p-5">
                 <h2 className="m-auto">{isLogin ? 'Sign in to MoneySaver' : 'Sign up to MoneySaver'}</h2>
+                {loading ? <Spinner className="m-auto mt-5" animation={"border"}/> :
                 <Form classname="d-flex flex-column">
                     <Form.Control
                         className="mt-3"
@@ -122,7 +126,7 @@ const Auth = () => {
                             {isLogin ? 'Sign in' : 'Sign up'}
                         </Button>
                     </Row>
-                </Form>
+                </Form>}
             </Card>
         </Container>
     );

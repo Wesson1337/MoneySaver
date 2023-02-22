@@ -4,6 +4,7 @@ import {NavLink, useLocation, useNavigate} from "react-router-dom";
 import {LOGIN_ROUTE, MAIN_PAGE_ROUTE, REGISTRATION_ROUTE} from "../utils/consts";
 import {login, registration} from "../http/userAPI";
 import {Button, Card, Container, Form, Row} from "react-bootstrap";
+import {ErrorComponent} from "../components/ErrorComponent";
 
 const Auth = () => {
     const location = useLocation()
@@ -13,6 +14,7 @@ const Auth = () => {
     const [password1, setPassword1] = useState('')
     const [password2, setPassword2] = useState('')
     const {setUser} = useAuth()
+    const [errorMsg, setErrorMsg] = useState(null)
 
     const isValidEmail = () => {
         return /\S+@\S+\.\S+/.test(email)
@@ -20,15 +22,15 @@ const Auth = () => {
 
     const checkEmailAndPassword = () => {
         if (!isValidEmail()) {
-            alert('Email is incorrect')
+            setErrorMsg('Email is incorrect')
             return
         }
         if (password1.length < 6) {
-            alert('Password should be more than 6 symbols')
+            setErrorMsg('Password should be more than 6 symbols')
             return
         }
         if (!isLogin && (password1 !== password2)) {
-            alert("Passwords don't match")
+            setErrorMsg("Passwords don't match")
             return
         }
         return (isLogin && password1) || (password1 && password2)
@@ -42,7 +44,7 @@ const Auth = () => {
             setUser(email)
             navigate(MAIN_PAGE_ROUTE)
             } catch (e) {
-                alert(e.response.data.detail)
+                setErrorMsg(e.response.data.detail)
             }
         }
     }
@@ -55,7 +57,7 @@ const Auth = () => {
                 setUser(email)
                 navigate(MAIN_PAGE_ROUTE)
             } catch (e) {
-                alert(e.response.data.detail[0].msg)
+                setErrorMsg(e.response.data.detail[0].msg)
             }
         }
     }
@@ -67,6 +69,10 @@ const Auth = () => {
             className="d-flex justify-content-center align-items-center"
             style={{height: window.innerHeight}}
         >
+            <ErrorComponent
+                message={errorMsg}
+                onClose={() => setErrorMsg(null)}
+            />
             <Card style={{width: 600}} className="p-5">
                 <h2 className="m-auto">{isLogin ? 'Sign in to MoneySaver' : 'Sign up to MoneySaver'}</h2>
                 <Form classname="d-flex flex-column">

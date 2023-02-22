@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useAuth} from "../context/Auth";
 import {NavLink, useLocation, useNavigate} from "react-router-dom";
 import {LOGIN_ROUTE, MAIN_PAGE_ROUTE, REGISTRATION_ROUTE} from "../utils/consts";
@@ -7,15 +7,23 @@ import {Button, Card, Container, Form, Row, Spinner} from "react-bootstrap";
 import {ErrorComponent} from "../components/ErrorComponent";
 
 const Auth = () => {
-    const location = useLocation()
     const navigate = useNavigate()
+    const {user, setUser} = useAuth()
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        if (user) {
+            navigate(MAIN_PAGE_ROUTE)
+        }
+        setLoading(false)
+    }, [user, navigate])
+
+    const location = useLocation()
     const isLogin = location.pathname === LOGIN_ROUTE
     const [email, setEmail] = useState('')
     const [password1, setPassword1] = useState('')
     const [password2, setPassword2] = useState('')
-    const {setUser} = useAuth()
     const [errorMsg, setErrorMsg] = useState(null)
-    const [loading, setLoading] = useState(false)
 
     const isValidEmail = () => {
         return /\S+@\S+\.\S+/.test(email)
@@ -41,7 +49,7 @@ const Auth = () => {
         setLoading(true)
         if (checkEmailAndPassword()) {
             try {
-            const response = await login(email, password1)
+            await login(email, password1)
             setUser(email)
             navigate(MAIN_PAGE_ROUTE)
             } catch (e) {
@@ -55,7 +63,7 @@ const Auth = () => {
         setLoading(true)
         if (checkEmailAndPassword()) {
             try {
-                const response = await registration(email, password1, password2)
+                await registration(email, password1, password2)
                 setUser(email)
                 navigate(MAIN_PAGE_ROUTE)
             } catch (e) {

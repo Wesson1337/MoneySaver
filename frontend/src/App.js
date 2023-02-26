@@ -9,6 +9,8 @@ import Operations from "./pages/Operations";
 import {useAuth} from "./context/Auth";
 import {check} from "./http/userAPI";
 import {Spinner} from "react-bootstrap";
+import NavBar from "./components/NavBar";
+import AppRouter from "./components/AppRouter";
 
 function App() {
     const {setUser} = useAuth()
@@ -18,17 +20,13 @@ function App() {
             setUser(email)
         }).finally(() => setLoading(false))
     }, [setUser])
-  return (
-      loading ? <Spinner animation='border' style={{position: 'absolute', top: '50%', left: '50%'}}/> :
-          <Routes>
-              <Route element={<PrivateRoutes/>}>
-                  <Route path={MAIN_PAGE_ROUTE} element={<MainPage/>} />
-                  <Route path={ACCOUNTS_ROUTE} element={<Accounts/>} />
-                  <Route path={OPERATIONS_ROUTE} element={<Operations/>} />
-              </Route>
-              <Route path={LOGIN_ROUTE} element={<Auth/>}/>
-              <Route path={REGISTRATION_ROUTE} element={<Auth/>}/>
-          </Routes>
+
+    return (
+        loading ? <Spinner animation='border' style={{position: 'absolute', top: '50%', left: '50%'}}/> :
+            <div>
+                <NavBar/>
+                <AppRouter/>
+            </div>
   );
 }
 

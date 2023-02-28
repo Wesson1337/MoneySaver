@@ -9,9 +9,7 @@ function App() {
     const {setUser} = useAuth()
     const [loading, setLoading] = useState(true)
     useEffect(() => {
-        check().then(email => {
-            setUser(email)
-        }).finally(() => setLoading(false))
+        check().then(email => {setUser(email)}).finally(() => setLoading(false))
     }, [setUser])
 
     return (

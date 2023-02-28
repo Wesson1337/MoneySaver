@@ -22,3 +22,8 @@ export const check = async () => {
     const {data} = await $authHost.get('/api/v1/users/me/')
     return data.email
 }
+
+export const getUserIdFromJWT = () => {
+    const token = localStorage.getItem('token')
+    return token ? jwtDecode(token).sub : null
+}

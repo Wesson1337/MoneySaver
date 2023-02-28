@@ -73,6 +73,12 @@ const Auth = () => {
         setLoading(false)
     }
 
+    const handleKeyDown = async (e) => {
+        if (e.key === 'Enter') {
+            isLogin ? await loginClick() : await registrationClick()
+        }
+    }
+
 
 
     return (
@@ -94,6 +100,7 @@ const Auth = () => {
                         type="email"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
+                        onKeyDown={handleKeyDown}
                     >
                     </Form.Control>
                     <Form.Control
@@ -102,6 +109,7 @@ const Auth = () => {
                         type="password"
                         value={password1}
                         onChange={e => setPassword1(e.target.value)}
+                        onKeyDown={handleKeyDown}
                     >
                     </Form.Control>
                     {isLogin ?
@@ -112,6 +120,7 @@ const Auth = () => {
                         type="password"
                         value={password2}
                         onChange={e => setPassword2(e.target.value)}
+                        onKeyDown={handleKeyDown}
                         >
                         </Form.Control>
                     }

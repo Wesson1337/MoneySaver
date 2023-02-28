@@ -29,7 +29,7 @@ const NavBar = () => {
                 <Nav
                     className="me-auto my-2 my-lg-0"
                     activeKey={active}
-                    onSelect={(selectedKey) => setActive(selectedKey)}
+                    onSelect={(selectedKey) => {user ? setActive(selectedKey) : setActive("")}}
                     navbarScroll
                     style={{maxWidth: "100px"}}
                 >
@@ -38,11 +38,11 @@ const NavBar = () => {
                 </Nav>
                 {user
                     ?
-                    <Button onClick={() => {logout(); setUser(""); navigate(LOGIN_ROUTE)}} variant="outline-secondary">
+                    <Button onClick={() => {logout(); setUser(""); setActive(""); navigate(LOGIN_ROUTE)}} variant="outline-secondary">
                         Sign out
                     </Button>
                     :
-                    <Button onClick={() => {navigate(LOGIN_ROUTE)}} variant="outline-secondary">
+                    <Button onClick={() => {setActive(""); navigate(LOGIN_ROUTE)}} variant="outline-secondary">
                         Sign in
                     </Button>
                 }

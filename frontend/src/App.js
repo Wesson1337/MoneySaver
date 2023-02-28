@@ -1,11 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {Route, Routes} from "react-router-dom";
-import MainPage from "./pages/MainPage";
-import Auth from "./pages/Auth";
-import PrivateRoutes from "./utils/PrivateRoutes";
-import {ACCOUNTS_ROUTE, LOGIN_ROUTE, MAIN_PAGE_ROUTE, OPERATIONS_ROUTE, REGISTRATION_ROUTE} from "./utils/consts";
-import Accounts from "./pages/Accounts";
-import Operations from "./pages/Operations";
+import React, {useEffect, useState} from 'react';
 import {useAuth} from "./context/Auth";
 import {check} from "./http/userAPI";
 import {Spinner} from "react-bootstrap";

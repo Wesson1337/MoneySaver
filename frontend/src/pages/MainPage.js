@@ -1,36 +1,40 @@
 import React, {useEffect, useState} from 'react';
 import {useAuth} from "../context/Auth";
-import BudgetCard from "../components/BudgetCard";
 import {getAllAccounts} from "../http/accountsAPI";
-import {Button, Form} from "react-bootstrap";
+import {Container, Spinner} from "react-bootstrap";
+import {ErrorComponent} from "../components/ErrorComponent";
+import BudgetCard from "../components/BudgetCard";
 
 const MainPage = () => {
     const {user} = useAuth()
     const [isLoading, setIsLoading] = useState(true)
     const [data, setData] = useState(null)
     const [accountData, setAccountData] = useState(null)
+    const [errorMsg, setErrorMsg] = useState(null)
 
     const getData = async () => {
         const accounts = await getAllAccounts()
-        const operations = await getAllOperations()
-        return {accounts: accounts, operations: operations}
+        return {accounts: accounts}
     }
 
     useEffect(() => {
-        getData().then(accounts => setData(accounts)).finally(() => setIsLoading(false))
+        getData().then(data => {console.log(data); setData(data)}).finally(() => setIsLoading(false))
     }, [])
 
-    return (
-        <div>
+    return (<>
+        {isLoading
+            ?
+            <Spinner
+                variant="border"
+                style={{position: 'absolute', top: window.innerHeight / 2 - 56, left: '50%'}}
+            />
+            :
+        <Container>
+            <ErrorComponent message={errorMsg} onClose={() => setErrorMsg(null)}/>
             <h1>{user}</h1>
-            <BudgetCard/>
-            {data ? data.map((x) => (<div>{x.balance}</div>)) : null}
-            <Form>
-                <Form.Control/>
-
-                <Button>Create account</Button>
-            </Form>
-        </div>
+            <BudgetCard data={data}/>
+        </Container>}
+        </>
     );
 };
 

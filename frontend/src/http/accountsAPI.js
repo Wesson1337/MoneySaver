@@ -5,7 +5,6 @@ const userId = getUserIdFromJWT()
 
 export const getAllAccounts = async () => {
     const {data} = await $authHost.get(`/api/v1/budget/users/${userId}/accounts/`)
-    console.log(data)
     return data
 }
 

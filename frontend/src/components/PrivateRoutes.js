@@ -1,6 +1,6 @@
 import React from 'react';
 import {Navigate, Outlet} from "react-router-dom";
-import {LOGIN_ROUTE} from "./consts";
+import {LOGIN_ROUTE} from "../utils/consts";
 import {useAuth} from "../context/Auth";
 
 const PrivateRoutes = () => {

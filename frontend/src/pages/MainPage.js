@@ -18,7 +18,7 @@ const MainPage = () => {
     }
 
     useEffect(() => {
-        getData().then(data => {console.log(data); setData(data)}).finally(() => setIsLoading(false))
+        getData().then(data => {setData(data)}).finally(() => setIsLoading(false))
     }, [])
 
     return (<>
@@ -32,7 +32,7 @@ const MainPage = () => {
         <Container>
             <ErrorComponent message={errorMsg} onClose={() => setErrorMsg(null)}/>
             <h1>{user}</h1>
-            <BudgetCard data={data}/>
+            <BudgetCard data={data} setErrorMsg={setErrorMsg}/>
         </Container>}
         </>
     );

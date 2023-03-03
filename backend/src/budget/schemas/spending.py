@@ -14,7 +14,7 @@ class SpendingSchemaIn(BaseORMSchema):
     user_id: conint(ge=1)
     category: SpendingCategories
     receipt_account_id: conint(ge=1)
-    amount: condecimal(gt=Decimal(0), decimal_places=2)
+    amount: condecimal(gt=Decimal(0), decimal_places=2, lt=Decimal(1000000000))
     currency: Currencies
 
 
@@ -32,5 +32,5 @@ class SpendingSchemaOut(BaseORMSchema):
 
 class SpendingSchemaPatch(BaseORMSchema):
     name: Optional[constr(max_length=255)]
-    amount: Optional[condecimal(gt=Decimal(0), decimal_places=2)]
+    amount: Optional[condecimal(gt=Decimal(0), decimal_places=2, lt=Decimal(1000000000))]
     category: Optional[SpendingCategories]

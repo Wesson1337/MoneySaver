@@ -1,6 +1,10 @@
 import axios from "axios";
+import {SUPPORTED_CURRENCIES} from "../utils/consts";
 
 export const getLatestExchangeRates = async (baseCurrency) => {
+    if (!(baseCurrency in SUPPORTED_CURRENCIES)) {
+        throw new Error("Base currency is not supported in app")
+    }
     const {data} = await axios({
          method: "get",
          url: "https://api.freecurrencyapi.com/v1/latest",

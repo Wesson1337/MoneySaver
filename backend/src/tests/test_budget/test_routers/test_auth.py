@@ -174,12 +174,13 @@ async def test_certain_spending_auth(
         "name": "test_income",
         "currency": Currencies.USD,
         "replenishment_account_id": 2,
-        "amount": 2.0
+        "amount": 2.0,
     }),
     (f'{DEFAULT_API_PREFIX}/budget/accounts/', {
         "name": "test_account",
         "type": AccountTypes.BANK_ACCOUNT,
-        "currency": Currencies.USD
+        "currency": Currencies.USD,
+        "balance": 0
     }),
     (f'{DEFAULT_API_PREFIX}/budget/spendings/', {
         "name": "test_account",

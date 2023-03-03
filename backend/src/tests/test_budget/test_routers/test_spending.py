@@ -315,6 +315,14 @@ async def test_create_spending_with_different_currency_from_account(
          "category": SpendingCategories.TAXI
      }, 422, None),
     ({
+        "name": "test_spending",
+        "user_id": 1,
+        "currency": Currencies.USD,
+        "receipt_account_id": 1,
+        "amount": 100000000000000,
+        "category": SpendingCategories.TAXI
+    }, 422, None),
+    ({
          "name": "test_spending",
          "user_id": 1,
          "currency": Currencies.USD,

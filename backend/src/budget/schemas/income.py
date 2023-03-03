@@ -14,12 +14,12 @@ class IncomeSchemaIn(BaseORMSchema):
     name: constr(max_length=255)
     currency: Currencies
     replenishment_account_id: conint(ge=1)
-    amount: condecimal(gt=Decimal(0), decimal_places=2)
+    amount: condecimal(gt=Decimal(0), decimal_places=2, lt=Decimal(1000000000))
 
 
 class IncomeSchemaPatch(BaseORMSchema):
     name: Optional[constr(max_length=255)]
-    amount: Optional[condecimal(gt=Decimal(0), decimal_places=2)]
+    amount: Optional[condecimal(gt=Decimal(0), decimal_places=2, lt=Decimal(1000000000))]
 
 
 class IncomeSchemaOut(BaseORMSchema):

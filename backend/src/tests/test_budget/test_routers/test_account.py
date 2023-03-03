@@ -94,7 +94,8 @@ async def test_create_account(
         "name": "test_account",
         "user_id": 1,
         "type": AccountTypes.BANK_ACCOUNT,
-        "currency": Currencies.USD
+        "currency": Currencies.USD,
+        "balance": 0
     }
     response = await client.post(
         f'{DEFAULT_API_PREFIX}/budget/accounts/',
@@ -112,20 +113,37 @@ async def test_create_account(
         "name": "test_account",
         "user_id": 1,
         "type": "testtest",
-        "currency": Currencies.USD
+        "currency": Currencies.USD,
+        "balance": 0
     }, 422, None),
     ({
         "name": "test_account",
         "user_id": 1,
         "type": AccountTypes.BANK_ACCOUNT,
-        "currency": "testtest"
+        "currency": "testtest",
+        "balance": 0
     }, 422, None),
     ({
         "name": "test_account",
         "user_id": 9999,
         "type": AccountTypes.BANK_ACCOUNT,
-        "currency": Currencies.RUB
+        "currency": Currencies.RUB,
+        "balance": 0
     }, 400, UserNotExistsException(9999).detail),
+    ({
+        "name": "test_account",
+        "user_id": 1,
+        "type": AccountTypes.BANK_ACCOUNT,
+        "currency": Currencies.RUB,
+        "balance": -1
+    }, 422, None),
+    ({
+        "name": "test_account",
+        "user_id": 1,
+        "type": AccountTypes.BANK_ACCOUNT,
+        "currency": Currencies.USD,
+        "balance": 1000000000000
+    }, 422, None),
     ({}, 422, None)
 ])
 async def test_create_incorrect_account(

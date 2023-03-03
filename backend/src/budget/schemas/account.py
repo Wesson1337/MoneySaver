@@ -1,5 +1,5 @@
 from typing import Optional
-
+from decimal import Decimal
 from pydantic import constr, conint, condecimal
 
 from backend.src.budget.config import Currencies, AccountTypes
@@ -11,6 +11,7 @@ class AccountSchemaIn(BaseORMSchema):
     user_id: conint(ge=1)
     type: AccountTypes
     currency: Currencies
+    balance: condecimal(ge=Decimal(0), decimal_places=2, lt=Decimal(1000000000))
 
 
 class AccountSchemaOut(BaseORMSchema):

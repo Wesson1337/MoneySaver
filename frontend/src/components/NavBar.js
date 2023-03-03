@@ -8,13 +8,12 @@ import {logout} from "../http/userAPI";
 
 const NavBar = () => {
     const navigate = useNavigate()
-    const [active, setActive] = useState("")
     const {user, setUser} = useAuth()
     return (
             <>
       <Navbar bg="dark" variant="dark" expand="lg">
         <Container>
-            <Navbar.Brand onClick={() => {setActive(""); navigate(MAIN_PAGE_ROUTE)}} style={{cursor: "pointer"}}>
+            <Navbar.Brand onClick={() => {navigate(MAIN_PAGE_ROUTE)}} style={{cursor: "pointer"}}>
                 <img
                   alt=""
                   src={dollar}
@@ -28,21 +27,20 @@ const NavBar = () => {
             <Navbar.Collapse id="navbarScroll">
                 <Nav
                     className="me-auto my-2 my-lg-0"
-                    activeKey={active}
-                    onSelect={(selectedKey) => {user ? setActive(selectedKey) : setActive("")}}
+                    activeKey={"/" + window.location.pathname.split('/')[1]}
                     navbarScroll
                     style={{maxWidth: "100px"}}
                 >
-                <Nav.Link eventKey="accounts" onClick={() => navigate(ACCOUNTS_ROUTE)}>Accounts</Nav.Link>
-                <Nav.Link eventKey="operations" onClick={() => navigate(OPERATIONS_ROUTE)}>Operations</Nav.Link>
+                <Nav.Link eventKey={ACCOUNTS_ROUTE} onClick={() => navigate(ACCOUNTS_ROUTE)}>Accounts</Nav.Link>
+                <Nav.Link eventKey={OPERATIONS_ROUTE} onClick={() => navigate(OPERATIONS_ROUTE)}>Operations</Nav.Link>
                 </Nav>
                 {user
                     ?
-                    <Button onClick={() => {logout(); setUser(""); setActive(""); navigate(LOGIN_ROUTE)}} variant="outline-secondary">
+                    <Button onClick={() => {logout(); setUser(""); navigate(LOGIN_ROUTE)}} variant="outline-secondary">
                         Sign out
                     </Button>
                     :
-                    <Button onClick={() => {setActive(""); navigate(LOGIN_ROUTE)}} variant="outline-secondary">
+                    <Button onClick={() => {navigate(LOGIN_ROUTE)}} variant="outline-secondary">
                         Sign in
                     </Button>
                 }

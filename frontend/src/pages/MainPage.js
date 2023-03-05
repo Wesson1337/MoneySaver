@@ -3,7 +3,7 @@ import {useAuth} from "../context/Auth";
 import {getAllAccounts} from "../http/accountsAPI";
 import {Container, Spinner} from "react-bootstrap";
 import {ErrorComponent} from "../components/ErrorComponent";
-import BudgetCard from "../components/BudgetCard";
+import BudgetCard from "../components/main_page/BudgetCard";
 
 const MainPage = () => {
     const {user} = useAuth()

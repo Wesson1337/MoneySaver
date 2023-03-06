@@ -4,7 +4,7 @@ import {LOGIN_ROUTE} from "../utils/consts";
 import {useAuth} from "../context/Auth";
 
 const PrivateRoutes = () => {
-    const { user } = useAuth()
+    const {user} = useAuth()
     return (
         user ? <Outlet/> : <Navigate to={LOGIN_ROUTE}/>
     );

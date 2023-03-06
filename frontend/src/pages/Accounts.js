@@ -1,6 +1,4 @@
 import React from 'react';
-import {Container} from "react-bootstrap";
-import {CURRENCIES_AND_SYMBOLS} from "../utils/consts";
 
 const Accounts = () => {
     return (

@@ -93,7 +93,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend:/home/app/MoneySaver/frontend
+      - ./frontend/src:/home/app/MoneySaver/frontend/src
+      - ./frontend/public:/home/app/MoneySaver/frontend/public
     depends_on:
       - backend
 

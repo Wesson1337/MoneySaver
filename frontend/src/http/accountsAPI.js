@@ -1,9 +1,9 @@
 import {$authHost} from "./index";
 import {getUserIdFromJWT} from "./userAPI";
 
-const userId = getUserIdFromJWT()
 
 export const getAllAccounts = async () => {
+    const userId = getUserIdFromJWT()
     const {data} = await $authHost.get(`/api/v1/budget/users/${userId}/accounts/`)
     return data
 }

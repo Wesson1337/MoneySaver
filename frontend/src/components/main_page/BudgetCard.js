@@ -30,7 +30,7 @@ const BudgetCard = (props) => {
         }
         return totalBalance.toFixed(2)
     }
-    
+
 
     useEffect(() => {
         getTotalBalance().then(totalBalance => setTotalBalance(prettifyFloat(totalBalance))).finally(() => setIsLoading(false))
@@ -39,7 +39,11 @@ const BudgetCard = (props) => {
     return (
         <MainPageCard navigateTo={ACCOUNTS_ROUTE}>
             <h4>Total balance:</h4>
-            {isLoading ? <Spinner variant="border" size="sm" className="m-auto"/> : <h3 style={{color: "rgb(66 131 69)"}}>{`${totalBalance} $`}</h3>}
+            {isLoading
+                ?
+                <Spinner variant="border" size="sm" className="m-auto"/>
+                :
+                <h3 style={{color: "rgb(66 131 69)"}}>{`${totalBalance} $`}</h3>}
         </MainPageCard>
     );
 };

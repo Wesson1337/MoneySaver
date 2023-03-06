@@ -49,9 +49,9 @@ const Auth = () => {
         setLoading(true)
         if (checkEmailAndPassword()) {
             try {
-            await login(email, password1)
-            setUser(email)
-            navigate(MAIN_PAGE_ROUTE)
+                await login(email, password1)
+                setUser(email)
+                navigate(MAIN_PAGE_ROUTE)
             } catch (e) {
                 setErrorMsg(e.response.data.detail)
             }
@@ -80,7 +80,6 @@ const Auth = () => {
     }
 
 
-
     return (
         <Container
             className="d-flex justify-content-center align-items-center"
@@ -93,57 +92,57 @@ const Auth = () => {
             <Card style={{width: 600}} className="p-5">
                 <h2 className="m-auto">{isLogin ? 'Sign in to MoneySaver' : 'Sign up to MoneySaver'}</h2>
                 {loading ? <Spinner className="m-auto mt-5" animation={"border"}/> :
-                <Form classname="d-flex flex-column">
-                    <Form.Control
-                        className="mt-3"
-                        placeholder="Insert your email..."
-                        type="email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                    >
-                    </Form.Control>
-                    <Form.Control
-                        className="mt-3"
-                        placeholder="Insert your password..."
-                        type="password"
-                        value={password1}
-                        onChange={e => setPassword1(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                    >
-                    </Form.Control>
-                    {isLogin ?
-                        '' :
+                    <Form classname="d-flex flex-column">
                         <Form.Control
-                        className="mt-3"
-                        placeholder="Repeat your password..."
-                        type="password"
-                        value={password2}
-                        onChange={e => setPassword2(e.target.value)}
-                        onKeyDown={handleKeyDown}
+                            className="mt-3"
+                            placeholder="Insert your email..."
+                            type="email"
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            onKeyDown={handleKeyDown}
                         >
                         </Form.Control>
-                    }
-                    <Row className="d-flex justify-content-between mt-3 pl-3 pr-3 gap-3">
-                        {isLogin ?
-                            <div className="w-auto">
-                                Don't have an account? <NavLink to={REGISTRATION_ROUTE}>Sign up!</NavLink>
-                            </div>
-                            :
-                            <div className="w-auto">
-                                Already have an account? <NavLink to={LOGIN_ROUTE}>Sign in!</NavLink>
-                            </div>
-                        }
-                        <Button
-                            className="w-auto"
-                            style={{marginRight: 11}}
-                            variant={"outline-success"}
-                            onClick={isLogin ? loginClick : registrationClick}
+                        <Form.Control
+                            className="mt-3"
+                            placeholder="Insert your password..."
+                            type="password"
+                            value={password1}
+                            onChange={e => setPassword1(e.target.value)}
+                            onKeyDown={handleKeyDown}
                         >
-                            {isLogin ? 'Sign in' : 'Sign up'}
-                        </Button>
-                    </Row>
-                </Form>}
+                        </Form.Control>
+                        {isLogin ?
+                            '' :
+                            <Form.Control
+                                className="mt-3"
+                                placeholder="Repeat your password..."
+                                type="password"
+                                value={password2}
+                                onChange={e => setPassword2(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                            >
+                            </Form.Control>
+                        }
+                        <Row className="d-flex justify-content-between mt-3 pl-3 pr-3 gap-3">
+                            {isLogin ?
+                                <div className="w-auto">
+                                    Don't have an account? <NavLink to={REGISTRATION_ROUTE}>Sign up!</NavLink>
+                                </div>
+                                :
+                                <div className="w-auto">
+                                    Already have an account? <NavLink to={LOGIN_ROUTE}>Sign in!</NavLink>
+                                </div>
+                            }
+                            <Button
+                                className="w-auto"
+                                style={{marginRight: 11}}
+                                variant={"outline-success"}
+                                onClick={isLogin ? loginClick : registrationClick}
+                            >
+                                {isLogin ? 'Sign in' : 'Sign up'}
+                            </Button>
+                        </Row>
+                    </Form>}
             </Card>
         </Container>
     );

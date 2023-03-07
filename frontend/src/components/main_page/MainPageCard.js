@@ -7,16 +7,15 @@ const MainPageCard = (props) => {
     const navigate = useNavigate()
     return (
         <Card
-            className="p-3"
+            className={"p-3 " + props.className}
             onMouseEnter={() => setIsActive(true)}
             onMouseLeave={() => setIsActive(false)}
-            onClick={() => navigate(props.navigateTo)}
-            style={{
-                filter: isActive ? "drop-shadow(1px 1px 2px rgba(2, 2, 2, 0.14))" : null,
+            onClick={() => navigate(props.navigateto)}
+            style={Object.assign({
+                filter: isActive ? "drop-shadow(2px 2px 2px rgba(2, 2, 2, 0.2))" : null,
                 transition: "0.25s",
                 cursor: "pointer"
-            }}
-            {...props}
+            }, props.style)}
         >
             {props.children}
         </Card>

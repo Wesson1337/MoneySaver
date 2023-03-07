@@ -63,10 +63,14 @@ const MonthOperationsCard = (props) => {
 
 
     const getTotalAmountOfOperations = async () => {
-        const filteredOperations = filterOperationsByMonth(props.data.operations)
-        const totalIncomeAmount = await getTotalAmountOfIncomes(filteredOperations.incomes, "incomes")
-        const totalSpendingAmount = await getTotalAmountOfIncomes(filteredOperations.spendings, "spendings")
-        return {incomes: totalIncomeAmount, spendings: totalSpendingAmount}
+        try {
+            const filteredOperations = filterOperationsByMonth(props.data.operations)
+            const totalIncomeAmount = await getTotalAmountOfIncomes(filteredOperations.incomes, "incomes")
+            const totalSpendingAmount = await getTotalAmountOfIncomes(filteredOperations.spendings, "spendings")
+            return {incomes: totalIncomeAmount, spendings: totalSpendingAmount}
+        } catch (e) {
+            props.setErrorMsg(`${e}`)
+        }
     }
 
     useEffect(() => {
@@ -80,9 +84,9 @@ const MonthOperationsCard = (props) => {
         if (active && payload && payload.length) {
             return (
                 <div className="custom-tooltip p-1 d-flex align-items-center justify-content-center"
-                     style={{background: "rgba(225, 225, 225, 0.8)", outline: "1px solid black", borderRadius: "3px"}}
+                     style={{background: "rgba(255, 255, 255, 1)"}}
                 >
-                    <p className="label m-0">{`${payload[0].name} : ${payload[0].value.toFixed(2)}$`}</p>
+                    <p className="label m-0 text-nowrap">{`${payload[0].name} : ${payload[0].value.toFixed(2)}$`}</p>
                 </div>
             );
         }
@@ -91,7 +95,7 @@ const MonthOperationsCard = (props) => {
 
     const renderCustomizedLabel = ({cx, cy, midAngle, innerRadius, outerRadius, percent}) => {
         const RADIAN = Math.PI / 180;
-        const radius = innerRadius + (outerRadius - innerRadius) * 0.15;
+        const radius = innerRadius + (outerRadius - innerRadius) * 0.4;
         const x = cx + radius * Math.cos(-midAngle * RADIAN);
         const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -101,7 +105,7 @@ const MonthOperationsCard = (props) => {
                 y={y}
                 fill="black"
                 fontSize="12"
-                textAnchor={x > cx ? "start" : "end"}
+                textAnchor="middle"
                 dominantBaseline="central"
             >
                 {`${(percent * 100).toFixed(1)}%`}
@@ -109,29 +113,39 @@ const MonthOperationsCard = (props) => {
         );
     };
     return (
-        <MainPageCard navigateTo={OPERATIONS_ROUTE}>
+        <MainPageCard
+            navigateto={OPERATIONS_ROUTE}
+            style={{
+                minWidth: "350px"
+            }}
+        >
             {isLoading ? <Spinner variant="border"/> :
-            <><PieChart width={200} height={200} style={{cursor: "pointer"}}>
-                <Pie
-                    dataKey="value"
-                    data={dataForPie}
-                    innerRadius={20}
-                    outerRadius={50}
-                    labelLine={false}
-                    label={renderCustomizedLabel}
-                    fill="#8884d8"
-                >
-                    {dataForPie.map((entry) => (
-                        <Cell fill={entry["name"] === "Incomes" ? "#428345" : "#d93838"}/>
-                    ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip/>}/>
-            </PieChart>
-            <div>
-                <p>{totalIncomeAmount.toFixed(2)} $</p>
-                <p>-{totalSpendingAmount.toFixed(2)} $</p>
-                <p>{(totalIncomeAmount - totalSpendingAmount).toFixed(2)} $</p>
-            </div></>}
+            <div className="d-flex flex-row justify-content-between align-items-center w-100"
+            >
+                <PieChart width={100} height={100} style={{cursor: "pointer"}}>
+                    <Pie
+                        animationBegin={200}
+                        animationDuration={700}
+                        dataKey="value"
+                        data={dataForPie}
+                        innerRadius={20}
+                        outerRadius={50}
+                        labelLine={false}
+                        label={renderCustomizedLabel}
+                        fill="#8884d8"
+                    >
+                        {dataForPie.map((entry) => (
+                            <Cell style={{outline: "none"}} fill={entry["name"] === "Incomes" ? "#428345" : "#d93838"}/>
+                        ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip/>} wrapperStyle={{outline: "1px solid black", borderRadius: "3px"}}/>
+                </PieChart>
+                <div>
+                    <p className="m-0">{totalIncomeAmount.toFixed(2)} $</p>
+                    <p className="m-0">-{totalSpendingAmount.toFixed(2)} $</p>
+                    <p className="m-0">{(totalIncomeAmount - totalSpendingAmount).toFixed(2)} $</p>
+                </div>
+            </div>}
         </MainPageCard>
     );
 };

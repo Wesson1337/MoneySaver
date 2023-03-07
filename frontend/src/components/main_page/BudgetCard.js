@@ -37,13 +37,13 @@ const BudgetCard = (props) => {
     }, [])
 
     return (
-        <MainPageCard navigateTo={ACCOUNTS_ROUTE}>
-            <h4>Total balance:</h4>
+        <MainPageCard navigateto={ACCOUNTS_ROUTE} style={{minHeight: "134px"}}>
+            <h4 className="mt-1">Total balance:</h4>
             {isLoading
                 ?
                 <Spinner variant="border" size="sm" className="m-auto"/>
                 :
-                <h3 style={{color: "rgb(66 131 69)"}}>{`${totalBalance} $`}</h3>}
+                <h3 className="m-0 mt-2" style={{color: "rgb(66 131 69)"}}>{`${totalBalance} $`}</h3>}
         </MainPageCard>
     );
 };

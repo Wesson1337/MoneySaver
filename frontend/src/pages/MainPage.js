@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useAuth} from "../context/Auth";
 import {getAllAccounts} from "../http/accountsAPI";
-import {Container, Spinner} from "react-bootstrap";
+import {Col, Container, Row, Spinner} from "react-bootstrap";
 import {ErrorComponent} from "../components/ErrorComponent";
 import BudgetCard from "../components/main_page/BudgetCard";
 import MonthOperationsCard from "../components/main_page/MonthOperationsCard";
@@ -13,7 +13,6 @@ const MainPage = () => {
     const {user} = useAuth()
     const [isLoading, setIsLoading] = useState(true)
     const [data, setData] = useState(null)
-    const [accountData, setAccountData] = useState(null)
     const [errorMsg, setErrorMsg] = useState(null)
 
     const getData = async () => {
@@ -47,12 +46,19 @@ const MainPage = () => {
                     style={{position: 'absolute', top: window.innerHeight / 2 - 56, left: '50%'}}
                 />
                 :
-                <Container>
+                <Container className="px-3">
                     <ErrorComponent message={errorMsg} onClose={() => setErrorMsg(null)}/>
-                    <h1>{user}</h1>
-                    <BudgetCard data={data} setErrorMsg={setErrorMsg}/>
-                    <MonthOperationsCard month="this-month" data={data} setErrorMsg={setErrorMsg}/>
-                    <MonthOperationsCard month="previous-month" data={data} setErrorMsg={setErrorMsg}/>
+                    <Row>
+                        <Col className="g-3">
+                            <BudgetCard data={data} setErrorMsg={setErrorMsg}/>
+                        </Col>
+                        <Col className="g-3">
+                            <MonthOperationsCard month="this-month" data={data} setErrorMsg={setErrorMsg}/>
+                        </Col>
+                        <Col className="g-3">
+                            <MonthOperationsCard month="previous-month" data={data} setErrorMsg={setErrorMsg}/>
+                        </Col>
+                    </Row>
                 </Container>}
         </>
     );

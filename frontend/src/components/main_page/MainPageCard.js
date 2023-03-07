@@ -7,7 +7,7 @@ const MainPageCard = (props) => {
     const navigate = useNavigate()
     return (
         <Card
-            className="w-25 p-3"
+            className="p-3"
             onMouseEnter={() => setIsActive(true)}
             onMouseLeave={() => setIsActive(false)}
             onClick={() => navigate(props.navigateTo)}
@@ -16,6 +16,7 @@ const MainPageCard = (props) => {
                 transition: "0.25s",
                 cursor: "pointer"
             }}
+            {...props}
         >
             {props.children}
         </Card>

@@ -3,7 +3,7 @@ import {Spinner} from "react-bootstrap";
 import {convertCurrency} from "../../utils/currency";
 import {prettifyFloat} from "../../utils/prettifyFloat";
 import MainPageCard from "./MainPageCard";
-import {ACCOUNTS_ROUTE} from "../../utils/consts";
+import {ACCOUNTS_ROUTE, SUPPORTED_CURRENCIES} from "../../utils/consts";
 
 const BudgetCard = (props) => {
     const [isLoading, setIsLoading] = useState(true)
@@ -18,7 +18,7 @@ const BudgetCard = (props) => {
             if (a.is_active) {
                 if (a.balance && a.currency !== "USD") {
                     try {
-                        accountBalance = await convertCurrency(a.balance, a.currency, "USD")
+                        accountBalance = await convertCurrency(a.balance, a.currency, SUPPORTED_CURRENCIES.USD, props.data.latestExchangeRates)
                     } catch (e) {
                         props.setErrorMsg(`${e}`)
                     }

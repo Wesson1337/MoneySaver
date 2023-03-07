@@ -6,6 +6,8 @@ import {ErrorComponent} from "../components/ErrorComponent";
 import BudgetCard from "../components/main_page/BudgetCard";
 import MonthOperationsCard from "../components/main_page/MonthOperationsCard";
 import {getAllOperations} from "../http/operationsAPI";
+import {getLatestExchangeRates} from "../http/currencyAPI";
+import {SUPPORTED_CURRENCIES} from "../utils/consts";
 
 const MainPage = () => {
     const {user} = useAuth()
@@ -27,7 +29,8 @@ const MainPage = () => {
             firstDayOfPreviousMonth,
             currentDate
         )
-        return {operations: operations, accounts: accounts}
+        const latestExchangeRates = await getLatestExchangeRates(SUPPORTED_CURRENCIES.USD)
+        return {operations: operations, accounts: accounts, latestExchangeRates: latestExchangeRates}
     }
 
     useEffect(() => {

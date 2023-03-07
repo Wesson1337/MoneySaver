@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {Spinner} from "react-bootstrap";
-import {convertCurrency} from "../../utils/currency";
-import {prettifyFloat} from "../../utils/prettifyFloat";
+import {convertCurrency} from "../utils/currency";
+import {prettifyFloat} from "../utils/prettifyFloat";
 import MainPageCard from "./MainPageCard";
-import {ACCOUNTS_ROUTE, SUPPORTED_CURRENCIES} from "../../utils/consts";
+import {ACCOUNTS_ROUTE, GREEN, SUPPORTED_CURRENCIES} from "../utils/consts";
 
 const BudgetCard = (props) => {
     const [isLoading, setIsLoading] = useState(true)
@@ -37,13 +37,13 @@ const BudgetCard = (props) => {
     }, [])
 
     return (
-        <MainPageCard navigateto={ACCOUNTS_ROUTE} style={{minHeight: "134px"}}>
-            <h4 className="mt-1">Total balance:</h4>
+        <MainPageCard navigateto={ACCOUNTS_ROUTE} className="d-flex justify-content-around" id="budget-card">
+            <h4 className="m-0 text-nowrap">Total balance:</h4>
             {isLoading
                 ?
                 <Spinner variant="border" size="sm" className="m-auto"/>
                 :
-                <h3 className="m-0 mt-2" style={{color: "rgb(66 131 69)"}}>{`${totalBalance} $`}</h3>}
+                <h2 className="m-0 mt-1 text-nowrap" style={{color: GREEN}}>{`${totalBalance} $`}</h2>}
         </MainPageCard>
     );
 };

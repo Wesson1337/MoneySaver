@@ -1,0 +1,9 @@
+#budget-card {
+    min-height: 139px;
+}
+@media (max-width: 767px) {
+    #budget-card {
+        min-height: unset;
+        min-width: 340px;
+    }
+}

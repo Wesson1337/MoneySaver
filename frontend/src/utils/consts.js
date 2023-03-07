@@ -21,3 +21,6 @@ export const CURRENCIES_AND_SYMBOLS = {
     GBP: "£",
     CAD: "C$"
 }
+
+export const GREEN = "#428345"
+export const RED = "#d93838"

@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
-import {OPERATIONS_ROUTE, SUPPORTED_CURRENCIES} from "../../utils/consts";
+import {GREEN, OPERATIONS_ROUTE, RED, SUPPORTED_CURRENCIES} from "../utils/consts";
 import {Cell, Pie, PieChart, Tooltip} from "recharts";
-import {convertCurrency} from "../../utils/currency";
+import {convertCurrency} from "../utils/currency";
 import {Spinner} from "react-bootstrap";
+import green_arrow from "../static/green_arrow.svg"
+import red_arrow from "../static/red-arrow.svg"
 
 
 const MonthOperationsCard = (props) => {
@@ -12,9 +14,13 @@ const MonthOperationsCard = (props) => {
     const [totalSpendingAmount, setTotalSpendingAmount] = useState(0)
 
     const dataForPie = [
-        {name: "Incomes", value: totalIncomeAmount},
-        {name: "Spendings", value: totalSpendingAmount},
+        {name: "Incomes", value: totalIncomeAmount, color: GREEN},
+        {name: "Spendings", value: totalSpendingAmount, color: RED},
     ];
+
+    const emptyDataForPie = [
+        {name: "null", value: 100, color: "grey"}
+    ]
 
     const filterOperationsByMonth = (operations) => {
         let filteredIncomes
@@ -94,56 +100,88 @@ const MonthOperationsCard = (props) => {
     };
 
     const renderCustomizedLabel = ({cx, cy, midAngle, innerRadius, outerRadius, percent}) => {
-        const RADIAN = Math.PI / 180;
-        const radius = innerRadius + (outerRadius - innerRadius) * 0.4;
-        const x = cx + radius * Math.cos(-midAngle * RADIAN);
-        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+        if (percent >= 0.001) {
+            const RADIAN = Math.PI / 180;
+            const radius = innerRadius + (outerRadius - innerRadius) * 0.4;
+            const x = cx + radius * Math.cos(-midAngle * RADIAN);
+            const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-        return (
-            <text
-                x={x}
-                y={y}
-                fill="black"
-                fontSize="12"
-                textAnchor="middle"
-                dominantBaseline="central"
-            >
-                {`${(percent * 100).toFixed(1)}%`}
-            </text>
-        );
+            return (
+                <text
+                    x={x}
+                    y={y}
+                    fill="black"
+                    fontSize="12"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                >
+                    {`${(percent * 100).toFixed(1)}%`}
+                </text>
+            );
+        }
     };
     return (
         <MainPageCard
             navigateto={OPERATIONS_ROUTE}
-            style={{
-                minWidth: "350px"
-            }}
+            style={{minWidth: "340px"}}
         >
             {isLoading ? <Spinner variant="border"/> :
-            <div className="d-flex flex-row justify-content-between align-items-center w-100"
+            <div className="d-flex flex-row align-items-center w-100 gap-3"
             >
-                <PieChart width={100} height={100} style={{cursor: "pointer"}}>
+                <PieChart width={150} height={100} style={{cursor: "pointer"}}>
                     <Pie
                         animationBegin={200}
                         animationDuration={700}
                         dataKey="value"
-                        data={dataForPie}
+                        data={totalIncomeAmount || totalSpendingAmount ? dataForPie : emptyDataForPie}
                         innerRadius={20}
                         outerRadius={50}
                         labelLine={false}
-                        label={renderCustomizedLabel}
+                        label={totalIncomeAmount || totalSpendingAmount ? renderCustomizedLabel : null}
                         fill="#8884d8"
                     >
                         {dataForPie.map((entry) => (
-                            <Cell style={{outline: "none"}} fill={entry["name"] === "Incomes" ? "#428345" : "#d93838"}/>
+                            <Cell style={{outline: "none"}} fill={totalIncomeAmount || totalSpendingAmount ? entry["color"] : "#e1e0e0"}/>
                         ))}
                     </Pie>
-                    <Tooltip content={<CustomTooltip/>} wrapperStyle={{outline: "1px solid black", borderRadius: "3px"}}/>
+                    {totalIncomeAmount || totalSpendingAmount ?
+                    <Tooltip content={<CustomTooltip/>} wrapperStyle={{outline: "1px solid black", borderRadius: "3px"}}/> : null}
                 </PieChart>
-                <div>
-                    <p className="m-0">{totalIncomeAmount.toFixed(2)} $</p>
-                    <p className="m-0">-{totalSpendingAmount.toFixed(2)} $</p>
-                    <p className="m-0">{(totalIncomeAmount - totalSpendingAmount).toFixed(2)} $</p>
+                <div className="d-flex w-100 flex-column">
+                    <b className="text-nowrap">{props.month === "this-month" ? "This month": "Previous month"}</b>
+                    <div className="d-flex w-100 justify-content-between align-items-center">
+                        <img
+                            src={green_arrow}
+                            alt=""
+                            width={18}
+                            height={18}
+                        />
+                        <p className="m-0 text-nowrap" style={{color: GREEN}}>{totalIncomeAmount.toFixed(2)} $</p>
+                    </div>
+                    <div className="d-flex w-100 justify-content-between align-items-center">
+                        <img
+                            src={red_arrow}
+                            alt=""
+                            width={18}
+                            height={18}
+                        />
+                        <p className="m-0 text-nowrap" style={{color: RED}}>-{totalSpendingAmount.toFixed(2)} $</p>
+                    </div>
+                    <div className="m-0 d-flex w-100 justify-content-end align-items-center">
+                        <div className="w-50 my-1" style={{height: "1px", background: "#e1e0e0"}}></div>
+                    </div>
+                    <div
+                        className="d-flex w-100 justify-content-end align-items-center"
+                    >
+                        <p
+                            className="text-nowrap m-0"
+                            style={
+                            {color: totalIncomeAmount > totalSpendingAmount ? GREEN : totalIncomeAmount < totalSpendingAmount ? RED : null}
+                        }
+                        >
+                            {(totalIncomeAmount - totalSpendingAmount).toFixed(2)} $
+                        </p>
+                    </div>
                 </div>
             </div>}
         </MainPageCard>

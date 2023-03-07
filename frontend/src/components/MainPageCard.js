@@ -16,6 +16,7 @@ const MainPageCard = (props) => {
                 transition: "0.25s",
                 cursor: "pointer"
             }, props.style)}
+            id={props.id}
         >
             {props.children}
         </Card>

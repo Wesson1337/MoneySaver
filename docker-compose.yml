@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     volumes:
-      - db_volume:/var/lib/postgres/data
+      - db_volume:/var/lib/postgresql/data
     environment:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
 

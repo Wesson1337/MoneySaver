@@ -2,6 +2,7 @@ import datetime
 from decimal import Decimal
 
 import sqlalchemy as sa
+from sqlalchemy import func
 from sqlalchemy.orm import relationship
 
 from ..database import Base
@@ -16,11 +17,13 @@ class Income(Base):
     replenishment_account_id = sa.Column(sa.ForeignKey('account.id'), nullable=False)
     amount = sa.Column(sa.DECIMAL, nullable=False)
     amount_in_account_currency_at_creation = sa.Column(sa.DECIMAL, nullable=False)
-    created_at = sa.Column(sa.DateTime, default=datetime.datetime.now(), nullable=False)
+    created_at = sa.Column(sa.DateTime, server_default=func.now(), nullable=False)
     user_id = sa.Column(sa.ForeignKey('user.id'), nullable=False)
 
     user = relationship('User', back_populates='incomes')
     replenishment_account = relationship('Account', back_populates='incomes')
+
+    __mapper_args__ = {"eager_defaults": True}
 
 
 class Account(Base):
@@ -49,8 +52,10 @@ class Spending(Base):
     amount = sa.Column(sa.DECIMAL, nullable=False)
     amount_in_account_currency_at_creation = sa.Column(sa.DECIMAL, nullable=False)
     currency = sa.Column(sa.String(3), nullable=False)
-    created_at = sa.Column(sa.DateTime, default=datetime.datetime.now(), nullable=False)
+    created_at = sa.Column(sa.DateTime, server_default=func.now(), nullable=False)
     user_id = sa.Column(sa.ForeignKey('user.id'), nullable=False)
 
     user = relationship('User', back_populates='spendings')
     receipt_account = relationship('Account', back_populates='spendings')
+
+    __mapper_args__ = {"eager_defaults": True}

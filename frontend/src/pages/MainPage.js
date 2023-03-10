@@ -8,6 +8,7 @@ import MonthOperationsCard from "../components/MonthOperationsCard";
 import {getAllOperations} from "../http/operationsAPI";
 import {getLatestExchangeRates} from "../http/currencyAPI";
 import {SUPPORTED_CURRENCIES} from "../utils/consts";
+import LastOperationsCard from "../components/LastOperationsCard";
 
 const MainPage = () => {
     const {user} = useAuth()
@@ -57,6 +58,11 @@ const MainPage = () => {
                         </Col>
                         <Col className="g-3">
                             <MonthOperationsCard month="previous-month" data={data} setErrorMsg={setErrorMsg}/>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col className="g-3">
+                            <LastOperationsCard data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                     </Row>
                 </Container>}

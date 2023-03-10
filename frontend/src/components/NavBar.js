@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, Container, Nav, Navbar} from "react-bootstrap";
-import dollar from "../static/dollar-white.svg"
+import dollar from "../static/icons/dollar-white.svg"
 import {useNavigate} from "react-router-dom";
 import {ACCOUNTS_ROUTE, LOGIN_ROUTE, MAIN_PAGE_ROUTE, OPERATIONS_ROUTE} from "../utils/consts";
 import {useAuth} from "../context/Auth";

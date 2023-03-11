@@ -1,6 +1,6 @@
 import React from 'react';
 
-const OperationCard = (props) => {
+const Operation = (props) => {
     return (
         <div className="p-1 w-100">
 
@@ -8,4 +8,4 @@ const OperationCard = (props) => {
     );
 };
 
-export default OperationCard;
+export default Operation;

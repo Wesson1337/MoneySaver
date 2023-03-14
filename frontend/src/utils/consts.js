@@ -1,4 +1,4 @@
-import supermarketIcon from '../static/icons/categories_icons/supermarket-svgrepo-com.svg'
+import supermarketIcon from '../static/icons/categories_icons/shopping-svgrepo-com.svg'
 import transferIcon from '../static/icons/categories_icons/transfer-fee-svgrepo-com.svg'
 import fastFoodIcon from '../static/icons/categories_icons/fastfood-svgrepo-com.svg'
 import taxiIcon from '../static/icons/categories_icons/taxi-svgrepo-com.svg'

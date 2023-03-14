@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
-import {OPERATIONS_ROUTE} from "../utils/consts";
+import {OPERATIONS_ROUTE, SPENDING_CATEGORIES, SUPPORTED_CURRENCIES} from "../utils/consts";
 import dots from "../static/icons/menu-dots-vertical.svg"
 import {Spinner} from "react-bootstrap";
 import Operation from "./Operation";
@@ -20,7 +20,7 @@ const LastOperationsCard = (props) => {
     const checkAmountOfOperations = () => {
         setIsLoading(true)
         const amount = Number(localStorage.getItem("amountOfOperations"))
-        if ((!Number.isInteger(amount)) || (amount < 1) || (amount > 20)) {
+        if ((!Number.isInteger(amount)) || (amount < 1) || (amount > 15)) {
             setAmountOfOperationsLocal(5)
         }
     }
@@ -44,7 +44,7 @@ const LastOperationsCard = (props) => {
     useEffect(() => {checkAmountOfOperations(); uniteOperationsForCard()}, [amountOfOperations])
 
     return (
-        <MainPageCard navigateto={navigateTo} className="w-50 d-flex flex-column" style={{minHeight: "180px"}}>
+        <MainPageCard navigateto={navigateTo} className="w-50 d-flex flex-column gap-3" style={{minHeight: "180px"}}>
             {isLoading
                 ?
                 <div className="d-flex justify-content-center"><Spinner variant="border"/></div>
@@ -71,14 +71,17 @@ const LastOperationsCard = (props) => {
                             }}/>
                         </div>
                     </div>
-                    <div className="w-100">
+                    <div className="w-100 d-flex flex-column gap-1">
                         {operations.map(o =>
                             <Operation
-                                key={o.id + Math.random()}
+                                key={`${o["category"] ? "spending" : "income"}_${o.id}`}
                                 name={o.name}
+                                amount={o.amount}
+                                currency={o.currency}
                                 type={o["category"] ? "spending" : "income"}
-                                category={o["category"] ? o["spending_category"] : o["name"]}
+                                category={o["category"] ? SPENDING_CATEGORIES[o["category"]].name : o["name"]}
                                 date={o["created_at"]}
+                                icon={o["category"] ? SPENDING_CATEGORIES[o["category"]].icon : null}
                                 account={o["category"] ? o["receipt_account"] : o["replenishment_account"]}
                         />)}
                     </div>

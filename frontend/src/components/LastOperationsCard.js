@@ -9,7 +9,7 @@ const LastOperationsCard = (props) => {
     const [showModal, setShowModal] = useState(false)
     const [navigateTo, setNavigateTo] = useState(OPERATIONS_ROUTE)
     const [operations, setOperations] = useState(null)
-    const [amountOfOperations, setAmountOfOperations] = useState(5)
+    const [amountOfOperations, setAmountOfOperations] = useState(Number(localStorage.getItem("amountOfOperations")))
     const [isLoading, setIsLoading] = useState(true)
 
     const setAmountOfOperationsLocal = (amount) => {
@@ -18,17 +18,15 @@ const LastOperationsCard = (props) => {
     }
 
     const checkAmountOfOperations = () => {
+        setIsLoading(true)
         const amount = Number(localStorage.getItem("amountOfOperations"))
-        if (!Number.isInteger(amount) || amount < 1 || amount > 20) {
+        if ((!Number.isInteger(amount)) || (amount < 1) || (amount > 20)) {
             setAmountOfOperationsLocal(5)
-        } else {
-            setAmountOfOperations(amount)
         }
     }
 
 
     const uniteOperationsForCard = () => {
-        checkAmountOfOperations()
         let operationsArray = []
         for (let i = 0; i < amountOfOperations; i++) {
             if (props.data.operations.spendings[i]) {
@@ -43,12 +41,10 @@ const LastOperationsCard = (props) => {
         setIsLoading(false)
     }
 
-    useEffect(() => {
-        uniteOperationsForCard()
-    }, [])
+    useEffect(() => {checkAmountOfOperations(); uniteOperationsForCard()}, [amountOfOperations])
 
     return (
-        <MainPageCard navigateto={navigateTo} className="w-50 d-flex flex-column">
+        <MainPageCard navigateto={navigateTo} className="w-50 d-flex flex-column" style={{minHeight: "180px"}}>
             {isLoading
                 ?
                 <div className="d-flex justify-content-center"><Spinner variant="border"/></div>
@@ -78,7 +74,7 @@ const LastOperationsCard = (props) => {
                     <div className="w-100">
                         {operations.map(o =>
                             <Operation
-                                key={o.id}
+                                key={o.id + Math.random()}
                                 name={o.name}
                                 type={o["category"] ? "spending" : "income"}
                                 category={o["category"] ? o["spending_category"] : o["name"]}

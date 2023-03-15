@@ -77,6 +77,7 @@ const LastOperationsCard = (props) => {
                                 key={`${o["category"] ? "spending" : "income"}_${o.id}`}
                                 name={o.name}
                                 amount={o.amount}
+                                amountInAccountCurrency={o["amount_in_account_currency_at_creation"]}
                                 currency={o.currency}
                                 type={o["category"] ? "spending" : "income"}
                                 category={o["category"] ? SPENDING_CATEGORIES[o["category"]].name : o["name"]}

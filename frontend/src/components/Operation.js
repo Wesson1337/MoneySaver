@@ -1,5 +1,5 @@
 import React from 'react';
-import {CURRENCIES_AND_SYMBOLS} from "../utils/consts";
+import {ACCOUNT_TYPES, INTERFACE_COLORS, CURRENCIES_AND_SYMBOLS} from "../utils/consts";
 
 const Operation = (props) => {
     return (
@@ -15,17 +15,19 @@ const Operation = (props) => {
                         {props.category}
                     </p>
                     <p className="m-0 little-text">
-                        {props.type === "spending" ? "-" : "+"}{props.amount} {CURRENCIES_AND_SYMBOLS[props.currency]}
+                        {props.type === "spending" ? "-" : "+"}{props.amount !== props.amountInAccountCurrency ? props.amountInAccountCurrency : props.amount} {CURRENCIES_AND_SYMBOLS[props.account["currency"]]}
                     </p>
                 </div>
                 <div className="d-flex justify-content-between">
                     <p className="m-0 little-text">
-                        {props.account["type"]}
+                        {`${props.account["name"] ? props.account["name"] : "Unnamed account"} (${ACCOUNT_TYPES[props.account["type"]].name})`}
                     </p>
                     <p className="m-0 little-text">
                         {new Date(props.date).toLocaleDateString("ru-RU", {hour: "2-digit", minute: "2-digit"})}
                     </p>
                 </div>
+            </div>
+            <div style={{width: "5px", height: "40px", background: props.type === "spending" ? INTERFACE_COLORS.RED : INTERFACE_COLORS.GREEN}}>
             </div>
         </div>
     );

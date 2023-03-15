@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
-import {GREEN, OPERATIONS_ROUTE, RED, SUPPORTED_CURRENCIES} from "../utils/consts";
+import {INTERFACE_COLORS, OPERATIONS_ROUTE, SUPPORTED_CURRENCIES} from "../utils/consts";
 import {Cell, Pie, PieChart, Tooltip} from "recharts";
 import {convertCurrency} from "../utils/currency";
 import {Spinner} from "react-bootstrap";
@@ -14,8 +14,8 @@ const MonthOperationsCard = (props) => {
     const [totalSpendingAmount, setTotalSpendingAmount] = useState(0)
 
     const dataForPie = [
-        {name: "Incomes", value: totalIncomeAmount, color: GREEN},
-        {name: "Spendings", value: totalSpendingAmount, color: RED},
+        {name: "Incomes", value: totalIncomeAmount, color: INTERFACE_COLORS.GREEN},
+        {name: "Spendings", value: totalSpendingAmount, color: INTERFACE_COLORS.RED},
     ];
 
     const emptyDataForPie = [
@@ -38,10 +38,12 @@ const MonthOperationsCard = (props) => {
             date.setMonth(date.getMonth() - 1)
             date.setDate(1)
             filteredSpendings = operations.spendings.filter(
-                spending => new Date(spending["created_at"]) >= date && new Date(spending["created_at"]) < new Date(date.getFullYear(), date.getMonth() + 1, 1)
+                spending => new Date(spending["created_at"]) >= date
+                    && new Date(spending["created_at"]) < new Date(date.getFullYear(), date.getMonth() + 1, 1)
             )
             filteredIncomes = operations.incomes.filter(
-                income => new Date(income["created_at"]) >= date && new Date(income["created_at"]) < new Date(date.getFullYear(), date.getMonth() + 1, 1)
+                income => new Date(income["created_at"]) >= date
+                    && new Date(income["created_at"]) < new Date(date.getFullYear(), date.getMonth() + 1, 1)
             )
         }
         return {incomes: filteredIncomes, spendings: filteredSpendings}
@@ -163,7 +165,9 @@ const MonthOperationsCard = (props) => {
                                 width={18}
                                 height={18}
                             />
-                            <p className="m-0 text-nowrap" style={{color: GREEN}}>{totalIncomeAmount.toFixed(2)} $</p>
+                            <p className="m-0 text-nowrap"
+                               style={{color: INTERFACE_COLORS.GREEN}}>{totalIncomeAmount.toFixed(2)} $
+                            </p>
                         </div>
                         <div className="d-flex w-100 justify-content-between align-items-center">
                             <img
@@ -172,7 +176,9 @@ const MonthOperationsCard = (props) => {
                                 width={18}
                                 height={18}
                             />
-                            <p className="m-0 text-nowrap" style={{color: RED}}>-{totalSpendingAmount.toFixed(2)} $</p>
+                            <p className="m-0 text-nowrap"
+                               style={{color: INTERFACE_COLORS.RED}}>-{totalSpendingAmount.toFixed(2)} $
+                            </p>
                         </div>
                         <div className="m-0 d-flex w-100 justify-content-end align-items-center">
                             <div className="w-50 my-1" style={{height: "1px", background: "#e1e0e0"}}></div>
@@ -183,7 +189,10 @@ const MonthOperationsCard = (props) => {
                             <p
                                 className="text-nowrap m-0"
                                 style={
-                                    {color: totalIncomeAmount > totalSpendingAmount ? GREEN : totalIncomeAmount < totalSpendingAmount ? RED : null}
+                                    {
+                                        color: totalIncomeAmount > totalSpendingAmount ? INTERFACE_COLORS.GREEN :
+                                            totalIncomeAmount < totalSpendingAmount ? INTERFACE_COLORS.RED : null
+                                    }
                                 }
                             >
                                 {(totalIncomeAmount - totalSpendingAmount).toFixed(2)} $

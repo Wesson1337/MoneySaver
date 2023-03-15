@@ -37,8 +37,11 @@ export const CURRENCIES_AND_SYMBOLS = {
     CAD: "C$"
 }
 
-export const GREEN = "#428345"
-export const RED = "#d93838"
+
+export const INTERFACE_COLORS = {
+    GREEN: "#428345",
+    RED: "#d93838"
+}
 
 export const SPENDING_CATEGORIES = {
     SUPERMARKETS: {
@@ -110,5 +113,18 @@ export const SPENDING_CATEGORIES = {
         name: "Other",
         nameForRequest: "OTHER",
         icon: otherIcon
+    }
+}
+
+export const ACCOUNT_TYPES = {
+    "WALLET": {
+        name: "Wallet",
+        nameForRequest: "WALLET",
+        icon: null
+    },
+    "BANK_ACCOUNT": {
+        name: "Bank Account",
+        nameForRequest: "BANK_ACCOUNT",
+        icon: null
     }
 }

@@ -1,8 +1,8 @@
 """initial
 
-Revision ID: 52a4af9a0d13
+Revision ID: 044829375f58
 Revises: 
-Create Date: 2023-03-10 07:54:25.404222
+Create Date: 2023-03-16 03:07:10.071187
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '52a4af9a0d13'
+revision = '044829375f58'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,7 +24,7 @@ def upgrade() -> None:
     sa.Column('hashed_password', sa.String(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('is_superuser', sa.Boolean(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
@@ -46,7 +46,7 @@ def upgrade() -> None:
     sa.Column('replenishment_account_id', sa.Integer(), nullable=False),
     sa.Column('amount', sa.DECIMAL(), nullable=False),
     sa.Column('amount_in_account_currency_at_creation', sa.DECIMAL(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['replenishment_account_id'], ['account.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
@@ -60,7 +60,7 @@ def upgrade() -> None:
     sa.Column('amount', sa.DECIMAL(), nullable=False),
     sa.Column('amount_in_account_currency_at_creation', sa.DECIMAL(), nullable=False),
     sa.Column('currency', sa.String(length=3), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['receipt_account_id'], ['account.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),

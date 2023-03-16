@@ -13,7 +13,7 @@ const MainPageCard = (props) => {
             onMouseUp={!props.navigateto ? () => setIsClicked(false) : null}
             onMouseEnter={props.navigateto ? () => {setIsClicked(false); setIsActive(true)} : null}
             onMouseLeave={props.navigateto ? () => {setIsClicked(false); setIsActive(false)} : null}
-            onClick={props.navigateto ? () => {
+            onClick={isClicked ? () => {
                 navigate(props.navigateto)
             } : null}
             style={Object.assign({

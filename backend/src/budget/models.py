@@ -17,7 +17,7 @@ class Income(Base):
     replenishment_account_id = sa.Column(sa.ForeignKey('account.id'), nullable=False)
     amount = sa.Column(sa.DECIMAL, nullable=False)
     amount_in_account_currency_at_creation = sa.Column(sa.DECIMAL, nullable=False)
-    created_at = sa.Column(sa.DateTime, server_default=func.now(), nullable=False)
+    created_at = sa.Column(sa.DateTime(timezone=True), server_default=func.now(), nullable=False)
     user_id = sa.Column(sa.ForeignKey('user.id'), nullable=False)
 
     user = relationship('User', back_populates='incomes')
@@ -52,7 +52,7 @@ class Spending(Base):
     amount = sa.Column(sa.DECIMAL, nullable=False)
     amount_in_account_currency_at_creation = sa.Column(sa.DECIMAL, nullable=False)
     currency = sa.Column(sa.String(3), nullable=False)
-    created_at = sa.Column(sa.DateTime, server_default=func.now(), nullable=False)
+    created_at = sa.Column(sa.DateTime(timezone=True), server_default=func.now(), nullable=False)
     user_id = sa.Column(sa.ForeignKey('user.id'), nullable=False)
 
     user = relationship('User', back_populates='spendings')

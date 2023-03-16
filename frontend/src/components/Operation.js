@@ -10,19 +10,19 @@ const Operation = (props) => {
                 alt=""
             />
             <div className="w-100">
-                <div className="d-flex justify-content-between">
-                    <p className="m-0 little-text">
+                <div className="d-flex justify-content-between gap-3">
+                    <p className="m-0 little-text text-nowrap">
                         {props.category}
                     </p>
-                    <p className="m-0 little-text">
+                    <p className="m-0 little-text text-nowrap">
                         {props.type === "spending" ? "-" : "+"}{props.amount !== props.amountInAccountCurrency ? props.amountInAccountCurrency : props.amount} {CURRENCIES_AND_SYMBOLS[props.account["currency"]]}
                     </p>
                 </div>
-                <div className="d-flex justify-content-between">
-                    <p className="m-0 little-text">
+                <div className="d-flex justify-content-between gap-3">
+                    <p className="m-0 little-text text-nowrap">
                         {`${props.account["name"] ? props.account["name"] : "Unnamed account"} (${ACCOUNT_TYPES[props.account["type"]].name})`}
                     </p>
-                    <p className="m-0 little-text">
+                    <p className="m-0 little-text text-nowrap">
                         {new Date(props.date).toLocaleDateString("ru-RU", {hour: "2-digit", minute: "2-digit"})}
                     </p>
                 </div>

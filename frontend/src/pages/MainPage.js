@@ -9,6 +9,7 @@ import {getAllOperations} from "../http/operationsAPI";
 import {getLatestExchangeRates} from "../http/currencyAPI";
 import {SUPPORTED_CURRENCIES} from "../utils/consts";
 import LastOperationsCard from "../components/LastOperationsCard";
+import CurrenciesBudgetCard from "../components/CurrenciesBudgetCard";
 
 const MainPage = () => {
     const {user} = useAuth()
@@ -22,7 +23,7 @@ const MainPage = () => {
         const firstDayOfPreviousMonth = new Date(
             currentDate.getFullYear(),
             currentDate.getMonth() - 1,
-            1, 3).toISOString().replace("Z", "")
+            1).toISOString().replace("Z", "")
         currentDate = currentDate.toISOString().replace("Z", "")
         const operations = await getAllOperations(
             null,
@@ -63,6 +64,9 @@ const MainPage = () => {
                     <Row>
                         <Col className="g-3">
                             <LastOperationsCard data={data} setErrorMsg={setErrorMsg}/>
+                        </Col>
+                        <Col className="g-3">
+                            <CurrenciesBudgetCard data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                     </Row>
                 </Container>}

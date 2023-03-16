@@ -14,7 +14,7 @@ class User(Base):
     hashed_password = sa.Column(sa.String, nullable=False)
     is_active = sa.Column(sa.Boolean, default=True, nullable=False)
     is_superuser = sa.Column(sa.Boolean, default=False, nullable=False)
-    created_at = sa.Column(sa.DateTime(), default=datetime.now(), nullable=False)
+    created_at = sa.Column(sa.DateTime(timezone=True), default=datetime.now(), nullable=False)
 
     incomes = relationship('Income', back_populates='user')
     accounts = relationship('Account', back_populates='user')

@@ -101,6 +101,7 @@ const LastOperationsCard = (props) => {
                                                         }}
                                                         isInvalid={errorTempAmount}
                                                         aria-errormessage={errorTempAmount}
+                                                        onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); handleCloseModal()}}}
                                                     >
                                                     </Form.Control>
                                                     <Form.Control.Feedback type="invalid">

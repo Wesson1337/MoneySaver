@@ -4,17 +4,17 @@ import {OPERATIONS_ROUTE} from "../utils/consts";
 
 const ShowMoreModal = (props) => {
     const [isClicked, setIsClicked] = useState(false)
+    const [isActive, setIsActive] = useState(false)
 
     return (
         <>
             <div
-                onMouseEnter={() => props.setNavigateTo(null)}
-                onMouseDown={() => setIsClicked(true)}
-                onMouseUp={() => setIsClicked(false)}
-                onMouseLeave={!props.showModal ? () => props.setNavigateTo(OPERATIONS_ROUTE): null}
+                onMouseDown={(e) => {e.stopPropagation(); setIsClicked(true)}}
+                onMouseUp={(e) => {e.stopPropagation(); setIsClicked(false)}}
+                onMouseEnter={() => setIsActive(true)}
+                onMouseLeave={() => setIsActive(false)}
                 onClick={(e) => {
                     e.stopPropagation()
-                    props.setNavigateTo(null)
                     props.setShowModal(true)
                 }}
                 className="d-flex justify-content-center align-items-center"
@@ -22,8 +22,8 @@ const ShowMoreModal = (props) => {
                     width: "25px",
                     height: "25px",
                     cursor: "pointer",
-                    filter: (props.navigateTo ? "" : "drop-shadow(2px 2px 3px rgba(2, 2, 2, 0.4))")
-                    + ((props.showModal || isClicked) && !props.navigateTo ? "brightness(0.95)" : ""),
+                    filter: (isActive || props.showModal ? "drop-shadow(2px 2px 3px rgba(2, 2, 2, 0.4))" : "")
+                    + (props.showModal || isClicked ? "brightness(0.95)" : ""),
                     transition: "0.25s",
                     background: "white",
                     borderRadius: "3px"

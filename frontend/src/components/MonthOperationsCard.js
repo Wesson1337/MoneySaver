@@ -147,9 +147,12 @@ const MonthOperationsCard = (props) => {
                             label={totalIncomeAmount || totalSpendingAmount ? renderCustomizedLabel : null}
                             fill="#8884d8"
                         >
-                            {dataForPie.map((entry) => (
-                                <Cell style={{outline: "none"}}
-                                      fill={totalIncomeAmount || totalSpendingAmount ? entry["color"] : "#e1e0e0"}/>
+                            {dataForPie.map((entry, index) => (
+                                <Cell
+                                    key={`cell-${index}`}
+                                    style={{outline: "none"}}
+                                    fill={totalIncomeAmount || totalSpendingAmount ? entry["color"] : "#e1e0e0"}
+                                />
                             ))}
                         </Pie>
                         {totalIncomeAmount || totalSpendingAmount ?

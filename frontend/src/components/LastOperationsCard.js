@@ -7,11 +7,10 @@ import ShowMoreModal from "./ShowMoreModal";
 
 const LastOperationsCard = (props) => {
     const [showModal, setShowModal] = useState(false)
-    const [navigateTo, setNavigateTo] = useState(OPERATIONS_ROUTE)
     const [operations, setOperations] = useState(null)
     const [amountOfOperations, setAmountOfOperations] = useState(Number(localStorage.getItem("amountOfOperations")))
     const [isLoading, setIsLoading] = useState(true)
-    const [tempAmount, setTempAmount] = useState(5)
+    const [tempAmount, setTempAmount] = useState(Number(localStorage.getItem("amountOfOperations")))
     const [errorTempAmount, setErrorTempAmount] = useState("")
 
     const setAmountOfOperationsLocal = (amount) => {
@@ -54,14 +53,13 @@ const LastOperationsCard = (props) => {
             setErrorTempAmount("Amount of operations must be greater than 1 and less than 15")
         } else {
             setAmountOfOperationsLocal(amount)
-            setNavigateTo(OPERATIONS_ROUTE)
             setShowModal(false)
             setErrorTempAmount(null)
         }
     }
 
     return (
-        <MainPageCard navigateto={navigateTo} className="d-flex flex-column gap-3">
+        <MainPageCard navigateto={OPERATIONS_ROUTE} showModal={showModal} className="d-flex flex-column gap-3">
             {isLoading
                 ?
                 <div className="d-flex justify-content-center"><Spinner variant="border"/></div>
@@ -70,9 +68,7 @@ const LastOperationsCard = (props) => {
                     <div className="d-flex justify-content-between align-items-center">
                         <b>Last operations</b>
                         <ShowMoreModal
-                            setNavigateTo={setNavigateTo}
                             setShowModal={setShowModal}
-                            navigateTo={navigateTo}
                             showModal={showModal}
                         >
                             <Modal
@@ -80,11 +76,8 @@ const LastOperationsCard = (props) => {
                                 onHide={() => {
                                     setErrorTempAmount(null);
                                     setShowModal(false);
-                                    setNavigateTo(OPERATIONS_ROUTE)
                                 }}
-                                onShow={() => {
-                                    setTempAmount(null)
-                                }}
+                                onShow={() => {setTempAmount(amountOfOperations)}}
                             >
                                 <Modal.Header closeButton>
                                     <Modal.Title>Last operations</Modal.Title>
@@ -102,6 +95,7 @@ const LastOperationsCard = (props) => {
                                                         min={1}
                                                         max={15}
                                                         autoFocus
+                                                        value={tempAmount}
                                                         onChange={(e) => {
                                                             setTempAmount(Number(e.target.value))
                                                         }}
@@ -129,9 +123,9 @@ const LastOperationsCard = (props) => {
                         </ShowMoreModal>
                     </div>
                     <div className="w-100 d-flex flex-column gap-1">
-                        {operations.map(o =>
+                        {operations.map((o, index) =>
                             <Operation
-                                key={`${o["category"] ? "spending" : "income"}_${o.id}`}
+                                key={`operation-${index}`}
                                 name={o.name}
                                 amount={o.amount}
                                 amountInAccountCurrency={o["amount_in_account_currency_at_creation"]}

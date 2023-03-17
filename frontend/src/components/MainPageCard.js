@@ -9,11 +9,11 @@ const MainPageCard = (props) => {
     return (
         <Card
             className={"p-3 " + props.className}
-            onMouseDown={props.navigateto ? () => setIsClicked(true) : null}
-            onMouseUp={!props.navigateto ? () => setIsClicked(false) : null}
-            onMouseEnter={props.navigateto ? () => {setIsClicked(false); setIsActive(true)} : null}
-            onMouseLeave={props.navigateto ? () => {setIsClicked(false); setIsActive(false)} : null}
-            onClick={isClicked ? () => {
+            onMouseDown={!props.showModal ? () => setIsClicked(true) : null}
+            onMouseUp={() => {setIsActive(false); setIsClicked(false)}}
+            onMouseEnter={() => {setIsClicked(false); setIsActive(true)}}
+            onMouseLeave={() => {setIsClicked(false); setIsActive(false)}}
+            onClick={!props.showModal ? () => {
                 navigate(props.navigateto)
             } : null}
             style={Object.assign({

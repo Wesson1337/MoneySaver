@@ -39,7 +39,7 @@ export const CURRENCIES_AND_SYMBOLS = {
 
 
 export const INTERFACE_COLORS = {
-    GREEN: "#428345",
+    GREEN: "rgb(37,154,42)",
     RED: "#d93838"
 }
 

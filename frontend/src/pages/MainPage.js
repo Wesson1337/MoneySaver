@@ -10,6 +10,7 @@ import {getLatestExchangeRates} from "../http/currencyAPI";
 import {SUPPORTED_CURRENCIES} from "../utils/consts";
 import LastOperationsCard from "../components/LastOperationsCard";
 import CurrenciesBudgetCard from "../components/CurrenciesBudgetCard";
+import AddRemoveButtons from "../components/AddRemoveButtons";
 
 const MainPage = () => {
     const {user} = useAuth()
@@ -48,28 +49,30 @@ const MainPage = () => {
                     style={{position: 'absolute', top: window.innerHeight / 2 - 56, left: '50%'}}
                 />
                 :
-                <Container className="px-3">
-                    <ErrorComponent message={errorMsg} onClose={() => setErrorMsg(null)}/>
-                    <Row>
-                        <Col className="g-3">
-                            <BudgetCard data={data} setErrorMsg={setErrorMsg}/>
-                        </Col>
-                        <Col className="g-3">
-                            <MonthOperationsCard month="this-month" data={data} setErrorMsg={setErrorMsg}/>
-                        </Col>
-                        <Col className="g-3">
-                            <MonthOperationsCard month="previous-month" data={data} setErrorMsg={setErrorMsg}/>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col className="g-3">
-                            <LastOperationsCard data={data} setErrorMsg={setErrorMsg}/>
-                        </Col>
-                        <Col className="g-3">
-                            <CurrenciesBudgetCard data={data} setErrorMsg={setErrorMsg}/>
-                        </Col>
-                    </Row>
-                </Container>}
+                    <Container className="px-3">
+                        <ErrorComponent message={errorMsg} onClose={() => setErrorMsg(null)}/>
+                        <Row>
+                            <Col className="g-3">
+                                <BudgetCard data={data} setErrorMsg={setErrorMsg}/>
+                            </Col>
+                            <Col className="g-3">
+                                <MonthOperationsCard month="this-month" data={data} setErrorMsg={setErrorMsg}/>
+                            </Col>
+                            <Col className="g-3">
+                                <MonthOperationsCard month="previous-month" data={data} setErrorMsg={setErrorMsg}/>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col className="g-3">
+                                <LastOperationsCard data={data} setErrorMsg={setErrorMsg}/>
+                            </Col>
+                            <Col className="g-3">
+                                <CurrenciesBudgetCard data={data} setErrorMsg={setErrorMsg}/>
+                            </Col>
+                        </Row>
+                        <AddRemoveButtons data={data}/>
+                    </Container>
+            }
         </>
     );
 };

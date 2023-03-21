@@ -1,5 +1,5 @@
 import React from 'react';
-import {ACCOUNT_TYPES, INTERFACE_COLORS, CURRENCIES_AND_SYMBOLS} from "../utils/consts";
+import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS} from "../utils/consts";
 
 const Operation = (props) => {
     return (
@@ -27,7 +27,11 @@ const Operation = (props) => {
                     </p>
                 </div>
             </div>
-            <div style={{width: "5px", height: "40px", background: props.type === "spending" ? INTERFACE_COLORS.RED : INTERFACE_COLORS.GREEN}}>
+            <div style={{
+                width: "5px",
+                height: "40px",
+                background: props.type === "spending" ? INTERFACE_COLORS.RED : INTERFACE_COLORS.GREEN
+            }}>
             </div>
         </div>
     );

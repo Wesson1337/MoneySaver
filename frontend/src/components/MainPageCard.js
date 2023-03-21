@@ -10,9 +10,18 @@ const MainPageCard = (props) => {
         <Card
             className={"p-3 " + props.className}
             onMouseDown={!props.showModal ? () => setIsClicked(true) : null}
-            onMouseUp={() => {setIsActive(false); setIsClicked(false)}}
-            onMouseEnter={() => {setIsClicked(false); setIsActive(true)}}
-            onMouseLeave={() => {setIsClicked(false); setIsActive(false)}}
+            onMouseUp={() => {
+                setIsActive(false);
+                setIsClicked(false)
+            }}
+            onMouseEnter={() => {
+                setIsClicked(false);
+                setIsActive(true)
+            }}
+            onMouseLeave={() => {
+                setIsClicked(false);
+                setIsActive(false)
+            }}
             onClick={!props.showModal ? () => {
                 navigate(props.navigateto)
             } : null}

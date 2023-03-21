@@ -3,163 +3,164 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 
 <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg fill="white" width="800px" height="800px" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+<svg fill="white" width="800px" height="800px" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg"
+     xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
 
 <rect id="Icons" x="-960" y="-64" width="1280" height="800" style="fill:none;"/>
 
-<g id="Icons1">
+    <g id="Icons1">
 
 <g id="Strike">
 
 </g>
 
-<g id="H1">
+        <g id="H1">
 
 </g>
 
-<g id="H2">
+        <g id="H2">
 
 </g>
 
-<g id="H3">
+        <g id="H3">
 
 </g>
 
-<g id="list-ul">
+        <g id="list-ul">
 
 </g>
 
-<g id="hamburger-1">
+        <g id="hamburger-1">
 
 </g>
 
-<g id="hamburger-2">
+        <g id="hamburger-2">
 
 </g>
 
-<g id="list-ol">
+        <g id="list-ol">
 
 </g>
 
-<g id="list-task">
+        <g id="list-task">
 
 </g>
 
-<g id="trash">
+        <g id="trash">
 
 </g>
 
-<g id="vertical-menu">
+        <g id="vertical-menu">
 
 </g>
 
-<g id="horizontal-menu">
+        <g id="horizontal-menu">
 
 </g>
 
-<g id="sidebar-2">
+        <g id="sidebar-2">
 
 </g>
 
-<g id="Pen">
+        <g id="Pen">
 
 </g>
 
-<g id="Pen1">
+        <g id="Pen1">
 
 </g>
 
-<g id="clock">
+        <g id="clock">
 
 </g>
 
-<g id="external-link">
+        <g id="external-link">
 
 </g>
 
-<g id="hr">
+        <g id="hr">
 
 </g>
 
-<g id="info">
+        <g id="info">
 
 </g>
 
-<g id="warning">
+        <g id="warning">
 
 </g>
 
-<g id="plus-circle">
+        <g id="plus-circle">
 
 </g>
 
-<g id="minus-circle">
+        <g id="minus-circle">
 
 </g>
 
-<path id="minus" d="M8.026,29.801l47.974,0l0,3.993l-47.974,0l0,-3.993Z"/>
+        <path id="minus" d="M8.026,29.801l47.974,0l0,3.993l-47.974,0l0,-3.993Z"/>
 
-<g id="vue">
-
-</g>
-
-<g id="cog">
+        <g id="vue">
 
 </g>
 
-<g id="logo">
+        <g id="cog">
 
 </g>
 
-<g id="radio-check">
+        <g id="logo">
 
 </g>
 
-<g id="eye-slash">
+        <g id="radio-check">
 
 </g>
 
-<g id="eye">
+        <g id="eye-slash">
 
 </g>
 
-<g id="toggle-off">
+        <g id="eye">
 
 </g>
 
-<g id="shredder">
+        <g id="toggle-off">
 
 </g>
 
-<g id="spinner--loading--dots-">
+        <g id="shredder">
 
 </g>
 
-<g id="react">
+        <g id="spinner--loading--dots-">
 
 </g>
 
-<g id="check-selected">
+        <g id="react">
 
 </g>
 
-<g id="turn-off">
+        <g id="check-selected">
 
 </g>
 
-<g id="code-block">
+        <g id="turn-off">
 
 </g>
 
-<g id="user">
+        <g id="code-block">
 
 </g>
 
-<g id="coffee-bean">
+        <g id="user">
 
 </g>
 
-<g id="coffee-beans">
+        <g id="coffee-bean">
+
+</g>
+
+        <g id="coffee-beans">
 
 <g id="coffee-bean1">
 
@@ -167,11 +168,11 @@
 
 </g>
 
-<g id="coffee-bean-filled">
+        <g id="coffee-bean-filled">
 
 </g>
 
-<g id="coffee-beans-filled">
+        <g id="coffee-beans-filled">
 
 <g id="coffee-bean2">
 
@@ -179,19 +180,19 @@
 
 </g>
 
-<g id="clipboard">
+        <g id="clipboard">
 
 </g>
 
-<g id="clipboard-paste">
+        <g id="clipboard-paste">
 
 </g>
 
-<g id="clipboard-copy">
+        <g id="clipboard-copy">
 
 </g>
 
-<g id="Layer1">
+        <g id="Layer1">
 
 </g>
 

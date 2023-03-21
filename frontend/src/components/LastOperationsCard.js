@@ -77,7 +77,9 @@ const LastOperationsCard = (props) => {
                                     setErrorTempAmount(null);
                                     setShowModal(false);
                                 }}
-                                onShow={() => {setTempAmount(amountOfOperations)}}
+                                onShow={() => {
+                                    setTempAmount(amountOfOperations)
+                                }}
                             >
                                 <Modal.Header closeButton>
                                     <Modal.Title>Last operations</Modal.Title>
@@ -87,7 +89,8 @@ const LastOperationsCard = (props) => {
                                         <Form.Group controlId="amountOfOperationsInput">
                                             <Row>
                                                 <Col>
-                                                    <Form.Label className="m-0 mt-1">Enter amount of operations:</Form.Label>
+                                                    <Form.Label className="m-0 mt-1">Enter amount of
+                                                        operations:</Form.Label>
                                                 </Col>
                                                 <Col>
                                                     <Form.Control
@@ -101,7 +104,12 @@ const LastOperationsCard = (props) => {
                                                         }}
                                                         isInvalid={errorTempAmount}
                                                         aria-errormessage={errorTempAmount}
-                                                        onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); handleCloseModal()}}}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter") {
+                                                                e.preventDefault();
+                                                                handleCloseModal()
+                                                            }
+                                                        }}
                                                     >
                                                     </Form.Control>
                                                     <Form.Control.Feedback type="invalid">

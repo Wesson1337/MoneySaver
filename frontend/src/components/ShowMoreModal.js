@@ -1,6 +1,5 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import dots from "../static/icons/menu-dots-vertical.svg";
-import {OPERATIONS_ROUTE} from "../utils/consts";
 
 const ShowMoreModal = (props) => {
     const [isClicked, setIsClicked] = useState(false)
@@ -9,8 +8,14 @@ const ShowMoreModal = (props) => {
     return (
         <>
             <div
-                onMouseDown={(e) => {e.stopPropagation(); setIsClicked(true)}}
-                onMouseUp={(e) => {e.stopPropagation(); setIsClicked(false)}}
+                onMouseDown={(e) => {
+                    e.stopPropagation();
+                    setIsClicked(true)
+                }}
+                onMouseUp={(e) => {
+                    e.stopPropagation();
+                    setIsClicked(false)
+                }}
                 onMouseEnter={() => setIsActive(true)}
                 onMouseLeave={() => setIsActive(false)}
                 onClick={(e) => {
@@ -23,7 +28,7 @@ const ShowMoreModal = (props) => {
                     height: "25px",
                     cursor: "pointer",
                     filter: (isActive || props.showModal ? "drop-shadow(2px 2px 3px rgba(2, 2, 2, 0.4))" : "")
-                    + (props.showModal || isClicked ? "brightness(0.95)" : ""),
+                        + (props.showModal || isClicked ? "brightness(0.95)" : ""),
                     transition: "0.25s",
                     background: "white",
                     borderRadius: "3px"

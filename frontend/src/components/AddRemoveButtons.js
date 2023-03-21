@@ -16,7 +16,13 @@ const AddRemoveButtons = (props) => {
             style={{position: "fixed", bottom: "4%", right: "5%"}}
         >
             <button
-                style={{width: "56px", height: "56px", border: "0px", borderRadius: "50%", background: INTERFACE_COLORS.GREEN}}
+                style={{
+                    width: "56px",
+                    height: "56px",
+                    border: "0px",
+                    borderRadius: "50%",
+                    background: INTERFACE_COLORS.GREEN
+                }}
                 className="d-flex align-items-center justify-content-center"
             >
                 <img
@@ -36,7 +42,13 @@ const AddRemoveButtons = (props) => {
                 </>
             </button>
             <button
-                style={{width: "56px", height: "56px", border: "0px", borderRadius: "50%", background: INTERFACE_COLORS.RED}}
+                style={{
+                    width: "56px",
+                    height: "56px",
+                    border: "0px",
+                    borderRadius: "50%",
+                    background: INTERFACE_COLORS.RED
+                }}
                 className="d-flex align-items-center justify-content-center"
             >
                 <img

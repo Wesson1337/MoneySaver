@@ -91,7 +91,8 @@ async def _parse_current_exchange_rate(currency, desired_currency) -> Decimal:
             base_url=f'https://investing.com/currencies/{currency.lower()}-{desired_currency.lower()}') as client:
         response = await client.get(url='/', timeout=10, follow_redirects=True)
     soup = BeautifulSoup(response.read(), 'html.parser')
-    return Decimal(soup.find("main").find("span", {"data-test": "instrument-price-last"}).text.strip())
+    return Decimal(soup.find("main").find("span", {"data-test": "instrument-price-last"}).text.strip())\
+        .quantize(Decimal(".00001"))
 
 
 async def get_current_exchange_rate(currency, desired_currency, redis) -> Decimal:
@@ -100,6 +101,8 @@ async def get_current_exchange_rate(currency, desired_currency, redis) -> Decima
         raise CurrencyNotSupportedException(currency)
     if desired_currency not in supported_currencies:
         raise CurrencyNotSupportedException(desired_currency)
+    if currency == desired_currency:
+        return Decimal(1).quantize(Decimal(".00001"))
 
     cached_rate = await RedisService(redis).get_cache(Keys().currency_key(currency, desired_currency))
     if cached_rate is None:
@@ -117,7 +120,7 @@ async def get_current_exchange_rate(currency, desired_currency, redis) -> Decima
         )
     else:
         rate = cached_rate.get('rate')
-    return Decimal(rate)
+    return Decimal(rate).quantize(Decimal(".00001"))
 
 
 async def convert_amount_to_another_currency(

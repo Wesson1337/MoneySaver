@@ -10,11 +10,11 @@ from backend.src.auth.exceptions import CredentialsException, InactiveUserExcept
 from backend.src.auth.models import User
 from backend.src.auth.schemas import TokenData, UserSchemaOut
 from backend.src.auth.service import get_cached_user_by_id, get_user_by_id_db
-from backend.src.config import DEFAULT_API_PREFIX
+from backend.src.config import API_PREFIX_V1
 from backend.src.dependencies import get_async_session
 from backend.src.redis import init_redis_pool, RedisService, Keys
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{DEFAULT_API_PREFIX}/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{API_PREFIX_V1}/token")
 
 
 async def get_current_user(

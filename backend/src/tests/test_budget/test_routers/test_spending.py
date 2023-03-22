@@ -3,13 +3,14 @@ from decimal import Decimal
 from typing import Literal
 
 import pytest
+from aioredis import Redis
 from httpx import AsyncClient
 
 from backend.src.budget.config import Currencies, SpendingCategories
 from backend.src.budget.exceptions import AccountNotFoundException, SpendingNotFoundException, \
     AccountNotBelongsToUserException, AccountNotExistsException, AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Spending, Account
-from backend.src.config import DEFAULT_API_PREFIX
+from backend.src.config import API_PREFIX_V1
 from backend.src.tests.conftest import PRELOAD_DATA
 from backend.src.utils import convert_amount_to_another_currency
 
@@ -23,7 +24,7 @@ async def test_get_all_spendings_with_suitable_query(
     query_params = [('currency', Currencies.USD),
                     ('category', SpendingCategories.TAXI)]
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/users/1/spendings/',
+        f'{API_PREFIX_V1}/budget/users/1/spendings/',
         params=query_params,
         headers=[auth_headers_superuser]
     )
@@ -50,8 +51,8 @@ async def test_get_all_spendings_with_suitable_query(
 
 @pytest.mark.parametrize(
     "url", [
-        f'{DEFAULT_API_PREFIX}/budget/users/1/spendings/',
-        f'{DEFAULT_API_PREFIX}/budget/accounts/1/spendings/'
+        f'{API_PREFIX_V1}/budget/users/1/spendings/',
+        f'{API_PREFIX_V1}/budget/accounts/1/spendings/'
     ]
 )
 @pytest.mark.parametrize(
@@ -85,8 +86,8 @@ async def test_get_all_spendings_without_suitable_query(
 
 @pytest.mark.parametrize(
     'url', [
-        f'{DEFAULT_API_PREFIX}/budget/users/1/spendings/',
-        f'{DEFAULT_API_PREFIX}/budget/accounts/1/spendings/'
+        f'{API_PREFIX_V1}/budget/users/1/spendings/',
+        f'{API_PREFIX_V1}/budget/accounts/1/spendings/'
     ]
 )
 @pytest.mark.parametrize(
@@ -120,7 +121,7 @@ async def test_get_all_spendings_by_account(
         auth_headers_superuser: tuple[Literal["Authorization"], str]
 ):
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/accounts/{receipt_account_id}/spendings/',
+        f'{API_PREFIX_V1}/budget/accounts/{receipt_account_id}/spendings/',
         headers=[auth_headers_superuser]
     )
 
@@ -143,7 +144,7 @@ async def test_get_all_spending_nonexistent_account(
         client: AsyncClient
 ):
     response = await client.get(
-        f"{DEFAULT_API_PREFIX}/budget/accounts/9999/spendings/",
+        f"{API_PREFIX_V1}/budget/accounts/9999/spendings/",
         headers=[auth_headers_superuser]
     )
     assert response.status_code == 404
@@ -157,7 +158,7 @@ async def test_get_certain_spending(
         client: AsyncClient
 ):
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/{spending_id}/',
+        f'{API_PREFIX_V1}/budget/spendings/{spending_id}/',
         headers=[auth_headers_superuser]
     )
 
@@ -181,7 +182,7 @@ async def test_get_nonexistent_spending(
         auth_headers_superuser: tuple[Literal["Authorization"], str]
 ):
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/9999/',
+        f'{API_PREFIX_V1}/budget/spendings/9999/',
         headers=[auth_headers_superuser]
     )
 
@@ -213,7 +214,7 @@ async def test_create_spending(
         client: AsyncClient
 ):
     response = await client.post(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/',
+        f'{API_PREFIX_V1}/budget/spendings/',
         headers=[auth_headers_superuser],
         json=spending_data
     )
@@ -242,6 +243,7 @@ async def test_create_spending(
 async def test_create_spending_with_different_currency_from_account(
         client: AsyncClient,
         auth_headers_superuser: tuple[Literal["Authorization"], str],
+        redis: Redis
 ):
     spending_data = {
         "name": "test_spending",
@@ -253,13 +255,13 @@ async def test_create_spending_with_different_currency_from_account(
     }
 
     get_spending_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/1/',
+        f'{API_PREFIX_V1}/budget/spendings/1/',
         headers=[auth_headers_superuser]
     )
     account_before_spending_creation = get_spending_response.json()['receipt_account']
 
     create_spending_response = await client.post(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/',
+        f'{API_PREFIX_V1}/budget/spendings/',
         headers=[auth_headers_superuser],
         json=spending_data
     )
@@ -268,7 +270,8 @@ async def test_create_spending_with_different_currency_from_account(
     spending_amount_in_account_currency = await convert_amount_to_another_currency(
         amount=spending_data['amount'],
         currency=spending_data['currency'],
-        desired_currency=account_before_spending_creation['currency']
+        desired_currency=account_before_spending_creation['currency'],
+        redis=redis
     )
 
     response_spending = create_spending_response.json()
@@ -364,7 +367,7 @@ async def test_create_incorrect_spending(
         auth_headers_superuser: tuple[Literal["Authorization"], str],
 ):
     response = await client.post(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/',
+        f'{API_PREFIX_V1}/budget/spendings/',
         headers=[auth_headers_superuser],
         json=spending_data
     )
@@ -382,14 +385,14 @@ async def test_patch_spending(
         "amount": 0.9
     }
     get_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/1/',
+        f'{API_PREFIX_V1}/budget/spendings/1/',
         headers=[auth_headers_superuser]
     )
     account_before_spending_patch = get_response.json()['receipt_account']
     spending_amount_before_patch = get_response.json()['amount']
 
     patch_response = await client.patch(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/1/',
+        f'{API_PREFIX_V1}/budget/spendings/1/',
         json=spending_data,
         headers=[auth_headers_superuser]
     )
@@ -420,10 +423,11 @@ async def test_patch_spending(
 async def test_patch_spending_with_different_currency_from_account(
         spending_data: dict,
         auth_headers_superuser: tuple[Literal["Authorization"], str],
-        client: AsyncClient
+        client: AsyncClient,
+        redis: Redis
 ):
     get_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/3/',
+        f'{API_PREFIX_V1}/budget/spendings/3/',
         headers=[auth_headers_superuser]
     )
     stored_spending = get_response.json()
@@ -432,11 +436,12 @@ async def test_patch_spending_with_different_currency_from_account(
     spendings_difference_in_account_currency = await convert_amount_to_another_currency(
         amount=Decimal(spending_data['amount'] - stored_spending['amount']),
         currency=stored_spending['currency'],
-        desired_currency=account_before_spending_patch['currency']
+        desired_currency=account_before_spending_patch['currency'],
+        redis=redis
     )
 
     patch_response = await client.patch(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/3/',
+        f'{API_PREFIX_V1}/budget/spendings/3/',
         headers=[auth_headers_superuser],
         json=spending_data
     )
@@ -467,7 +472,7 @@ async def test_patch_spending_with_incorrect_data(
         client: AsyncClient
 ):
     response = await client.patch(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/1/',
+        f'{API_PREFIX_V1}/budget/spendings/1/',
         headers=[auth_headers_superuser],
         json=spending_data
     )
@@ -479,7 +484,7 @@ async def test_patch_nonexistent_spending(
         client: AsyncClient
 ):
     response = await client.patch(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/9999/',
+        f'{API_PREFIX_V1}/budget/spendings/9999/',
         headers=[auth_headers_superuser],
         json={}
     )
@@ -492,26 +497,26 @@ async def test_delete_spending(
         client: AsyncClient
 ):
     get_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/1/',
+        f'{API_PREFIX_V1}/budget/spendings/1/',
         headers=[auth_headers_superuser]
     )
     stored_spending = get_response.json()
 
     delete_response = await client.delete(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/1/',
+        f'{API_PREFIX_V1}/budget/spendings/1/',
         headers=[auth_headers_superuser]
     )
     assert delete_response.status_code == 200
     assert delete_response.json() == {"message": "success"}
 
     deleted_spending_get_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/1/',
+        f'{API_PREFIX_V1}/budget/spendings/1/',
         headers=[auth_headers_superuser]
     )
     assert deleted_spending_get_response.status_code == 404
 
     get_second_spending_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/3/',
+        f'{API_PREFIX_V1}/budget/spendings/3/',
         headers=[auth_headers_superuser]
     )
     updated_account = get_second_spending_response.json()['receipt_account']
@@ -525,7 +530,7 @@ async def test_delete_nonexistent_spending(
         auth_headers_superuser: tuple[Literal["Authorization"], str],
 ):
     response = await client.delete(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/9999/',
+        f'{API_PREFIX_V1}/budget/spendings/9999/',
         headers=[auth_headers_superuser]
     )
     assert response.status_code == 404

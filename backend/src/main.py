@@ -1,17 +1,23 @@
+from _decimal import Decimal
+
 import aioredis
 import sentry_sdk
-from fastapi import FastAPI
+from aioredis import Redis
+from fastapi import FastAPI, Depends
 from fastapi_utils.tasks import repeat_every
 from fastapi_utils.timing import add_timing_middleware
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.middleware.cors import CORSMiddleware
 
 import backend.src.auth.router as auth
-from backend.src import config
+from backend.src import config, utils
+from backend.src.auth.dependencies import get_current_active_user
+from backend.src.auth.models import User
+from backend.src.budget.config import Currencies
 from backend.src.budget.routers import account, income, spending
-from backend.src.config import DEFAULT_API_PREFIX, logger
+from backend.src.config import API_PREFIX_V1, logger
 from backend.src.database import async_session
-from backend.src.redis import seed_redis_from_db
+from backend.src.redis import seed_redis_from_db, init_redis_pool
 
 sentry_sdk.init(
     dsn=config.SENTRY_SDK_DSN,
@@ -25,10 +31,10 @@ sentry_sdk.init(
 app = FastAPI()
 
 # routers
-app.include_router(auth.router, prefix=f'{DEFAULT_API_PREFIX}', tags=['Users'])
-app.include_router(income.router, prefix=f'{DEFAULT_API_PREFIX}/budget', tags=['Incomes'])
-app.include_router(account.router, prefix=f'{DEFAULT_API_PREFIX}/budget', tags=['Accounts'])
-app.include_router(spending.router, prefix=f'{DEFAULT_API_PREFIX}/budget', tags=['Spendings'])
+app.include_router(auth.router, prefix=f'{API_PREFIX_V1}', tags=['Users'])
+app.include_router(income.router, prefix=f'{API_PREFIX_V1}/budget', tags=['Incomes'])
+app.include_router(account.router, prefix=f'{API_PREFIX_V1}/budget', tags=['Accounts'])
+app.include_router(spending.router, prefix=f'{API_PREFIX_V1}/budget', tags=['Spendings'])
 
 # middleware
 app.add_middleware(
@@ -56,3 +62,13 @@ async def refresh_redis():
     async with async_session() as session:
         await seed_redis_from_db(session, redis)
     await redis.close()
+
+
+@app.get(f'{API_PREFIX_V1}/currency/')
+async def get_exchange_rate(
+        base_currency: Currencies,
+        desired_currency: Currencies,
+        current_user: User = Depends(get_current_active_user),
+        redis: Redis = Depends(init_redis_pool)
+) -> Decimal:
+    return await utils.get_current_exchange_rate(base_currency, desired_currency, redis)

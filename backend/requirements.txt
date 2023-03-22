@@ -16,3 +16,4 @@ prometheus_fastapi_instrumentator==5.9.1
 fastapi_utils==0.2.1
 aioredis==2.0.1
 sentry-sdk[fastapi]==1.14.0
+beautifulsoup4==4.12.0

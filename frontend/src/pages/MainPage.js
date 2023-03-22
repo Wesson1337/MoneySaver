@@ -6,7 +6,7 @@ import {ErrorComponent} from "../components/ErrorComponent";
 import BudgetCard from "../components/BudgetCard";
 import MonthOperationsCard from "../components/MonthOperationsCard";
 import {getAllOperations} from "../http/operationsAPI";
-import {getLatestExchangeRates} from "../http/currencyAPI";
+import {getCurrencyRate} from "../http/currencyAPI";
 import {SUPPORTED_CURRENCIES} from "../utils/consts";
 import LastOperationsCard from "../components/LastOperationsCard";
 import CurrenciesBudgetCard from "../components/CurrenciesBudgetCard";
@@ -19,20 +19,25 @@ const MainPage = () => {
     const [errorMsg, setErrorMsg] = useState(null)
 
     const getData = async () => {
-        const accounts = await getAllAccounts()
-        let currentDate = new Date()
-        const firstDayOfPreviousMonth = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth() - 1,
-            1).toISOString().replace("Z", "")
-        currentDate = currentDate.toISOString().replace("Z", "")
-        const operations = await getAllOperations(
-            null,
-            firstDayOfPreviousMonth,
-            currentDate
-        )
-        const latestExchangeRates = await getLatestExchangeRates(SUPPORTED_CURRENCIES.USD)
-        return {operations: operations, accounts: accounts, latestExchangeRates: latestExchangeRates}
+        let accounts
+        let operations
+        try {
+            accounts = await getAllAccounts()
+            let currentDate = new Date()
+            const firstDayOfPreviousMonth = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth() - 1,
+                1).toISOString().replace("Z", "")
+            currentDate = currentDate.toISOString().replace("Z", "")
+            operations = await getAllOperations(
+                null,
+                firstDayOfPreviousMonth,
+                currentDate
+            )
+        } catch (e) {
+            setErrorMsg(`Error with connecting to server, app may work incorrect. Error message: ${e}`)
+        }
+        return {operations: operations, accounts: accounts}
     }
 
     useEffect(() => {

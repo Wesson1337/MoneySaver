@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from backend.src.budget.config import Currencies, AccountTypes
 from backend.src.budget.exceptions import AccountNotFoundException, UserNotExistsException
 from backend.src.budget.models import Account
-from backend.src.config import DEFAULT_API_PREFIX
+from backend.src.config import API_PREFIX_V1
 from backend.src.tests.conftest import PRELOAD_DATA
 
 pytestmark = pytest.mark.asyncio
@@ -20,7 +20,7 @@ async def test_get_all_accounts_by_user(
 ):
     query_params = [('is_active', True)]
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/users/{user_id}/accounts/',
+        f'{API_PREFIX_V1}/budget/users/{user_id}/accounts/',
         headers=[auth_headers_superuser],
         params=query_params
     )
@@ -46,7 +46,7 @@ async def test_get_all_accounts_by_user_incorrect_query(
         client: AsyncClient
 ):
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/users/1/accounts/',
+        f'{API_PREFIX_V1}/budget/users/1/accounts/',
         headers=[auth_headers_superuser],
         params=[incorrect_query]
     )
@@ -60,7 +60,7 @@ async def test_get_certain_account(
         client: AsyncClient
 ):
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/accounts/{account_id}/',
+        f'{API_PREFIX_V1}/budget/accounts/{account_id}/',
         headers=[auth_headers_superuser]
     )
     assert response.status_code == 200
@@ -79,7 +79,7 @@ async def test_get_certain_nonexistent_account(
         client: AsyncClient
 ):
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/accounts/9999/',
+        f'{API_PREFIX_V1}/budget/accounts/9999/',
         headers=[auth_headers_superuser]
     )
     assert response.status_code == 404
@@ -98,7 +98,7 @@ async def test_create_account(
         "balance": 0
     }
     response = await client.post(
-        f'{DEFAULT_API_PREFIX}/budget/accounts/',
+        f'{API_PREFIX_V1}/budget/accounts/',
         headers=[auth_headers_superuser],
         json=account_data
     )
@@ -154,7 +154,7 @@ async def test_create_incorrect_account(
         client: AsyncClient
 ):
     response = await client.post(
-        f'{DEFAULT_API_PREFIX}/budget/accounts/',
+        f'{API_PREFIX_V1}/budget/accounts/',
         headers=[auth_headers_superuser],
         json=account_data
     )
@@ -172,7 +172,7 @@ async def test_patch_account(
         "is_active": True
     }
     response = await client.patch(
-        f"{DEFAULT_API_PREFIX}/budget/accounts/1/",
+        f"{API_PREFIX_V1}/budget/accounts/1/",
         headers=[auth_headers_superuser],
         json=account_data
     )
@@ -197,7 +197,7 @@ async def test_patch_account_incorrect_data(
         client: AsyncClient
 ):
     response = await client.patch(
-        f"{DEFAULT_API_PREFIX}/budget/accounts/1/",
+        f"{API_PREFIX_V1}/budget/accounts/1/",
         headers=[auth_headers_superuser],
         json=account_data
     )
@@ -209,7 +209,7 @@ async def test_patch_nonexistent_account(
         client: AsyncClient
 ):
     response = await client.patch(
-        f"{DEFAULT_API_PREFIX}/budget/accounts/9999/",
+        f"{API_PREFIX_V1}/budget/accounts/9999/",
         headers=[auth_headers_superuser],
         json={}
     )

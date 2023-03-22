@@ -10,6 +10,7 @@ from sqlalchemy.orm import joinedload
 from backend.src import config
 from backend.src.auth.models import User
 from backend.src.auth.schemas import UserSchemaOut
+from backend.src.budget.config import Currencies
 from backend.src.budget.models import Income, Account, Spending
 from backend.src.budget.schemas.account import AccountSchemaOut
 from backend.src.budget.schemas.income import IncomeSchemaOut
@@ -48,25 +49,31 @@ class Keys:
         self.model = sql_model
 
     @prefixed_key
-    def sql_model_key_by_id(self, model_id: int):
+    def sql_model_key_by_id(self, model_id: int) -> str:
         return f"cache:{self.model.__tablename__}:{model_id}"
+
+    @prefixed_key
+    def currency_key(self, base_currency: Currencies, desired_currency: Currencies) -> str:
+        return f"cache:{base_currency}-{desired_currency}"
 
 
 class RedisService:
     def __init__(self, redis: Redis):
         self._redis = redis
 
-    async def set_cache(self, key: Keys, data: dict):
+    async def set_cache(self, key: Keys, data: dict, ex: Optional[int] = None):
         await self._redis.set(
             key,
             json.dumps(data),
-            ex=config.REDIS_CACHING_DURATION_SECONDS
+            ex=ex or config.REDIS_CACHING_DURATION_SECONDS
         )
 
     async def get_cache(self, key: Keys):
         data = await self._redis.get(key)
         if data:
             parsed_data = json.loads(data)
+            if type(parsed_data) == dict:
+                return parsed_data
             return json.loads(parsed_data)
 
 

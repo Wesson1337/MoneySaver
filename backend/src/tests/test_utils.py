@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import pytest
 import sqlalchemy as sa
+from aioredis import Redis
 from sqlalchemy.sql import Select
 
 from backend.src.auth.models import User
@@ -66,20 +67,20 @@ async def test_apply_query_params_to_select_sql_query():
     assert format_sql_query(updated_select_sql_query) == format_sql_query(desired_select_sql_query)
 
 
-async def test_convert_amount_to_another_currency():
+async def test_convert_amount_to_another_currency(redis: Redis):
     amount_in_usd = Decimal(5.0)
-    amount_in_rub = await convert_amount_to_another_currency(amount_in_usd, Currencies.USD, Currencies.RUB)
+    amount_in_rub = await convert_amount_to_another_currency(amount_in_usd, Currencies.USD, Currencies.RUB, redis)
 
     assert amount_in_rub > amount_in_usd
 
-    new_amount_in_usd = await convert_amount_to_another_currency(amount_in_rub, Currencies.RUB, Currencies.USD)
+    new_amount_in_usd = await convert_amount_to_another_currency(amount_in_rub, Currencies.RUB, Currencies.USD, redis)
 
     assert amount_in_rub > new_amount_in_usd
     assert amount_in_usd == new_amount_in_usd
 
 
-async def test_convert_amount_to_another_currency_wrong_currencies():
+async def test_convert_amount_to_another_currency_wrong_currencies(redis: Redis):
     with pytest.raises(CurrencyNotSupportedException):
-        await convert_amount_to_another_currency(Decimal(5.0), "incorrect_currency", Currencies.RUB)
+        await convert_amount_to_another_currency(Decimal(5.0), "incorrect_currency", Currencies.RUB, redis)
     with pytest.raises(CurrencyNotSupportedException):
-        await convert_amount_to_another_currency(Decimal(5.0), Currencies.USD, "incorrect_currency")
+        await convert_amount_to_another_currency(Decimal(5.0), Currencies.USD, "incorrect_currency", redis)

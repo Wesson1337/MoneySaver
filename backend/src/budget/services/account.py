@@ -92,7 +92,7 @@ async def add_amount_to_account_balance(
         redis: Redis
 ) -> Decimal:
     amount_in_account_currency = await convert_amount_to_another_currency(
-        amount=amount, currency=currency, desired_currency=account.currency
+        amount=amount, currency=currency, desired_currency=account.currency, redis=redis
     )
 
     account.balance += amount_in_account_currency

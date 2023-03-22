@@ -1,24 +1,20 @@
-import os
 from dataclasses import fields, Field
 from decimal import Decimal
 from operator import methodcaller
 from typing import Type, Any
 
+from aioredis import Redis
+from bs4 import BeautifulSoup
 from httpx import AsyncClient
-from pydantic import BaseModel
 from sqlalchemy.sql import Select
 
 from backend.src.budget.config import Currencies
 from backend.src.database import Base
 from backend.src.dependencies import BaseQueryParams
 from backend.src.exceptions import NoDataForUpdateException, WrongDataForUpdateException, CurrencyNotSupportedException
+from backend.src.redis import RedisService, Keys
 
 PREFIXES_AND_METHODS = {"_ge": "__ge__", "_le": "__le__", "_ne": "__ne__"}
-
-
-class BaseORMSchema(BaseModel):
-    class Config:
-        orm_mode = True
 
 
 async def update_sql_entity(sql_entity: Type[Base], data_to_update: dict) -> Type[Base]:
@@ -90,28 +86,50 @@ def _get_method_for_specific_field(field: Field) -> tuple[str]:
             return prefix, method
 
 
-async def convert_amount_to_another_currency(
-        amount: Decimal | float | int,
-        currency: Currencies | str,
-        desired_currency: Currencies | str
-) -> Decimal:
-    """Converts amount to another currency. It's using https://app.freecurrencyapi.com/.
-    Returns a decimal object with two digits after the dot"""
+async def _parse_current_exchange_rate(currency, desired_currency) -> Decimal:
+    async with AsyncClient(
+            base_url=f'https://investing.com/currencies/{currency.lower()}-{desired_currency.lower()}') as client:
+        response = await client.get(url='/', timeout=10, follow_redirects=True)
+    soup = BeautifulSoup(response.read(), 'html.parser')
+    return Decimal(soup.find("main").find("span", {"data-test": "instrument-price-last"}).text.strip())
+
+
+async def get_current_exchange_rate(currency, desired_currency, redis) -> Decimal:
     supported_currencies = [field.value for field in Currencies]
     if currency not in supported_currencies:
         raise CurrencyNotSupportedException(currency)
     if desired_currency not in supported_currencies:
         raise CurrencyNotSupportedException(desired_currency)
+
+    cached_rate = await RedisService(redis).get_cache(Keys().currency_key(currency, desired_currency))
+    if cached_rate is None:
+        rate = await _parse_current_exchange_rate(currency, desired_currency)
+        await RedisService(redis).set_cache(
+            key=Keys().currency_key(currency, desired_currency),
+            data={"rate": float(rate)},
+            ex=60 * 60 * 3  # 3 hours
+        )
+        reversed_rate = (Decimal(1) / rate).quantize(Decimal(".00001"))
+        await RedisService(redis).set_cache(
+            key=Keys().currency_key(desired_currency, currency),
+            data={"rate": float(reversed_rate)},
+            ex=60 * 60 * 3
+        )
+    else:
+        rate = cached_rate.get('rate')
+    return Decimal(rate)
+
+
+async def convert_amount_to_another_currency(
+        amount: Decimal | float | int,
+        currency: Currencies | str,
+        desired_currency: Currencies | str,
+        redis: Redis
+) -> Decimal:
     if currency == desired_currency:
         return amount
 
-    amount = Decimal(amount)
-    async with AsyncClient(base_url='https://api.freecurrencyapi.com/v1/latest') as client:
-        query_params = [('apikey', os.getenv('CURRENCY_API_KEY')),
-                        ('base_currency', currency)]
-        response = await client.get(url='/', params=query_params, timeout=10)
-        desired_currency_rate = response.json()['data'][desired_currency]
-        amount_in_desired_currency = amount * Decimal(desired_currency_rate)
-        return Decimal(amount_in_desired_currency).quantize(Decimal('.01'))
+    rate = await get_current_exchange_rate(currency, desired_currency, redis)
+    return (Decimal(amount) * rate).quantize(Decimal(".01"))
 
 

@@ -1,9 +1,10 @@
-from typing import Optional
 from decimal import Decimal
+from typing import Optional
+
 from pydantic import constr, conint, condecimal
 
 from backend.src.budget.config import Currencies, AccountTypes
-from backend.src.utils import BaseORMSchema
+from backend.src.schema import BaseORMSchema
 
 
 class AccountSchemaIn(BaseORMSchema):

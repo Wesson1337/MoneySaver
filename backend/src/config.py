@@ -1,7 +1,7 @@
 import logging
 import os
 
-DEFAULT_API_PREFIX = "/api/v1"
+API_PREFIX_V1 = "/api/v1"
 
 DEBUG = bool(os.getenv("DEBUG"))
 

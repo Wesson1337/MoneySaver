@@ -1,4 +1,4 @@
-import {getLatestExchangeRates} from "../http/currencyAPI";
+import {getCurrencyRate} from "../http/currencyAPI";
 import {SUPPORTED_CURRENCIES} from "./consts";
 
 export const convertCurrency = async (amount, baseCurrency, desiredCurrency, latestExchangeRates) => {
@@ -8,6 +8,6 @@ export const convertCurrency = async (amount, baseCurrency, desiredCurrency, lat
     if (!(desiredCurrency in SUPPORTED_CURRENCIES)) {
         throw new Error("Desired currency is not supported in app")
     }
-    const {data} = latestExchangeRates ? latestExchangeRates : await getLatestExchangeRates(desiredCurrency)
-    return amount / data[baseCurrency]
+    const rate = getCurrencyRate(baseCurrency, desiredCurrency)
+    return amount * rate
 }

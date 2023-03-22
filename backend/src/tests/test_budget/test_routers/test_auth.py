@@ -5,7 +5,7 @@ from httpx import AsyncClient
 from pytest_lazyfixture import lazy_fixture
 
 from backend.src.budget.config import Currencies, AccountTypes, SpendingCategories
-from backend.src.config import DEFAULT_API_PREFIX
+from backend.src.config import API_PREFIX_V1
 
 pytestmark = pytest.mark.asyncio
 
@@ -30,7 +30,7 @@ async def test_certain_user_auth(
         client: AsyncClient
 ):
     response = await client.get(
-        url.format(DEFAULT_API_PREFIX=DEFAULT_API_PREFIX, user_id=user_id),
+        url.format(DEFAULT_API_PREFIX=API_PREFIX_V1, user_id=user_id),
         headers=[auth_headers]
     )
     assert response.status_code == status_code
@@ -63,7 +63,7 @@ async def test_certain_account_auth(
         client: AsyncClient
 ):
     response = await client.get(
-        url.format(DEFAULT_API_PREFIX=DEFAULT_API_PREFIX, account_id=account_id),
+        url.format(DEFAULT_API_PREFIX=API_PREFIX_V1, account_id=account_id),
         headers=[auth_headers]
     )
     assert response.status_code == status_code
@@ -72,7 +72,7 @@ async def test_certain_account_auth(
 
     if data:
         response = await client.patch(
-            url.format(DEFAULT_API_PREFIX=DEFAULT_API_PREFIX, account_id=account_id),
+            url.format(DEFAULT_API_PREFIX=API_PREFIX_V1, account_id=account_id),
             headers=[auth_headers],
             json=data
         )
@@ -97,7 +97,7 @@ async def test_certain_income_auth(
         client: AsyncClient
 ):
     response = await client.get(
-        f"{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/",
+        f"{API_PREFIX_V1}/budget/incomes/{income_id}/",
         headers=[auth_headers]
     )
     assert response.status_code == status_code
@@ -108,7 +108,7 @@ async def test_certain_income_auth(
         "amount": 1
     }
     response = await client.patch(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/',
+        f'{API_PREFIX_V1}/budget/incomes/{income_id}/',
         headers=[auth_headers],
         json=income_data
     )
@@ -117,7 +117,7 @@ async def test_certain_income_auth(
         assert response.json()['detail'] == response_detail
 
     response = await client.delete(
-        f"{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/",
+        f"{API_PREFIX_V1}/budget/incomes/{income_id}/",
         headers=[auth_headers]
     )
     assert response.status_code == status_code
@@ -141,7 +141,7 @@ async def test_certain_spending_auth(
         client: AsyncClient
 ):
     response = await client.get(
-        f"{DEFAULT_API_PREFIX}/budget/spendings/{spending_id}/",
+        f"{API_PREFIX_V1}/budget/spendings/{spending_id}/",
         headers=[auth_headers]
     )
     assert response.status_code == status_code
@@ -152,7 +152,7 @@ async def test_certain_spending_auth(
         "amount": 2
     }
     response = await client.patch(
-        f'{DEFAULT_API_PREFIX}/budget/spendings/{spending_id}/',
+        f'{API_PREFIX_V1}/budget/spendings/{spending_id}/',
         headers=[auth_headers],
         json=spending_data
     )
@@ -161,7 +161,7 @@ async def test_certain_spending_auth(
         assert response.json()['detail'] == response_detail
 
     response = await client.delete(
-        f"{DEFAULT_API_PREFIX}/budget/spendings/{spending_id}/",
+        f"{API_PREFIX_V1}/budget/spendings/{spending_id}/",
         headers=[auth_headers]
     )
     assert response.status_code == status_code
@@ -170,19 +170,19 @@ async def test_certain_spending_auth(
 
 
 @pytest.mark.parametrize('url, data', [
-    (f'{DEFAULT_API_PREFIX}/budget/incomes/', {
+    (f'{API_PREFIX_V1}/budget/incomes/', {
         "name": "test_income",
         "currency": Currencies.USD,
         "replenishment_account_id": 2,
         "amount": 2.0,
     }),
-    (f'{DEFAULT_API_PREFIX}/budget/accounts/', {
+    (f'{API_PREFIX_V1}/budget/accounts/', {
         "name": "test_account",
         "type": AccountTypes.BANK_ACCOUNT,
         "currency": Currencies.USD,
         "balance": 0
     }),
-    (f'{DEFAULT_API_PREFIX}/budget/spendings/', {
+    (f'{API_PREFIX_V1}/budget/spendings/', {
         "name": "test_account",
         "currency": Currencies.USD,
         "receipt_account_id": 2,

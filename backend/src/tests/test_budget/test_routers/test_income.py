@@ -3,6 +3,7 @@ from decimal import Decimal
 from typing import Literal
 
 import pytest
+from aioredis import Redis
 from httpx import AsyncClient
 
 from backend.src.budget.config import Currencies
@@ -10,7 +11,7 @@ from backend.src.budget.exceptions import IncomeNotFoundException, AccountNotFou
     AccountNotBelongsToUserException, AccountNotExistsException, \
     AccountBalanceWillGoNegativeException
 from backend.src.budget.models import Income, Account
-from backend.src.config import DEFAULT_API_PREFIX
+from backend.src.config import API_PREFIX_V1
 from backend.src.tests.conftest import PRELOAD_DATA
 from backend.src.utils import convert_amount_to_another_currency
 
@@ -27,7 +28,7 @@ async def test_get_all_incomes_with_suitable_query(
                     ('created_at_ge', datetime.datetime(year=2022, month=1, day=1)),
                     ('created_at_le', datetime.datetime.now())]
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/users/1/incomes/',
+        f'{API_PREFIX_V1}/budget/users/1/incomes/',
         params=query_params,
         headers=[auth_headers_superuser]
     )
@@ -54,8 +55,8 @@ async def test_get_all_incomes_with_suitable_query(
 
 @pytest.mark.parametrize(
     'url', [
-        f'{DEFAULT_API_PREFIX}/budget/users/1/incomes/',
-        f'{DEFAULT_API_PREFIX}/budget/accounts/1/incomes/'
+        f'{API_PREFIX_V1}/budget/users/1/incomes/',
+        f'{API_PREFIX_V1}/budget/accounts/1/incomes/'
     ]
 )
 @pytest.mark.parametrize(
@@ -92,8 +93,8 @@ async def test_get_all_incomes_without_suitable_query(
 
 @pytest.mark.parametrize(
     'url', [
-        f'{DEFAULT_API_PREFIX}/budget/users/1/incomes/',
-        f'{DEFAULT_API_PREFIX}/budget/accounts/1/incomes/'
+        f'{API_PREFIX_V1}/budget/users/1/incomes/',
+        f'{API_PREFIX_V1}/budget/accounts/1/incomes/'
     ]
 )
 @pytest.mark.parametrize(
@@ -126,7 +127,7 @@ async def test_get_all_incomes_by_account(
         auth_headers_superuser: tuple[Literal["Authorization"], str]
 ):
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/accounts/{replenishment_account_id}/incomes/',
+        f'{API_PREFIX_V1}/budget/accounts/{replenishment_account_id}/incomes/',
         headers=[auth_headers_superuser]
     )
 
@@ -149,7 +150,7 @@ async def test_get_all_incomes_by_account_nonexistent_account(
         client: AsyncClient
 ):
     response = await client.get(
-        f"{DEFAULT_API_PREFIX}/budget/accounts/9999/incomes/",
+        f"{API_PREFIX_V1}/budget/accounts/9999/incomes/",
         headers=[auth_headers_superuser]
     )
     assert response.status_code == 404
@@ -163,7 +164,7 @@ async def test_get_certain_income(
         client: AsyncClient
 ):
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/{income_id}/',
+        f'{API_PREFIX_V1}/budget/incomes/{income_id}/',
         headers=[auth_headers_superuser]
     )
 
@@ -187,7 +188,7 @@ async def test_get_nonexistent_income(
         auth_headers_superuser: tuple[Literal["Authorization"], str]
 ):
     response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/9999/',
+        f'{API_PREFIX_V1}/budget/incomes/9999/',
         headers=[auth_headers_superuser]
     )
 
@@ -217,7 +218,7 @@ async def test_create_income(
         client: AsyncClient
 ):
     response = await client.post(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/',
+        f'{API_PREFIX_V1}/budget/incomes/',
         headers=[auth_headers_superuser],
         json=income_data
     )
@@ -248,6 +249,7 @@ async def test_create_income(
 async def test_create_income_with_different_currency_from_account(
         client: AsyncClient,
         auth_headers_superuser: tuple[Literal["Authorization"], str],
+        redis: Redis
 ):
     income_data = {
         "name": "test_income",
@@ -258,13 +260,13 @@ async def test_create_income_with_different_currency_from_account(
     }
 
     get_income_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/1/',
+        f'{API_PREFIX_V1}/budget/incomes/1/',
         headers=[auth_headers_superuser]
     )
     replenishment_account_before_income_creation = get_income_response.json()['replenishment_account']
 
     create_income_response = await client.post(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/',
+        f'{API_PREFIX_V1}/budget/incomes/',
         headers=[auth_headers_superuser],
         json=income_data
     )
@@ -272,7 +274,8 @@ async def test_create_income_with_different_currency_from_account(
     income_amount_in_account_currency = await convert_amount_to_another_currency(
         amount=income_data['amount'],
         currency=income_data['currency'],
-        desired_currency=replenishment_account_before_income_creation['currency']
+        desired_currency=replenishment_account_before_income_creation['currency'],
+        redis=redis
     )
 
     assert create_income_response.status_code == 201
@@ -341,7 +344,7 @@ async def test_create_incorrect_income(
         auth_headers_superuser: tuple[Literal["Authorization"], str],
 ):
     response = await client.post(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/',
+        f'{API_PREFIX_V1}/budget/incomes/',
         headers=[auth_headers_superuser],
         json=income_data
     )
@@ -359,14 +362,14 @@ async def test_income_patch(
         "amount": 0.9
     }
     get_income_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/1/',
+        f'{API_PREFIX_V1}/budget/incomes/1/',
         headers=[auth_headers_superuser]
     )
     replenishment_account_before_income_patch = get_income_response.json()['replenishment_account']
     income_amount_before_patch = get_income_response.json()['amount']
 
     response = await client.patch(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/1/',
+        f'{API_PREFIX_V1}/budget/incomes/1/',
         json=income_data,
         headers=[auth_headers_superuser]
     )
@@ -400,11 +403,12 @@ async def test_income_patch(
 async def test_income_patch_with_different_currency_from_account(
         income_data: dict,
         auth_headers_superuser: tuple[Literal["Authorization"], str],
-        client: AsyncClient
+        client: AsyncClient,
+        redis: Redis
 ):
 
     get_income_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/2/',
+        f'{API_PREFIX_V1}/budget/incomes/2/',
         headers=[auth_headers_superuser]
     )
     stored_income = get_income_response.json()
@@ -414,10 +418,11 @@ async def test_income_patch_with_different_currency_from_account(
         amount=Decimal(income_data['amount'] - stored_income['amount']),
         currency=stored_income['currency'],
         desired_currency=replenishment_account_before_income_patch['currency'],
+        redis=redis
     )
 
     response = await client.patch(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/2/',
+        f'{API_PREFIX_V1}/budget/incomes/2/',
         headers=[auth_headers_superuser],
         json=income_data
     )
@@ -448,7 +453,7 @@ async def test_income_patch_with_incorrect_data(
         client: AsyncClient
 ):
     response = await client.patch(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/1/',
+        f'{API_PREFIX_V1}/budget/incomes/1/',
         headers=[auth_headers_superuser],
         json=income_data
     )
@@ -460,7 +465,7 @@ async def test_patch_nonexistent_income(
         client: AsyncClient
 ):
     response = await client.patch(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/9999/',
+        f'{API_PREFIX_V1}/budget/incomes/9999/',
         headers=[auth_headers_superuser],
         json={}
     )
@@ -473,26 +478,26 @@ async def test_income_delete(
         client: AsyncClient
 ):
     get_income_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/2/',
+        f'{API_PREFIX_V1}/budget/incomes/2/',
         headers=[auth_headers_superuser]
     )
     stored_income = get_income_response.json()
 
     delete_response = await client.delete(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/2/',
+        f'{API_PREFIX_V1}/budget/incomes/2/',
         headers=[auth_headers_superuser]
     )
     assert delete_response.status_code == 200
     assert delete_response.json() == {'message': 'success'}
 
     deleted_income_get_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/2/',
+        f'{API_PREFIX_V1}/budget/incomes/2/',
         headers=[auth_headers_superuser]
     )
     assert deleted_income_get_response.status_code == 404
 
     get_second_income_response = await client.get(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/1/',
+        f'{API_PREFIX_V1}/budget/incomes/1/',
         headers=[auth_headers_superuser]
     )
     updated_account = get_second_income_response.json()['replenishment_account']
@@ -507,7 +512,7 @@ async def test_delete_nonexistent_income(
         auth_headers_superuser: tuple[Literal["Authorization"], str],
 ):
     response = await client.delete(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/999/',
+        f'{API_PREFIX_V1}/budget/incomes/999/',
         headers=[auth_headers_superuser]
     )
     assert response.status_code == 404
@@ -519,7 +524,7 @@ async def test_income_delete_with_greater_amount_than_account_balance(
         client: AsyncClient
 ):
     response = await client.delete(
-        f'{DEFAULT_API_PREFIX}/budget/incomes/3/',
+        f'{API_PREFIX_V1}/budget/incomes/3/',
         headers=[auth_headers_superuser]
     )
     assert response.status_code == 400

@@ -9,9 +9,6 @@ export const getCurrencyRate = async (baseCurrency, desiredCurrency) => {
     if (!(desiredCurrency in SUPPORTED_CURRENCIES)) {
         throw new Error("Desired currency is not supported in app")
     }
-    if (baseCurrency === desiredCurrency) {
-        return 1
-    }
     const {data} = await $authHost.get(`/api/v1/currency/`, {params: {base_currency: baseCurrency, desired_currency: desiredCurrency}})
     return data
 }

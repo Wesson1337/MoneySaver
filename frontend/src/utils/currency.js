@@ -8,6 +8,6 @@ export const convertCurrency = async (amount, baseCurrency, desiredCurrency) => 
     if (!(desiredCurrency in SUPPORTED_CURRENCIES)) {
         throw new Error("Desired currency is not supported in app")
     }
-    const rate = getCurrencyRate(baseCurrency, desiredCurrency)
+    const rate = await getCurrencyRate(baseCurrency, desiredCurrency)
     return amount * rate
 }

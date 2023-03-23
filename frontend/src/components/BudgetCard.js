@@ -16,15 +16,7 @@ const BudgetCard = (props) => {
         for (let i = 0; i < props.data.accounts.length; i++) {
             a = props.data.accounts[i]
             if (a["is_active"]) {
-                if (a["balance"] && a.currency !== "USD") {
-                    try {
-                        accountBalance = await convertCurrency(a["balance"], a.currency, SUPPORTED_CURRENCIES.USD)
-                    } catch (e) {
-                        props.setErrorMsg(`${e}`)
-                    }
-                } else {
-                    accountBalance = a["balance"]
-                }
+                accountBalance = a["balanceInUSD"]
                 totalBalance += accountBalance
             }
         }

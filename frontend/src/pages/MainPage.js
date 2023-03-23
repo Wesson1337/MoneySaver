@@ -11,6 +11,7 @@ import {SUPPORTED_CURRENCIES} from "../utils/consts";
 import LastOperationsCard from "../components/LastOperationsCard";
 import CurrenciesBudgetCard from "../components/CurrenciesBudgetCard";
 import AddRemoveButtons from "../components/AddRemoveButtons";
+import {convertCurrency} from "../utils/currency";
 
 const MainPage = () => {
     const {user} = useAuth()
@@ -18,11 +19,18 @@ const MainPage = () => {
     const [data, setData] = useState(null)
     const [errorMsg, setErrorMsg] = useState(null)
 
+    const addUSDBalanceToAccounts = async (accounts) => {
+        for (const account of accounts) {
+            account["balanceInUSD"] = await convertCurrency(account["balance"], account["currency"], SUPPORTED_CURRENCIES.USD)
+        }
+        return accounts
+    }
+
     const getData = async () => {
         let accounts
         let operations
         try {
-            accounts = await getAllAccounts()
+            accounts = await addUSDBalanceToAccounts(await getAllAccounts())
             let currentDate = new Date()
             const firstDayOfPreviousMonth = new Date(
                 currentDate.getFullYear(),

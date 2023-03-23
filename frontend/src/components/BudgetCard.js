@@ -18,7 +18,7 @@ const BudgetCard = (props) => {
             if (a["is_active"]) {
                 if (a["balance"] && a.currency !== "USD") {
                     try {
-                        accountBalance = await convertCurrency(a["balance"], a.currency, SUPPORTED_CURRENCIES.USD, props.data.latestExchangeRates)
+                        accountBalance = await convertCurrency(a["balance"], a.currency, SUPPORTED_CURRENCIES.USD)
                     } catch (e) {
                         props.setErrorMsg(`${e}`)
                     }

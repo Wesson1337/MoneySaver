@@ -49,7 +49,7 @@ const MonthOperationsCard = (props) => {
         return {incomes: filteredIncomes, spendings: filteredSpendings}
     }
 
-    const getTotalAmountOfIncomes = async (operations, type) => {
+    const getAmountOfOperations = async (operations, type) => {
         let totalAmount = 0
         let convertedAmount
         const account = type === "spendings" ? "receipt_account" : "replenishment_account"
@@ -58,8 +58,7 @@ const MonthOperationsCard = (props) => {
                 convertedAmount = await convertCurrency(
                     op["amount_in_account_currency_at_creation"],
                     op[account]["currency"],
-                    SUPPORTED_CURRENCIES.USD,
-                    props.data.latestExchangeRates
+                    SUPPORTED_CURRENCIES.USD
                 )
                 totalAmount += convertedAmount
             } else {
@@ -73,8 +72,8 @@ const MonthOperationsCard = (props) => {
     const getTotalAmountOfOperations = async () => {
         try {
             const filteredOperations = filterOperationsByMonth(props.data.operations)
-            const totalIncomeAmount = await getTotalAmountOfIncomes(filteredOperations.incomes, "incomes")
-            const totalSpendingAmount = await getTotalAmountOfIncomes(filteredOperations.spendings, "spendings")
+            const totalIncomeAmount = await getAmountOfOperations(filteredOperations.incomes, "incomes")
+            const totalSpendingAmount = await getAmountOfOperations(filteredOperations.spendings, "spendings")
             return {incomes: totalIncomeAmount, spendings: totalSpendingAmount}
         } catch (e) {
             props.setErrorMsg(`${e}`)

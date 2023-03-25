@@ -28,7 +28,7 @@ const MainPageCard = (props) => {
             style={Object.assign({
                 filter: (isActive && props.navigateto ? "drop-shadow(2px 2px 2px rgba(2, 2, 2, 0.2))" : "")
                     + (isClicked && props.navigateto ? "brightness(0.95)" : ""),
-                transition: "0.25s",
+                transition: "0.25s ease-out",
                 cursor: "pointer"
             }, props.style)}
             id={props.id}

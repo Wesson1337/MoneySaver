@@ -11,8 +11,8 @@ from backend.src.auth.models import User
 from backend.src.auth.schemas import TokenData, UserSchemaOut
 from backend.src.auth.service import get_cached_user_by_id, get_user_by_id_db
 from backend.src.config import API_PREFIX_V1
-from backend.src.dependencies import get_async_session
-from backend.src.redis import init_redis_pool, RedisService, Keys
+from backend.src.dependencies import get_async_session, init_redis_pool
+from backend.src.redis import RedisService, Keys
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{API_PREFIX_V1}/token")
 

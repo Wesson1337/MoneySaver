@@ -16,9 +16,9 @@ from backend.src.budget.services.account import get_account_by_id_db
 from backend.src.budget.services.spending import get_all_spendings_db, \
     get_spending_by_id_with_joined_receipt_account, create_spending_db, patch_spending_db, delete_spending_db, \
     get_spending_by_id
-from backend.src.dependencies import get_async_session
+from backend.src.dependencies import get_async_session, init_redis_pool
 from backend.src.exceptions import NotSuperUserException
-from backend.src.redis import RedisService, Keys, init_redis_pool
+from backend.src.redis import RedisService, Keys
 
 router = APIRouter()
 

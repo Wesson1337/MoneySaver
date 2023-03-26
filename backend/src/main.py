@@ -17,7 +17,8 @@ from backend.src.budget.config import Currencies
 from backend.src.budget.routers import account, income, spending
 from backend.src.config import API_PREFIX_V1, logger
 from backend.src.database import async_session
-from backend.src.redis import seed_redis_from_db, init_redis_pool
+from backend.src.redis import seed_redis_from_db
+from backend.src.dependencies import init_redis_pool
 
 sentry_sdk.init(
     dsn=config.SENTRY_SDK_DSN,

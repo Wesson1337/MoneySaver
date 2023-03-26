@@ -1,13 +1,15 @@
 import React, {useState} from 'react';
 import {useLocation} from "react-router-dom";
-import {INTERFACE_COLORS, OPERATIONS_ROUTE} from "../utils/consts";
+import {INTERFACE_COLORS, MAIN_PAGE_ROUTE, OPERATIONS_ROUTE} from "../utils/consts";
 import whitePlusIcon from "../static/icons/plus-add-create-new-cross-svgrepo-com.svg"
 import whiteMinusIcon from "../static/icons/minus-remove-subtract-delete-svgrepo-com.svg"
-import {Modal} from "react-bootstrap";
+import {Dropdown, DropdownButton, Modal} from "react-bootstrap";
+import AddRemoveModal from "./AddRemoveModal";
 
 const AddRemoveButtons = (props) => {
     const location = useLocation()
-    const isOperations = location.pathname === OPERATIONS_ROUTE
+    const isOperations = location.pathname === OPERATIONS_ROUTE || location.pathname === MAIN_PAGE_ROUTE
+    const [showAddModal, setShowAddModal] = useState(false)
     const [greenIsActive, setGreenIsActive] = useState(false)
     const [greenIsClick, setGreenIsClicked] = useState(false)
     return (
@@ -24,23 +26,18 @@ const AddRemoveButtons = (props) => {
                     background: INTERFACE_COLORS.GREEN
                 }}
                 className="d-flex align-items-center justify-content-center"
+                onClick={() => {setShowAddModal(true)}}
             >
                 <img
                     src={whitePlusIcon}
                     alt=""
                     width="25px"
                 />
-                <>
-                    {isOperations
-                        ?
-                        <Modal>
-
-                        </Modal>
-                        :
-                        null
-                    }
-                </>
             </button>
+            <AddRemoveModal
+                show={showAddModal}
+                setShow={setShowAddModal}
+            />
             <button
                 style={{
                     width: "56px",

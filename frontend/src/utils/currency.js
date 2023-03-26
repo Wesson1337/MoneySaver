@@ -11,6 +11,17 @@ export const convertCurrency = async (amount, baseCurrency, desiredCurrency) => 
     if (baseCurrency === desiredCurrency || amount === 0) {
         return amount
     }
-    const rate = await getCurrencyRate(baseCurrency, desiredCurrency)
+    let rate
+    const cachedRate = JSON.parse(localStorage.getItem(`${baseCurrency}-${desiredCurrency}`))
+    if (cachedRate && cachedRate["exp"] >= Math.floor(Date.now() / 1000)) {
+        rate = cachedRate["rate"]
+    } else {
+        rate = await getCurrencyRate(baseCurrency, desiredCurrency)
+        localStorage.setItem(`${baseCurrency}-${desiredCurrency}`, JSON.stringify(
+            {
+                rate: rate,
+                exp: Math.floor(new Date(Date.now() + 3 * 60 * 60 * 1000).getTime() / 1000)
+            }))
+    }
     return amount * rate
 }

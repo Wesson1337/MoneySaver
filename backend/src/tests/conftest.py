@@ -18,9 +18,9 @@ from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM
 from backend.src.auth.models import Base, User
 from backend.src.budget.config import Currencies, AccountTypes, SpendingCategories
 from backend.src.budget.models import Base, Account, Income, Spending
-from backend.src.dependencies import get_async_session
+from backend.src.dependencies import get_async_session, init_redis_pool
 from backend.src.main import app
-from backend.src.redis import init_redis_pool, seed_redis_from_db
+from backend.src.redis import seed_redis_from_db
 
 TEST_DATABASE_URL = "postgresql+asyncpg://" + config.TEST_DATABASE_URL
 

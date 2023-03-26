@@ -13,9 +13,9 @@ from backend.src.budget.models import Account
 from backend.src.budget.schemas.account import AccountSchemaOut, AccountSchemaIn, AccountSchemaPatch
 from backend.src.budget.services.account import get_all_accounts_by_user_db, create_account_db, \
     patch_account_db, get_account_by_id, get_account_by_id_db
-from backend.src.dependencies import get_async_session
+from backend.src.dependencies import get_async_session, init_redis_pool
 from backend.src.exceptions import NotSuperUserException
-from backend.src.redis import RedisService, init_redis_pool, Keys
+from backend.src.redis import RedisService, Keys
 
 router = APIRouter()
 

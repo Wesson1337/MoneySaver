@@ -1,7 +1,6 @@
 import json
 from typing import Type, Optional
 
-import aioredis
 import sqlalchemy
 from aioredis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,12 +15,6 @@ from backend.src.budget.schemas.account import AccountSchemaOut
 from backend.src.budget.schemas.income import IncomeSchemaOut
 from backend.src.budget.schemas.spending import SpendingSchemaOut
 from backend.src.database import Base
-
-
-async def init_redis_pool():
-    redis = aioredis.from_url(config.REDIS_URL, password=config.REDIS_PASSWORD, decode_responses=True)
-    yield redis
-    await redis.close()
 
 
 def prefixed_key(f):

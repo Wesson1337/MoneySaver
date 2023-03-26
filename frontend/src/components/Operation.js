@@ -1,5 +1,6 @@
 import React from 'react';
 import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS} from "../utils/consts";
+import {prettifyFloat} from "../utils/prettifyFloat";
 
 const Operation = (props) => {
     return (
@@ -15,7 +16,7 @@ const Operation = (props) => {
                         {props.category}
                     </p>
                     <p className="m-0 little-text text-nowrap">
-                        {props.type === "spending" ? "-" : "+"}{props.amount !== props.amountInAccountCurrency ? props.amountInAccountCurrency : props.amount} {CURRENCIES_AND_SYMBOLS[props.account["currency"]]}
+                        {props.type === "spending" ? "-" : "+"}{props.amount !== props.amountInAccountCurrency ? prettifyFloat(props.amountInAccountCurrency.toFixed(2)) : prettifyFloat(props.amount.toFixed(2))} {CURRENCIES_AND_SYMBOLS[props.account["currency"]]}
                     </p>
                 </div>
                 <div className="d-flex justify-content-between gap-3">

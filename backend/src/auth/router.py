@@ -13,9 +13,9 @@ from backend.src.auth.exceptions import IncorrectEmailOrPasswordException, Email
     UserNotFoundException
 from backend.src.auth.models import User
 from backend.src.auth.schemas import Token, UserSchemaOut, UserSchemaIn
-from backend.src.dependencies import get_async_session
+from backend.src.dependencies import get_async_session, init_redis_pool
 from backend.src.exceptions import NotSuperUserException
-from backend.src.redis import init_redis_pool, RedisService, Keys
+from backend.src.redis import RedisService, Keys
 
 router = APIRouter()
 

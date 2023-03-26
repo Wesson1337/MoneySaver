@@ -16,9 +16,9 @@ from backend.src.budget.services.account import get_account_by_id_db
 from backend.src.budget.services.income import create_income_db, delete_income_db, \
     get_certain_income_by_id, patch_income_db, get_income_by_id_with_joined_replenishment_account, \
     get_incomes_db
-from backend.src.dependencies import get_async_session
+from backend.src.dependencies import get_async_session, init_redis_pool
 from backend.src.exceptions import NotSuperUserException
-from backend.src.redis import init_redis_pool, RedisService, Keys
+from backend.src.redis import RedisService, Keys
 
 router = APIRouter()
 

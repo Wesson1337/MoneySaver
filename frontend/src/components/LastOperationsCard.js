@@ -59,7 +59,9 @@ const LastOperationsCard = (props) => {
     }
 
     return (
-        <MainPageCard navigateto={OPERATIONS_ROUTE} showModal={showModal} className="d-flex flex-column gap-3">
+        <MainPageCard navigateto={OPERATIONS_ROUTE} showModal={showModal} className="d-flex flex-column gap-3"
+                      style={{height: `calc(75px + ${45.633333 * amountOfOperations}px)`}}
+        >
             {isLoading
                 ?
                 <div className="d-flex justify-content-center"><Spinner variant="border"/></div>

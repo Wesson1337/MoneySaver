@@ -39,8 +39,12 @@ const AddRemoveOperationModal = ({show, setShow, type}) => {
             <Modal
                 show={show}
                 onHide={() => {
+                    setChosenCategory(null)
                     setShow(false)
-                }}>
+                }}
+                backdrop="static"
+                keyboard={false}
+            >
                 <Modal.Header closeButton>
                     <Modal.Title>New {type === "remove" ? "spending" : "income"}</Modal.Title>
                 </Modal.Header>

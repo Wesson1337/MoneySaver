@@ -16,7 +16,7 @@ from backend.src import config
 from backend.src.auth.config import JWT_SECRET_KEY, JWT_ALGORITHM
 # noinspection PyUnresolvedReferences
 from backend.src.auth.models import Base, User
-from backend.src.budget.config import Currencies, AccountTypes, SpendingCategories
+from backend.src.budget.config import Currencies, AccountTypes, SpendingCategories, IncomeCategories
 from backend.src.budget.models import Base, Account, Income, Spending
 from backend.src.dependencies import get_async_session, init_redis_pool
 from backend.src.main import app
@@ -80,51 +80,55 @@ PRELOAD_DATA = {
     "income_1": {
         "model": Income,
         "data": {
-            "name": "test_income_1",
+            "comment": "test_income_1",
             "user_id": 1,
             "currency": Currencies.USD,
             "amount": Decimal(1.4),
             "replenishment_account_id": 1,
-            "amount_in_account_currency_at_creation": Decimal(1.4)
+            "amount_in_account_currency_at_creation": Decimal(1.4),
+            "category": IncomeCategories.OTHER
         }
     },
     "income_2": {
         "model": Income,
         "data": {
-            "name": "test_income_2",
+            "comment": "test_income_2",
             "user_id": 1,
             "currency": Currencies.RUB,
             "amount": Decimal(6),
             "replenishment_account_id": 1,
-            "amount_in_account_currency_at_creation": Decimal(0.3)
+            "amount_in_account_currency_at_creation": Decimal(0.3),
+            "category": IncomeCategories.ODD_JOBS
         }
     },
     "income_3": {
         "model": Income,
         "data": {
-            "name": "test_income_3",
+            "comment": "test_income_3",
             "user_id": 1,
             "currency": Currencies.USD,
             "amount": Decimal(2),
             "replenishment_account_id": 1,
-            "amount_in_account_currency_at_creation": Decimal(9999)
+            "amount_in_account_currency_at_creation": Decimal(9999),
+            "category": IncomeCategories.SALARY
         }
     },
     "income_4": {
         "model": Income,
         "data": {
-            "name": "test_income_4",
+            "comment": "test_income_4",
             "user_id": 2,
             "currency": Currencies.RUB,
             "amount": Decimal(3.0),
             "replenishment_account_id": 2,
-            "amount_in_account_currency_at_creation": Decimal(3.0)
+            "amount_in_account_currency_at_creation": Decimal(3.0),
+            "category": IncomeCategories.OTHER
         }
     },
     "spending_1": {
         "model": Spending,
         "data": {
-            "name": "test_spending_1",
+            "comment": "test_spending_1",
             "user_id": 1,
             "currency": Currencies.USD,
             "amount": Decimal(1.0),
@@ -136,7 +140,7 @@ PRELOAD_DATA = {
     "spending_2": {
         "model": Spending,
         "data": {
-            "name": "test_spending_2",
+            "comment": "test_spending_2",
             "user_id": 2,
             "currency": Currencies.RUB,
             "amount": Decimal(1.0),
@@ -148,7 +152,7 @@ PRELOAD_DATA = {
     "spending_3": {
         "model": Spending,
         "data": {
-            "name": "test_spending_3",
+            "comment": "test_spending_3",
             "user_id": 1,
             "currency": Currencies.RUB,
             "amount": Decimal(60.0),
@@ -160,7 +164,7 @@ PRELOAD_DATA = {
     "spending_4": {
         "model": Spending,
         "data": {
-            "name": "test_spending_4",
+            "comment": "test_spending_4",
             "user_id": 2,
             "currency": Currencies.USD,
             "amount": Decimal(1.0),

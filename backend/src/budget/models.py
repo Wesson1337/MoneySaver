@@ -11,13 +11,14 @@ class Income(Base):
     __tablename__ = 'income'
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
-    name = sa.Column(sa.String(255), nullable=False)
     currency = sa.Column(sa.String(3), nullable=False)
+    category = sa.Column(sa.String(255), nullable=False)
     replenishment_account_id = sa.Column(sa.ForeignKey('account.id'), nullable=False)
     amount = sa.Column(sa.DECIMAL, nullable=False)
     amount_in_account_currency_at_creation = sa.Column(sa.DECIMAL, nullable=False)
     created_at = sa.Column(sa.DateTime(timezone=True), server_default=func.now(), nullable=False)
     user_id = sa.Column(sa.ForeignKey('user.id'), nullable=False)
+    comment = sa.Column(sa.String(255))
 
     user = relationship('User', back_populates='incomes')
     replenishment_account = relationship('Account', back_populates='incomes')
@@ -45,7 +46,6 @@ class Spending(Base):
     __tablename__ = 'spending'
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
-    name = sa.Column(sa.String(255), nullable=False)
     receipt_account_id = sa.Column(sa.ForeignKey('account.id'), nullable=False)
     category = sa.Column(sa.String(255), nullable=False)
     amount = sa.Column(sa.DECIMAL, nullable=False)
@@ -53,6 +53,7 @@ class Spending(Base):
     currency = sa.Column(sa.String(3), nullable=False)
     created_at = sa.Column(sa.DateTime(timezone=True), server_default=func.now(), nullable=False)
     user_id = sa.Column(sa.ForeignKey('user.id'), nullable=False)
+    comment = sa.Column(sa.String(255))
 
     user = relationship('User', back_populates='spendings')
     receipt_account = relationship('Account', back_populates='spendings')

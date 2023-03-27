@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
 import {Dropdown, DropdownButton, Modal} from "react-bootstrap";
-import {SPENDING_CATEGORIES} from "../utils/consts";
+import {INCOME_CATEGORIES, SPENDING_CATEGORIES} from "../utils/consts";
 
-const AddRemoveModal = ({show, setShow}) => {
+const AddRemoveOperationModal = ({show, setShow, type}) => {
     const [chosenCategory, setChosenCategory] = useState(null)
     return (
         <>
@@ -16,14 +16,14 @@ const AddRemoveModal = ({show, setShow}) => {
                 </Modal.Header>
                 <Modal.Body>
                     <DropdownButton id="dropdown-basic-button" title="Choose category">
-                        {Object.keys(SPENDING_CATEGORIES).map((category) => (
+                        {Object.values(type === "remove" ? SPENDING_CATEGORIES : INCOME_CATEGORIES).map((category) => (
                         <Dropdown.Item
-                            key={category}
-                            onClick={() => {setChosenCategory(SPENDING_CATEGORIES[category])}}
+                            key={category.name}
+                            onClick={() => {setChosenCategory(category)}}
                         >
                             <div className="d-flex justify-content-between align-items-center gap-3">
-                                <img src={SPENDING_CATEGORIES[category].icon} alt="" height="25px"/>
-                                <p className="m-0" style={{minWidth: "145.13px"}}>{SPENDING_CATEGORIES[category].name}</p>
+                                <img src={category.icon} alt="" height="25px"/>
+                                <p className="m-0" style={{minWidth: "145.13px"}}>{category.name}</p>
                             </div>
                         </Dropdown.Item>
                         ))}
@@ -34,4 +34,4 @@ const AddRemoveModal = ({show, setShow}) => {
     );
 };
 
-export default AddRemoveModal;
+export default AddRemoveOperationModal;

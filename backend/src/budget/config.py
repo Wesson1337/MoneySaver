@@ -31,6 +31,16 @@ class AccountTypes(str, Enum):
     BANK_ACCOUNT = 'BANK_ACCOUNT'
 
 
+class IncomeCategories(str, Enum):
+    def __str__(self):
+        return self.value
+
+    SALARY = "SALARY"
+    ODD_JOBS = "ODD_JOBS"
+    FROM_INVESTMENTS = "FROM_INVESTMENTS"
+    OTHER = "OTHER"
+
+
 class SpendingCategories(str, Enum):
     """
     Enum type of spending categories supported in app

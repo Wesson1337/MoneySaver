@@ -192,7 +192,7 @@ async def test_get_nonexistent_spending(
 
 @pytest.mark.parametrize('spending_data', [
     {
-        "name": "test_spending",
+        "comment": "test_spending",
         "user_id": 1,
         "currency": Currencies.USD,
         "receipt_account_id": 1,
@@ -200,7 +200,7 @@ async def test_get_nonexistent_spending(
         "category": SpendingCategories.TAXI
     },
     {
-        "name": "test_spending",
+        "comment": "test_spending",
         "user_id": 2,
         "currency": Currencies.RUB,
         "receipt_account_id": 2,
@@ -246,7 +246,7 @@ async def test_create_spending_with_different_currency_from_account(
         redis: Redis
 ):
     spending_data = {
-        "name": "test_spending",
+        "comment": "test_spending",
         "user_id": 1,
         "currency": Currencies.CNY,
         "receipt_account_id": 1,
@@ -286,7 +286,7 @@ async def test_create_spending_with_different_currency_from_account(
 
 @pytest.mark.parametrize('spending_data, status_code, detail', [
     ({
-         "name": "test_spending",
+         "comment": "test_spending",
          "user_id": 1,
          "currency": "dsdsafdsf",
          "receipt_account_id": 1,
@@ -294,7 +294,7 @@ async def test_create_spending_with_different_currency_from_account(
          "category": SpendingCategories.TAXI
      }, 422, None),
     ({
-         "name": "test_spending",
+         "comment": "test_spending",
          "user_id": 1,
          "currency": Currencies.USD,
          "receipt_account_id": 1,
@@ -302,7 +302,7 @@ async def test_create_spending_with_different_currency_from_account(
          "category": SpendingCategories.TAXI
      }, 422, None),
     ({
-         "name": "test_spending",
+         "comment": "test_spending",
          "user_id": 1,
          "currency": Currencies.USD,
          "receipt_account_id": 1,
@@ -310,7 +310,7 @@ async def test_create_spending_with_different_currency_from_account(
          "category": "djafjdfjsajf"
      }, 422, None),
     ({
-         "name": "test_spending",
+         "comment": "test_spending",
          "user_id": 1,
          "currency": Currencies.USD,
          "receipt_account_id": 1,
@@ -318,7 +318,7 @@ async def test_create_spending_with_different_currency_from_account(
          "category": SpendingCategories.TAXI
      }, 422, None),
     ({
-        "name": "test_spending",
+        "comment": "test_spending",
         "user_id": 1,
         "currency": Currencies.USD,
         "receipt_account_id": 1,
@@ -326,7 +326,7 @@ async def test_create_spending_with_different_currency_from_account(
         "category": SpendingCategories.TAXI
     }, 422, None),
     ({
-         "name": "test_spending",
+         "comment": "test_spending",
          "user_id": 1,
          "currency": Currencies.USD,
          "receipt_account_id": 2,
@@ -334,7 +334,7 @@ async def test_create_spending_with_different_currency_from_account(
          "category": SpendingCategories.TAXI
      }, 400, AccountNotBelongsToUserException(2, 1).detail),
     ({
-         "name": "test_spending",
+         "comment": "test_spending",
          "user_id": 1,
          "currency": Currencies.USD,
          "receipt_account_id": 9999,
@@ -342,7 +342,7 @@ async def test_create_spending_with_different_currency_from_account(
          "category": SpendingCategories.TAXI
      }, 400, AccountNotExistsException(9999).detail),
     ({
-         "name": "test_spending",
+         "comment": "test_spending",
          "user_id": 999,
          "currency": Currencies.USD,
          "receipt_account_id": 1,
@@ -350,7 +350,7 @@ async def test_create_spending_with_different_currency_from_account(
          "category": SpendingCategories.TAXI
      }, 400, AccountNotBelongsToUserException(1, 999).detail),
     ({
-         "name": "test_spending",
+         "comment": "test_spending",
          "user_id": 1,
          "currency": Currencies.USD,
          "receipt_account_id": 1,
@@ -381,7 +381,7 @@ async def test_patch_spending(
         client: AsyncClient
 ):
     spending_data = {
-        "name": "test_spending",
+        "comment": "test_spending",
         "amount": 0.9
     }
     get_response = await client.get(
@@ -400,7 +400,7 @@ async def test_patch_spending(
     assert patch_response.status_code == 200
 
     patched_spending = patch_response.json()
-    assert patched_spending['name'] == spending_data['name']
+    assert patched_spending['comment'] == spending_data['comment']
     assert patched_spending['amount'] == spending_data['amount']
     assert patched_spending['amount_in_account_currency_at_creation'] == spending_data['amount']
 
@@ -412,11 +412,11 @@ async def test_patch_spending(
 
 @pytest.mark.parametrize('spending_data', [
     {
-        "name": "test_spending",
+        "comment": "test_spending",
         "amount": 11
     },
     {
-        "name": "test",
+        "comment": "test",
         "amount": 23
     }
 ])
@@ -449,7 +449,7 @@ async def test_patch_spending_with_different_currency_from_account(
     assert patch_response.status_code == 200
 
     patched_spending = patch_response.json()
-    assert patched_spending['name'] == spending_data['name']
+    assert patched_spending['comment'] == spending_data['comment']
     assert patched_spending['amount'] == spending_data['amount']
     assert Decimal(patched_spending['amount_in_account_currency_at_creation']).quantize(Decimal('.01')) == \
            (Decimal(stored_spending['amount_in_account_currency_at_creation']) +

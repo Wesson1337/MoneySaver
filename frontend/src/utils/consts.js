@@ -12,6 +12,9 @@ import clothingIcon from '../static/icons/categories_icons/clothing-svgrepo-com.
 import beautyIcon from '../static/icons/categories_icons/cosmetics-svgrepo-com.svg'
 import homeImprovementIcon from '../static/icons/categories_icons/home-svgrepo-com.svg'
 import otherIcon from '../static/icons/categories_icons/other-income-svgrepo-com.svg'
+import salaryIcon from '../static/icons/categories_icons/salary-svgrepo-com.svg'
+import oddJobsIcon from '../static/icons/categories_icons/scope-transactions-read-svgrepo-com.svg'
+import fromInvestmentIcon from '../static/icons/categories_icons/sales-amount-svgrepo-com.svg'
 
 export const LOGIN_ROUTE = '/login'
 export const REGISTRATION_ROUTE = '/registration'
@@ -41,6 +44,24 @@ export const CURRENCIES_AND_SYMBOLS = {
 export const INTERFACE_COLORS = {
     GREEN: "rgb(37,154,42)",
     RED: "#d93838"
+}
+
+export const INCOME_CATEGORIES = {
+    SALARY: {
+        name: "Salary",
+        nameForRequest: "SALARY",
+        icon: salaryIcon
+    },
+    ODD_JOBS: {
+        name: "Odd Jobs",
+        nameForRequest: "ODD_JOBS",
+        icon: oddJobsIcon
+    },
+    FROM_INVESTMENTS: {
+        name: "From Investments",
+        nameForRequest: "FROM_INVESTMENTS",
+        icon: fromInvestmentIcon
+    }
 }
 
 export const SPENDING_CATEGORIES = {

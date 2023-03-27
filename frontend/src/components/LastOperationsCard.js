@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
-import {OPERATIONS_ROUTE, SPENDING_CATEGORIES} from "../utils/consts";
+import {INCOME_CATEGORIES, OPERATIONS_ROUTE, SPENDING_CATEGORIES} from "../utils/consts";
 import {Button, Col, Form, Modal, Row, Spinner} from "react-bootstrap";
 import Operation from "./Operation";
 import ShowMoreModal from "./ShowMoreModal";
@@ -139,11 +139,11 @@ const LastOperationsCard = (props) => {
                                 amount={o.amount}
                                 amountInAccountCurrency={o["amount_in_account_currency_at_creation"]}
                                 currency={o.currency}
-                                type={o["category"] ? "spending" : "income"}
-                                category={o["category"] ? SPENDING_CATEGORIES[o["category"]].name : o["name"]}
+                                type={o["receipt_account"] ? "spending" : "income"}
+                                category={o["receipt_account"] ? SPENDING_CATEGORIES[o["category"]].name : INCOME_CATEGORIES[o["category"]].name}
                                 date={o["created_at"]}
-                                icon={o["category"] ? SPENDING_CATEGORIES[o["category"]].icon : null}
-                                account={o["category"] ? o["receipt_account"] : o["replenishment_account"]}
+                                icon={o["receipt_account"] ? SPENDING_CATEGORIES[o["category"]].icon : INCOME_CATEGORIES[o["category"]].icon}
+                                account={o["receipt_account"] ? o["receipt_account"] : o["replenishment_account"]}
                             />)}
                     </div>
                 </>}

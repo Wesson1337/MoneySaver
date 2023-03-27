@@ -6,7 +6,7 @@ import pytest
 from aioredis import Redis
 from httpx import AsyncClient
 
-from backend.src.budget.config import Currencies
+from backend.src.budget.config import Currencies, IncomeCategories
 from backend.src.budget.exceptions import IncomeNotFoundException, AccountNotFoundException, \
     AccountNotBelongsToUserException, AccountNotExistsException, \
     AccountBalanceWillGoNegativeException
@@ -178,9 +178,10 @@ async def test_get_certain_income(
 
     response_income = response.json()
 
-    assert preloaded_income[0]['name'] == response_income['name']
+    assert preloaded_income[0]['comment'] == response_income['comment']
     assert preloaded_income[0]['amount'] == response_income['amount']
     assert preloaded_income[0]['currency'] == response_income['currency']
+    assert preloaded_income[0]['category'] == response_income['category']
 
 
 async def test_get_nonexistent_income(
@@ -198,18 +199,20 @@ async def test_get_nonexistent_income(
 
 @pytest.mark.parametrize('income_data', [
     {
-        "name": "test_income",
+        "comment": "test_income",
         "user_id": 1,
         "currency": Currencies.USD,
         "replenishment_account_id": 1,
-        "amount": 2.30
+        "amount": 2.30,
+        "category": IncomeCategories.OTHER
     },
     {
-        "name": "test_income",
+        "comment": "test_income",
         "user_id": 2,
         "currency": Currencies.RUB,
         "replenishment_account_id": 2,
-        "amount": 200
+        "amount": 200,
+        "category": IncomeCategories.ODD_JOBS
     }
 ])
 async def test_create_income(
@@ -226,12 +229,13 @@ async def test_create_income(
 
     income_json = response.json()
 
-    assert income_json['name'] == income_data['name']
+    assert income_json['comment'] == income_data['comment']
     assert income_json['currency'] == income_data['currency']
     assert income_json['replenishment_account']['id'] == income_data['replenishment_account_id']
     assert income_json['amount'] == income_data['amount']
     assert income_json['amount_in_account_currency_at_creation'] == \
            income_data['amount']
+    assert income_json['category'] == income_data['category']
 
     preloaded_account = [
         PRELOAD_DATA[name]['data'] for name in PRELOAD_DATA
@@ -252,11 +256,12 @@ async def test_create_income_with_different_currency_from_account(
         redis: Redis
 ):
     income_data = {
-        "name": "test_income",
+        "comment": "test_income",
         "user_id": 1,
         "currency": "CNY",
         "replenishment_account_id": 1,
-        "amount": 2.30
+        "amount": 2.30,
+        "category": IncomeCategories.OTHER
     }
 
     get_income_response = await client.get(
@@ -282,7 +287,8 @@ async def test_create_income_with_different_currency_from_account(
 
     income_json = create_income_response.json()
 
-    assert income_json['name'] == income_data['name']
+    assert income_json['category'] == income_data['category']
+    assert income_json['comment'] == income_data['comment']
     assert income_json['currency'] == income_data['currency']
     assert income_json['replenishment_account']['id'] == income_data['replenishment_account_id']
     assert income_json['amount'] == income_data['amount']
@@ -294,45 +300,51 @@ async def test_create_income_with_different_currency_from_account(
 
 @pytest.mark.parametrize('income_data, status_code, detail', [
     ({
-         "name": "test_income",
+         "comment": "test_income",
          "user_id": 1,
          "currency": "dffjdjj",
          "replenishment_account_id": 1,
-         "amount": 2.30
+         "amount": 2.30,
+         "category": IncomeCategories.OTHER
      }, 422, None),
     ({
-         "name": "test_income",
+         "comment": "test_income",
          "currency": Currencies.RUB,
          "replenishment_account_id": 2,
-         "amount": 200
+         "amount": 200,
+         "category": IncomeCategories.OTHER
      }, 422, None),
     ({
-         "name": "test_income",
+         "comment": "test_income",
          "user_id": 1,
          "currency": "USD",
          "replenishment_account_id": 1,
-         "amount": 2.3333
+         "amount": 2.3333,
+         "category": IncomeCategories.OTHER
      }, 422, None),
     ({
-         "name": "test_income",
+         "comment": "test_income",
          "user_id": 1,
          "currency": "USD",
          "replenishment_account_id": 2,
-         "amount": 2.33
+         "amount": 2.33,
+         "category": IncomeCategories.OTHER
      }, 400, AccountNotBelongsToUserException(2, 1).detail),
     ({
-         "name": "test_income",
+         "comment": "test_income",
          "user_id": 1,
          "currency": "USD",
          "replenishment_account_id": 999,
-         "amount": 2.33
+         "amount": 2.33,
+         "category": IncomeCategories.OTHER
      }, 400, AccountNotExistsException(999).detail),
     ({
-         "name": "test_income",
+         "comment": "test_income",
          "user_id": 999,
          "currency": "USD",
          "replenishment_account_id": 1,
-         "amount": 2.33
+         "amount": 2.33,
+         "category": IncomeCategories.OTHER
      }, 400, AccountNotBelongsToUserException(1, 999).detail),
     ({}, 422, None)
 ])
@@ -358,8 +370,9 @@ async def test_income_patch(
         client: AsyncClient
 ):
     income_data = {
-        "name": "test_income",
-        "amount": 0.9
+        "comment": "test_income",
+        "amount": 0.9,
+        "category": IncomeCategories.ODD_JOBS
     }
     get_income_response = await client.get(
         f'{API_PREFIX_V1}/budget/incomes/1/',
@@ -377,8 +390,9 @@ async def test_income_patch(
     assert response.status_code == 200
 
     income_json = response.json()
-    assert income_json['name'] == income_data['name']
+    assert income_json['comment'] == income_data['comment']
     assert income_json['amount'] == income_data['amount']
+    assert income_json['category'] == income_data['category']
     assert income_json['amount_in_account_currency_at_creation'] == \
            income_data['amount']
 
@@ -391,12 +405,14 @@ async def test_income_patch(
 @pytest.mark.parametrize(
     'income_data', [
         {
-            "name": "test_income",
-            "amount": 60
+            "comment": "test_income",
+            "amount": 60,
+            "category": IncomeCategories.SALARY
         },
         {
-            "name": "test",
-            "amount": 1
+            "comment": "test",
+            "amount": 1,
+            "category": IncomeCategories.OTHER
         }
     ]
 )
@@ -430,7 +446,8 @@ async def test_income_patch_with_different_currency_from_account(
     assert response.status_code == 200
 
     income_json = response.json()
-    assert income_json['name'] == income_data['name']
+    assert income_json['category'] == income_data['category']
+    assert income_json['comment'] == income_data['comment']
     assert income_json['amount'] == income_data['amount']
     assert stored_income['amount'] != income_json['amount']
     assert Decimal(income_json['amount_in_account_currency_at_creation']).quantize(Decimal('.01')) == \

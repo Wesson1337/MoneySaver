@@ -4,7 +4,7 @@ import pytest
 from httpx import AsyncClient
 from pytest_lazyfixture import lazy_fixture
 
-from backend.src.budget.config import Currencies, AccountTypes, SpendingCategories
+from backend.src.budget.config import Currencies, AccountTypes, SpendingCategories, IncomeCategories
 from backend.src.config import API_PREFIX_V1
 
 pytestmark = pytest.mark.asyncio
@@ -171,10 +171,11 @@ async def test_certain_spending_auth(
 
 @pytest.mark.parametrize('url, data', [
     (f'{API_PREFIX_V1}/budget/incomes/', {
-        "name": "test_income",
+        "comment": "test_income",
         "currency": Currencies.USD,
         "replenishment_account_id": 2,
         "amount": 2.0,
+        "category": IncomeCategories.OTHER
     }),
     (f'{API_PREFIX_V1}/budget/accounts/', {
         "name": "test_account",

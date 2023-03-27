@@ -4,7 +4,7 @@ import {INTERFACE_COLORS, MAIN_PAGE_ROUTE, OPERATIONS_ROUTE} from "../utils/cons
 import whitePlusIcon from "../static/icons/plus-add-create-new-cross-svgrepo-com.svg"
 import whiteMinusIcon from "../static/icons/minus-remove-subtract-delete-svgrepo-com.svg"
 import {Dropdown, DropdownButton, Modal} from "react-bootstrap";
-import AddRemoveModal from "./AddRemoveModal";
+import AddRemoveOperationModal from "./AddRemoveOperationModal";
 
 const AddRemoveButtons = (props) => {
     const location = useLocation()
@@ -34,7 +34,7 @@ const AddRemoveButtons = (props) => {
                     width="25px"
                 />
             </button>
-            <AddRemoveModal
+            <AddRemoveOperationModal
                 show={showAddModal}
                 setShow={setShowAddModal}
             />

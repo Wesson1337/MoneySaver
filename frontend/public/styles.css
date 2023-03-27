@@ -12,3 +12,11 @@
 .little-text {
     font-size: 14px;
 }
+
+.dropdown-categories:active {
+    background-color: #8c969f;
+}
+
+.btn-categories:hover {
+    background-color: #8c969f;
+}

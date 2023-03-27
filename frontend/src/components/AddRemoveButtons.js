@@ -10,6 +10,7 @@ const AddRemoveButtons = (props) => {
     const location = useLocation()
     const isOperations = location.pathname === OPERATIONS_ROUTE || location.pathname === MAIN_PAGE_ROUTE
     const [showAddModal, setShowAddModal] = useState(false)
+    const [showRemoveModal, setShowRemoveModal] = useState(false)
     const [greenIsActive, setGreenIsActive] = useState(false)
     const [greenIsClick, setGreenIsClicked] = useState(false)
     return (
@@ -34,10 +35,17 @@ const AddRemoveButtons = (props) => {
                     width="25px"
                 />
             </button>
+            {
+                isOperations
+                    ?
             <AddRemoveOperationModal
                 show={showAddModal}
                 setShow={setShowAddModal}
+                type="add"
             />
+                    :
+                    null
+            }
             <button
                 style={{
                     width: "56px",
@@ -47,6 +55,7 @@ const AddRemoveButtons = (props) => {
                     background: INTERFACE_COLORS.RED
                 }}
                 className="d-flex align-items-center justify-content-center"
+                onClick={() => {setShowRemoveModal(true)}}
             >
                 <img
                     src={whiteMinusIcon}
@@ -55,6 +64,17 @@ const AddRemoveButtons = (props) => {
                     color="white"
                 />
             </button>
+            {
+                isOperations
+                    ?
+                    <AddRemoveOperationModal
+                        show={showRemoveModal}
+                        setShow={setShowRemoveModal}
+                        type="remove"
+                    />
+                    :
+                    null
+            }
         </div>
     );
 };

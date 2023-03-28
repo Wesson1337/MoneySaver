@@ -4,7 +4,6 @@ import {check} from "./http/userAPI";
 import {Spinner} from "react-bootstrap";
 import NavBar from "./components/NavBar";
 import AppRouter from "./components/AppRouter";
-import {getCurrencyRate} from "./http/currencyAPI";
 
 function App() {
     const {setUser} = useAuth()

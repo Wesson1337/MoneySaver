@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
-import {ACCOUNTS_ROUTE, CURRENCIES_AND_SYMBOLS, SUPPORTED_CURRENCIES} from "../utils/consts";
-import {ProgressBar, Spinner} from "react-bootstrap";
-import {convertCurrency} from "../utils/currency";
+import {ACCOUNTS_ROUTE} from "../utils/consts";
+import {Spinner} from "react-bootstrap";
 import Currency from "./Currency";
 import Sort from "./Sort";
 
@@ -37,21 +36,22 @@ const CurrenciesBudgetCard = (props) => {
 
     return (
         <MainPageCard navigateto={ACCOUNTS_ROUTE} showModal={showModal}>
-            {isLoading ? <div className="d-flex justify-content-center align-items-center"><Spinner variant="border"/></div> :
+            {isLoading ?
+                <div className="d-flex justify-content-center align-items-center"><Spinner variant="border"/></div> :
                 <div className="d-flex flex-column gap-3">
                     <b className="text-nowrap">Balance (Currencies)</b>
                     <div className="d-flex flex-column gap-2">
-                    <Sort by="percent">
-                        {Object.keys(currenciesAndBalance).map((currency) => (
-                            <Currency
-                                key={currency}
-                                currency={currency}
-                                balance={currenciesAndBalance[currency]["balance"]}
-                                percent={((currenciesAndBalance[currency]["USD"] / totalBalanceInUSD) * 100).toFixed(0)}
-                            />
-                        ))}
-                    </Sort>
-                        </div>
+                        <Sort by="percent">
+                            {Object.keys(currenciesAndBalance).map((currency) => (
+                                <Currency
+                                    key={currency}
+                                    currency={currency}
+                                    balance={currenciesAndBalance[currency]["balance"]}
+                                    percent={((currenciesAndBalance[currency]["USD"] / totalBalanceInUSD) * 100).toFixed(0)}
+                                />
+                            ))}
+                        </Sort>
+                    </div>
                 </div>
             }
 

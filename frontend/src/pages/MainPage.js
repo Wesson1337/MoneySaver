@@ -6,7 +6,6 @@ import {ErrorComponent} from "../components/ErrorComponent";
 import BudgetCard from "../components/BudgetCard";
 import MonthOperationsCard from "../components/MonthOperationsCard";
 import {getAllOperations} from "../http/operationsAPI";
-import {getCurrencyRate} from "../http/currencyAPI";
 import {SUPPORTED_CURRENCIES} from "../utils/consts";
 import LastOperationsCard from "../components/LastOperationsCard";
 import CurrenciesBudgetCard from "../components/CurrenciesBudgetCard";

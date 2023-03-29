@@ -35,8 +35,8 @@ const MonthOperationsCard = (props) => {
                 income => new Date(income["created_at"]) >= date
             )
         } else {
-            date.setMonth(date.getMonth() - 1)
             date.setDate(1)
+            date.setMonth(date.getMonth() - 1)
             filteredSpendings = operations.spendings.filter(
                 spending => new Date(spending["created_at"]) >= date
                     && new Date(spending["created_at"]) < new Date(date.getFullYear(), date.getMonth() + 1, 1)

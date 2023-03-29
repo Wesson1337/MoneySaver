@@ -34,8 +34,8 @@ const MainPage = () => {
             const firstDayOfPreviousMonth = new Date(
                 currentDate.getFullYear(),
                 currentDate.getMonth() - 1,
-                1).toISOString().replace("Z", "")
-            currentDate = currentDate.toISOString().replace("Z", "")
+                1).toISOString()
+            currentDate = currentDate.toISOString()
             operations = await getAllOperations(
                 null,
                 firstDayOfPreviousMonth,

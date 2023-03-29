@@ -100,7 +100,7 @@ const LastOperationsCard = (props) => {
                                                         min={1}
                                                         max={15}
                                                         autoFocus
-                                                        value={tempAmount}
+                                                        value={tempAmount ? tempAmount : null}
                                                         onChange={(e) => {
                                                             setTempAmount(Number(e.target.value))
                                                         }}

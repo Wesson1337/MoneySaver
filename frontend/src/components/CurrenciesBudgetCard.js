@@ -6,7 +6,6 @@ import Currency from "./Currency";
 import Sort from "./Sort";
 
 const CurrenciesBudgetCard = (props) => {
-    const [showModal, setShowModal] = useState(false)
     const [currenciesAndBalance, setCurrenciesAndBalance] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const [totalBalanceInUSD, setTotalBalanceInUSD] = useState(null)
@@ -35,7 +34,7 @@ const CurrenciesBudgetCard = (props) => {
     }, [])
 
     return (
-        <MainPageCard navigateto={ACCOUNTS_ROUTE} showModal={showModal}>
+        <MainPageCard navigateto={ACCOUNTS_ROUTE}>
             {isLoading ?
                 <div className="d-flex justify-content-center align-items-center"><Spinner variant="border"/></div> :
                 <div className="d-flex flex-column gap-3">
@@ -47,7 +46,7 @@ const CurrenciesBudgetCard = (props) => {
                                     key={currency}
                                     currency={currency}
                                     balance={currenciesAndBalance[currency]["balance"]}
-                                    percent={((currenciesAndBalance[currency]["USD"] / totalBalanceInUSD) * 100).toFixed(0)}
+                                    percent={((currenciesAndBalance[currency]["USD"] / totalBalanceInUSD) * 100).toFixed(2)}
                                 />
                             ))}
                         </Sort>

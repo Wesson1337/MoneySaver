@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {CURRENCIES_AND_SYMBOLS} from "../utils/consts";
 import {ProgressBar} from "react-bootstrap";
 import {prettifyFloat} from "../utils/prettifyFloat";
@@ -20,7 +20,7 @@ const Currency = (props) => {
                 />
                 <p
                     className="m-0 text-nowrap little-text"
-                    style={{minWidth: "35.5px", textAlign: "right"}}
+                    style={{minWidth: "60px", textAlign: "right"}}
                 >{props.percent} %</p>
             </div>
         </div>

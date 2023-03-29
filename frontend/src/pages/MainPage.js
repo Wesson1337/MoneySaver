@@ -19,8 +19,10 @@ const MainPage = () => {
     const [errorMsg, setErrorMsg] = useState(null)
 
     const addUSDBalanceToAccounts = async (accounts) => {
+        let balanceInUSD
         for (const account of accounts) {
-            account["balanceInUSD"] = await convertCurrency(account["balance"], account["currency"], SUPPORTED_CURRENCIES.USD)
+            balanceInUSD = await convertCurrency(account["balance"], account["currency"], SUPPORTED_CURRENCIES.USD)
+            account["balanceInUSD"] = Number(balanceInUSD.toFixed(5))
         }
         return accounts
     }

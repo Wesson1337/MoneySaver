@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {CURRENCIES_AND_SYMBOLS} from "../utils/consts";
 import {ProgressBar} from "react-bootstrap";
 import {prettifyFloat} from "../utils/prettifyFloat";

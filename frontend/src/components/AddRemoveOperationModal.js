@@ -35,66 +35,68 @@ const AddRemoveOperationModal = ({show, setShow, type}) => {
     const [chosenCategory, setChosenCategory] = useState(null)
     const [enteredAmount, setEnteredAmount] = useState(null)
     return (<>
-            <Modal
-                size="lg"
-                show={show}
-                onHide={() => {
-                    setChosenCategory(null)
-                    setShow(false)
-                }}
-                backdrop="static"
-                keyboard={false}
-            >
-                <Modal.Header closeButton>
-                    <Modal.Title>New {isRemove ? "spending" : "income"}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Row>
-                            <Form.Group as={Col}>
-                                <Form.Label className="little-text mb-1">Category</Form.Label>
-                                <Select
-                                    placeholder="Select category..."
-                                    onChange={(v) => {
-                                        setChosenCategory(isRemove ? SPENDING_CATEGORIES[v["value"]] : INCOME_CATEGORIES[v["value"]])
+        <Modal
+            size="lg"
+            show={show}
+            onHide={() => {
+                setChosenCategory(null)
+                setShow(false)
+            }}
+            backdrop="static"
+            keyboard={false}
+        >
+            <Modal.Header closeButton>
+                <Modal.Title>New {isRemove ? "spending" : "income"}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form>
+                    <Row>
+                        <Form.Group as={Col}>
+                            <Form.Label className="little-text mb-1">Category</Form.Label>
+                            <Select
+                                placeholder="Select category..."
+                                onChange={(v) => {
+                                    setChosenCategory(isRemove ? SPENDING_CATEGORIES[v["value"]] : INCOME_CATEGORIES[v["value"]])
+                                }}
+                                options={categories}
+                                styles={{
+                                    control: (baseStyles, state) => ({
+                                        ...baseStyles,
+                                        minWidth: "200px"
+                                    }),
+                                }}
+                            />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label className="little-text mb-1">Amount</Form.Label>
+                            <div className="d-flex">
+                                <Form.Control
+                                    value={enteredAmount ? enteredAmount : null}
+                                    onChange={(e) => {
+                                        setEnteredAmount(e.target.value)
                                     }}
-                                    options={categories}
+                                    type="number"
+                                    style={{minWidth: "150px"}}
+                                />
+                                <Select
+                                    placeholder=""
                                     styles={{
                                         control: (baseStyles, state) => ({
                                             ...baseStyles,
-                                            minWidth: "200px"
+                                            minWidth: "90px"
                                         }),
                                     }}
+                                    options={currencies}
                                 />
-                            </Form.Group>
-                            <Form.Group as={Col}>
-                                <Form.Label className="little-text mb-1">Amount</Form.Label>
-                                <div className="d-flex">
-                                    <Form.Control
-                                        value={enteredAmount ? enteredAmount : null}
-                                        onChange={(e) => {setEnteredAmount(e.target.value)}}
-                                                  type="number"
-                                                  style={{minWidth: "150px"}}
-                                    />
-                                    <Select
-                                        placeholder=""
-                                        styles={{
-                                            control: (baseStyles, state) => ({
-                                                ...baseStyles,
-                                                minWidth: "90px"
-                                            }),
-                                        }}
-                                        options={currencies}
-                                    />
 
 
-                                </div>
-                            </Form.Group>
-                        </Row>
-                    </Form>
-                </Modal.Body>
-            </Modal>
-        </>);
+                            </div>
+                        </Form.Group>
+                    </Row>
+                </Form>
+            </Modal.Body>
+        </Modal>
+    </>);
 };
 
 export default AddRemoveOperationModal;

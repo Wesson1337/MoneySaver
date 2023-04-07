@@ -1,12 +1,30 @@
 import React, {useEffect, useState} from 'react';
 import {Col, Form, Modal, Row} from "react-bootstrap";
-import {CURRENCIES_AND_SYMBOLS, INCOME_CATEGORIES, SPENDING_CATEGORIES} from "../utils/consts";
+import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INCOME_CATEGORIES, SPENDING_CATEGORIES} from "../utils/consts";
 import Select from "react-select";
+import {prettifyFloat} from "../utils/prettifyFloat";
 
-const AddRemoveOperationModal = ({show, setShow, type}) => {
+const AddRemoveOperationModal = ({show, setShow, type, data}) => {
     const isRemove = type === "remove"
     const [categories, setCategories] = useState(null)
     const [currencies, setCurrencies] = useState(null)
+    const [accounts, setAccounts] = useState(null)
+
+    useEffect(() => {
+        let tempAccounts = []
+        data.accounts.forEach((account) => {
+            let newAccount = {}
+            newAccount["label"] =
+                <div className="d-flex justify-content-between">
+                    <p className="m-0">{`${account["name"] ? account["name"] : 'Unnamed account'} (${ACCOUNT_TYPES[account["type"]].name})`}</p>
+                    <p className="m-0">{`${prettifyFloat(account["balance"])} ${CURRENCIES_AND_SYMBOLS[account["currency"]]}`}</p>
+                </div>
+            newAccount["value"] = account["id"]
+            tempAccounts.push(newAccount)
+        })
+        setAccounts(tempAccounts)
+    }, [])
+
     useEffect(() => {
         let tempCurrencies = []
         Object.entries(CURRENCIES_AND_SYMBOLS).forEach(([key, value]) => {
@@ -32,6 +50,7 @@ const AddRemoveOperationModal = ({show, setShow, type}) => {
         setCategories(tempCategories)
     }, [])
 
+    const [chosenCurrency, setChosenCurrency] = useState(null)
     const [chosenCategory, setChosenCategory] = useState(null)
     const [enteredAmount, setEnteredAmount] = useState(null)
     return (<>
@@ -49,7 +68,7 @@ const AddRemoveOperationModal = ({show, setShow, type}) => {
                 <Modal.Title>New {isRemove ? "spending" : "income"}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Form>
+                <Form className="d-flex flex-column gap-3">
                     <Row>
                         <Form.Group as={Col}>
                             <Form.Label className="little-text mb-1">Category</Form.Label>
@@ -87,11 +106,28 @@ const AddRemoveOperationModal = ({show, setShow, type}) => {
                                         }),
                                     }}
                                     options={currencies}
+                                    onChange={(v) => {setChosenCurrency(v)}}
                                 />
-
-
                             </div>
                         </Form.Group>
+                    </Row>
+                    <Row>
+                        <Form.Group as={Col}>
+                            <Form.Label className="little-text mb-1">Account</Form.Label>
+                            <Select
+                                placeholder="Select account..."
+                                styles={{
+                                    control: (baseStyles, state) => ({
+                                        ...baseStyles,
+                                        minWidth: "90px"
+                                    }),
+                                }}
+                                options={accounts}
+                            />
+                        </Form.Group>
+                        <Col>
+
+                        </Col>
                     </Row>
                 </Form>
             </Modal.Body>

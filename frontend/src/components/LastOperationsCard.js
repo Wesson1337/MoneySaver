@@ -137,10 +137,8 @@ const LastOperationsCard = (props) => {
                         {operations.map((o, index) =>
                             <Operation
                                 key={`operation-${index}`}
-                                name={o.name}
                                 amount={o.amount}
                                 amountInAccountCurrency={o["amount_in_account_currency_at_creation"]}
-                                currency={o.currency}
                                 type={o["receipt_account"] ? "spending" : "income"}
                                 category={o["receipt_account"] ? SPENDING_CATEGORIES[o["category"]].name : INCOME_CATEGORIES[o["category"]].name}
                                 date={o["created_at"]}

@@ -2,36 +2,36 @@ import React from 'react';
 import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS} from "../utils/consts";
 import {prettifyFloat} from "../utils/prettifyFloat";
 
-const Operation = (props) => {
+const Operation = ({icon, category, type, amount, amountInAccountCurrency, account, date}) => {
     return (
         <div className="d-flex gap-2 align-items-center">
             <img
-                src={props.icon}
+                src={icon}
                 style={{height: "40px"}}
                 alt=""
             />
             <div className="w-100">
                 <div className="d-flex justify-content-between gap-3">
                     <p className="m-0 little-text text-nowrap">
-                        {props.category}
+                        {category}
                     </p>
                     <p className="m-0 little-text text-nowrap">
-                        {props.type === "spending" ? "-" : "+"}{props.amount !== props.amountInAccountCurrency ? prettifyFloat(props.amountInAccountCurrency.toFixed(2)) : prettifyFloat(props.amount.toFixed(2))} {CURRENCIES_AND_SYMBOLS[props.account["currency"]]}
+                        {type === "spending" ? "-" : "+"}{amount !== amountInAccountCurrency ? prettifyFloat(amountInAccountCurrency.toFixed(2)) : prettifyFloat(amount.toFixed(2))} {CURRENCIES_AND_SYMBOLS[account["currency"]]}
                     </p>
                 </div>
                 <div className="d-flex justify-content-between gap-3">
                     <p className="m-0 little-text text-nowrap">
-                        {`${props.account["name"] ? props.account["name"] : "Unnamed account"} (${ACCOUNT_TYPES[props.account["type"]].name})`}
+                        {`${account["name"] ? account["name"] : "Unnamed account"} (${ACCOUNT_TYPES[account["type"]].name})`}
                     </p>
                     <p className="m-0 little-text text-nowrap">
-                        {new Date(props.date).toLocaleDateString("ru-RU", {hour: "2-digit", minute: "2-digit"})}
+                        {new Date(date).toLocaleDateString("ru-RU", {hour: "2-digit", minute: "2-digit"})}
                     </p>
                 </div>
             </div>
             <div style={{
                 width: "5px",
                 height: "40px",
-                background: props.type === "spending" ? INTERFACE_COLORS.RED : INTERFACE_COLORS.GREEN
+                background: type === "spending" ? INTERFACE_COLORS.RED : INTERFACE_COLORS.GREEN
             }}>
             </div>
         </div>

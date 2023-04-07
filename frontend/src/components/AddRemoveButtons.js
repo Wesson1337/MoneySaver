@@ -5,7 +5,7 @@ import whitePlusIcon from "../static/icons/plus-add-create-new-cross-svgrepo-com
 import whiteMinusIcon from "../static/icons/minus-remove-subtract-delete-svgrepo-com.svg"
 import AddRemoveOperationModal from "./AddRemoveOperationModal";
 
-const AddRemoveButtons = (props) => {
+const AddRemoveButtons = ({data}) => {
     const location = useLocation()
     const isOperations = location.pathname === OPERATIONS_ROUTE || location.pathname === MAIN_PAGE_ROUTE
     const [showAddModal, setShowAddModal] = useState(false)
@@ -43,6 +43,7 @@ const AddRemoveButtons = (props) => {
                         show={showAddModal}
                         setShow={setShowAddModal}
                         type="add"
+                        data={data}
                     />
                     :
                     null
@@ -74,6 +75,7 @@ const AddRemoveButtons = (props) => {
                         show={showRemoveModal}
                         setShow={setShowRemoveModal}
                         type="remove"
+                        data={data}
                     />
                     :
                     null

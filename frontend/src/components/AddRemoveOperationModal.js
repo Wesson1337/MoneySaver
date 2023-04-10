@@ -3,6 +3,7 @@ import {Col, Form, Modal, Row} from "react-bootstrap";
 import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INCOME_CATEGORIES, SPENDING_CATEGORIES} from "../utils/consts";
 import Select from "react-select";
 import {prettifyFloat} from "../utils/prettifyFloat";
+import {convertCurrency} from "../utils/currency";
 
 const AddRemoveOperationModal = ({show, setShow, type, data}) => {
     const isRemove = type === "remove"
@@ -19,7 +20,7 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                     <p className="m-0">{`${account["name"] ? account["name"] : 'Unnamed account'} (${ACCOUNT_TYPES[account["type"]].name})`}</p>
                     <p className="m-0">{`${prettifyFloat(account["balance"])} ${CURRENCIES_AND_SYMBOLS[account["currency"]]}`}</p>
                 </div>
-            newAccount["value"] = account["id"]
+            newAccount["value"] = account
             tempAccounts.push(newAccount)
         })
         setAccounts(tempAccounts)
@@ -52,7 +53,22 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
 
     const [chosenCurrency, setChosenCurrency] = useState(null)
     const [chosenCategory, setChosenCategory] = useState(null)
+    const [chosenAccount, setChosenAccount] = useState(null)
     const [enteredAmount, setEnteredAmount] = useState(null)
+    const [amountInAccountCurrency, setAmountInAccountCurrency] = useState(null)
+
+    const evalTotalAmountInAccountCurrency = async () => {
+        let convertedCurrency
+        if (enteredAmount && chosenAccount && chosenCurrency) {
+            console.log(enteredAmount, chosenCurrency, chosenAccount)
+            convertedCurrency = await convertCurrency(enteredAmount, chosenCurrency, chosenAccount["currency"])
+            return prettifyFloat(Number(convertedCurrency).toFixed(2))
+        }
+    }
+    useEffect(() => {
+        evalTotalAmountInAccountCurrency().then((value) => {setAmountInAccountCurrency(value)})
+    }, [chosenAccount, chosenCurrency, enteredAmount])
+
     return (<>
         <Modal
             size="lg"
@@ -106,7 +122,7 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                                         }),
                                     }}
                                     options={currencies}
-                                    onChange={(v) => {setChosenCurrency(v)}}
+                                    onChange={(v) => {setChosenCurrency(v["value"])}}
                                 />
                             </div>
                         </Form.Group>
@@ -123,10 +139,11 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                                     }),
                                 }}
                                 options={accounts}
+                                onChange={(v) => setChosenAccount(v["value"])}
                             />
                         </Form.Group>
-                        <Col>
-
+                        <Col className="d-flex align-items-end">
+                            <p className="m-0 mb-1 fs-4">Total: {amountInAccountCurrency} {chosenAccount ? CURRENCIES_AND_SYMBOLS[chosenAccount["currency"]] : null}</p>
                         </Col>
                     </Row>
                 </Form>

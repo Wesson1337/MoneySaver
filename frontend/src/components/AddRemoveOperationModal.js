@@ -74,7 +74,11 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
             size="lg"
             show={show}
             onHide={() => {
-                setChosenCategory(null)
+                setChosenCategory(null);
+                setChosenAccount(null);
+                setEnteredAmount(null);
+                setChosenCurrency(null);
+                setAmountInAccountCurrency(null)
                 setShow(false)
             }}
             backdrop="static"
@@ -142,8 +146,9 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                                 onChange={(v) => setChosenAccount(v["value"])}
                             />
                         </Form.Group>
-                        <Col className="d-flex align-items-end">
-                            <p className="m-0 mb-1 fs-4">Total: {amountInAccountCurrency} {chosenAccount ? CURRENCIES_AND_SYMBOLS[chosenAccount["currency"]] : null}</p>
+                        <Col className="d-flex align-items-end justify-content-between">
+                            <p className="m-0 mb-1 fs-4">Total: </p>
+                                <p className="m-0 mb-1 fs-4">{amountInAccountCurrency} {chosenAccount ? CURRENCIES_AND_SYMBOLS[chosenAccount["currency"]] : null}</p>
                         </Col>
                     </Row>
                 </Form>

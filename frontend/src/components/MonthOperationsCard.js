@@ -6,6 +6,7 @@ import {convertCurrency} from "../utils/currency";
 import {Spinner} from "react-bootstrap";
 import green_arrow from "../static/icons/green_arrow.svg"
 import red_arrow from "../static/icons/red-arrow.svg"
+import {prettifyFloat} from "../utils/prettifyFloat";
 
 
 const MonthOperationsCard = (props) => {
@@ -93,7 +94,7 @@ const MonthOperationsCard = (props) => {
                 <div className="custom-tooltip p-1 d-flex align-items-center justify-content-center"
                      style={{background: "rgba(255, 255, 255, 1)"}}
                 >
-                    <p className="label m-0 text-nowrap">{`${payload[0].name} : ${payload[0].value.toFixed(2)}$`}</p>
+                    <p className="label m-0 text-nowrap">{`${payload[0].name} : ${prettifyFloat(payload[0].value.toFixed(2))} $`}</p>
                 </div>
             );
         }
@@ -168,7 +169,7 @@ const MonthOperationsCard = (props) => {
                                 height={18}
                             />
                             <p className="m-0 text-nowrap"
-                               style={{color: INTERFACE_COLORS.GREEN}}>{totalIncomeAmount.toFixed(2)} $
+                               style={{color: INTERFACE_COLORS.GREEN}}>{prettifyFloat(totalIncomeAmount.toFixed(2))} $
                             </p>
                         </div>
                         <div className="d-flex w-100 justify-content-between align-items-center">
@@ -179,7 +180,7 @@ const MonthOperationsCard = (props) => {
                                 height={18}
                             />
                             <p className="m-0 text-nowrap"
-                               style={{color: INTERFACE_COLORS.RED}}>-{totalSpendingAmount.toFixed(2)} $
+                               style={{color: INTERFACE_COLORS.RED}}>-{prettifyFloat(totalSpendingAmount.toFixed(2))} $
                             </p>
                         </div>
                         <div className="m-0 d-flex w-100 justify-content-end align-items-center">
@@ -197,7 +198,7 @@ const MonthOperationsCard = (props) => {
                                     }
                                 }
                             >
-                                {(totalIncomeAmount - totalSpendingAmount).toFixed(2)} $
+                                {prettifyFloat((totalIncomeAmount - totalSpendingAmount).toFixed(2))} $
                             </p>
                         </div>
                     </div>

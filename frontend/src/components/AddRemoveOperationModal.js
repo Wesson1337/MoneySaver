@@ -4,11 +4,14 @@ import {
     ACCOUNT_TYPES,
     CURRENCIES_AND_SYMBOLS,
     INCOME_CATEGORIES,
+    INTERFACE_COLORS,
     SPENDING_CATEGORIES
 } from "../utils/consts";
 import Select from "react-select";
 import {prettifyFloat} from "../utils/prettifyFloat";
 import {convertCurrency} from "../utils/currency";
+import {getUserIdFromJWT} from "../http/userAPI";
+import {createOperation} from "../http/operationsAPI";
 
 const AddRemoveOperationModal = ({show, setShow, type, data}) => {
     const isRemove = type === "remove"
@@ -64,14 +67,14 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
     const [enteredComment, setEnteredComment] = useState(null)
     const [amountInAccountCurrency, setAmountInAccountCurrency] = useState(null)
     const [amountInAccountCurrencyIsLoading, setAmountInAccountCurrencyIsLoading] = useState(false)
+    const [error, setError] = useState("")
 
     const evalTotalAmountInAccountCurrency = async () => {
         let convertedCurrency
         if (enteredAmount && chosenAccount && chosenCurrency) {
             setAmountInAccountCurrencyIsLoading(true)
-            console.log(enteredAmount, chosenCurrency, chosenAccount)
             convertedCurrency = await convertCurrency(enteredAmount, chosenCurrency, chosenAccount["currency"])
-            return prettifyFloat(Number(convertedCurrency).toFixed(2))
+            return Number(convertedCurrency).toFixed(2)
         }
     }
     useEffect(() => {
@@ -97,7 +100,7 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
             return
         }
         setEnteredAmount(value)
-        setEnteredAmountError(null)
+        setEnteredAmountError("")
     }
 
     const handleOnHide = () => {
@@ -108,6 +111,37 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
         setAmountInAccountCurrency(null)
         setEnteredAmountError(null)
         setShow(false)
+        setError("")
+    }
+
+    const handleSave = async () => {
+        if (!chosenAccount || !chosenCategory || !enteredAmount || !chosenCurrency) {
+            setError("At least one field is not filled")
+            return
+        }
+        if (isRemove && amountInAccountCurrency > chosenAccount["balance"]) {
+            setError("After this spending account balance will go negative")
+            return
+        }
+
+        const operationData = {
+            "user_id": getUserIdFromJWT(),
+            "currency": chosenCurrency,
+            "category": chosenCategory.nameForRequest,
+            "amount": enteredAmount,
+            "comment": enteredComment
+        }
+
+        if (isRemove) {
+            operationData["receipt_account_id"] = chosenAccount.id
+        } else {
+            operationData["replenishment_account_id"] = chosenAccount.id
+        }
+        try {
+            return await createOperation(operationData)
+        } catch (e) {
+            setError(`${e.response.data.detail || e.response.data["msg"] || e}`)
+        }
     }
 
     return (<>
@@ -130,6 +164,7 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                                 placeholder="Select category..."
                                 onChange={(v) => {
                                     setChosenCategory(isRemove ? SPENDING_CATEGORIES[v["value"]] : INCOME_CATEGORIES[v["value"]])
+                                    setError("")
                                 }}
                                 options={categories}
                                 styles={{
@@ -148,6 +183,7 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                                         value={enteredAmount ? enteredAmount : ''}
                                         onChange={(e) => {
                                             handleAmountOnChange(e.target.value)
+                                            setError("")
                                         }}
                                         style={{minWidth: "150px"}}
                                         isInvalid={!!enteredAmountError}
@@ -166,7 +202,8 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                                     }}
                                     options={currencies}
                                     onChange={(v) => {
-                                        setChosenCurrency(v["value"])
+                                        setChosenCurrency(v["value"]);
+                                        setError("")
                                     }}
                                 />
                             </div>
@@ -184,13 +221,17 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                                     }),
                                 }}
                                 options={accounts}
-                                onChange={(v) => setChosenAccount(v["value"])}
+                                onChange={(v) => {
+                                    setChosenAccount(v["value"]);
+                                    setError("")
+                                }}
                             />
                         </Form.Group>
                         <Col className="d-flex align-items-end justify-content-between">
                             <p className="m-0 fs-4">Total: </p>
-                            {amountInAccountCurrencyIsLoading ? <Spinner variant={"border"} size="sm" className={"p-2 m-1"}/> :
-                            <p className="m-0 fs-4 text-nowrap">{amountInAccountCurrency} {chosenAccount ? CURRENCIES_AND_SYMBOLS[chosenAccount["currency"]] : null}</p>
+                            {amountInAccountCurrencyIsLoading ?
+                                <Spinner variant={"border"} size="sm" className={"p-2 m-1"}/> :
+                                <p className="m-0 fs-4 text-nowrap">{amountInAccountCurrency ? "~ " + prettifyFloat(amountInAccountCurrency) : null} {chosenAccount ? CURRENCIES_AND_SYMBOLS[chosenAccount["currency"]] : null}</p>
                             }
                         </Col>
                     </Row>
@@ -201,23 +242,38 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                                 as="textarea"
                                 maxLength={255}
                                 value={enteredComment ? enteredComment : ''}
-                                onChange={(e) => {setEnteredComment(e.target.value)}}
+                                onChange={(e) => {
+                                    setEnteredComment(e.target.value)
+                                }}
                             />
                         </Form.Group>
                     </Row>
                 </Form>
             </Modal.Body>
             <Modal.Footer>
-                <Button
-                    variant="secondary"
-                >
-                    Cancel
-                </Button>
-                <Button
-                    variant={isRemove ? "danger" : "success"}
-                >
-                    {isRemove ? "Save spending" : "Save income"}
-                </Button>
+                <div className="d-flex justify-content-between align-items-center w-100">
+                    <p className="m-0" style={{color: INTERFACE_COLORS.RED}}>{error}</p>
+                    <div className="d-flex gap-2">
+                        <Button
+                            variant="secondary"
+                            onClick={handleOnHide}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                handleSave().then((value) => {
+                                    if (value) {
+                                        window.location.reload()
+                                    }
+                                })
+                            }}
+                            variant={isRemove ? "danger" : "success"}
+                        >
+                            {isRemove ? "Save spending" : "Save income"}
+                        </Button>
+                    </div>
+                </div>
             </Modal.Footer>
         </Modal>
     </>);

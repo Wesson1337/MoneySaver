@@ -20,7 +20,7 @@ export const convertCurrency = async (amount, baseCurrency, desiredCurrency) => 
         localStorage.setItem(`${baseCurrency}-${desiredCurrency}`, JSON.stringify(
             {
                 rate: rate,
-                exp: Math.floor(new Date(Date.now() + 3 * 60 * 60 * 1000).getTime() / 1000)
+                exp: Math.floor(new Date(Date.now() + 60 * 60 * 1000).getTime() / 1000)
             }))
     }
     return amount * rate

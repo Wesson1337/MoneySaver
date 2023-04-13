@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import {useAuth} from "../context/Auth";
 import {getAllAccounts} from "../http/accountsAPI";
 import {Col, Container, Row, Spinner} from "react-bootstrap";
 import {ErrorComponent} from "../components/ErrorComponent";
@@ -13,7 +12,6 @@ import AddRemoveButtons from "../components/AddRemoveButtons";
 import {convertCurrency} from "../utils/currency";
 
 const MainPage = () => {
-    const {user} = useAuth()
     const [isLoading, setIsLoading] = useState(true)
     const [data, setData] = useState(null)
     const [errorMsg, setErrorMsg] = useState(null)
@@ -84,7 +82,7 @@ const MainPage = () => {
                             <CurrenciesBudgetCard data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                     </Row>
-                    <AddRemoveButtons data={data}/>
+                    <AddRemoveButtons data={data} setErrorMsg={setErrorMsg}/>
                 </Container>
             }
         </>

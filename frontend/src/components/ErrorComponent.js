@@ -1,13 +1,13 @@
 import React from 'react';
 import Alert from 'react-bootstrap/Alert';
 
-export const ErrorComponent = (props) => {
+export const ErrorComponent = ({message, onClose}) => {
 
-    if (props.message) {
+    if (message) {
         return (
             <Alert
                 variant="danger"
-                onClose={props.onClose}
+                onClose={onClose}
                 dismissible
                 style={{
                     position: 'absolute', top: '40px', zIndex: '500', width: '25%', right: '40px'
@@ -15,7 +15,7 @@ export const ErrorComponent = (props) => {
             >
                 <Alert.Heading>Error!</Alert.Heading>
                 <p>
-                    {props.message}
+                    {message}
                 </p>
             </Alert>
         );

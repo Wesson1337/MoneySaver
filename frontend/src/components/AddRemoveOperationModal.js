@@ -1,6 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {Col, Form, Modal, Row} from "react-bootstrap";
-import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INCOME_CATEGORIES, SPENDING_CATEGORIES} from "../utils/consts";
+import {Button, Col, Form, Modal, Row, Spinner} from "react-bootstrap";
+import {
+    ACCOUNT_TYPES,
+    CURRENCIES_AND_SYMBOLS,
+    INCOME_CATEGORIES,
+    SPENDING_CATEGORIES
+} from "../utils/consts";
 import Select from "react-select";
 import {prettifyFloat} from "../utils/prettifyFloat";
 import {convertCurrency} from "../utils/currency";
@@ -55,32 +60,61 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
     const [chosenCategory, setChosenCategory] = useState(null)
     const [chosenAccount, setChosenAccount] = useState(null)
     const [enteredAmount, setEnteredAmount] = useState(null)
+    const [enteredAmountError, setEnteredAmountError] = useState(null)
+    const [enteredComment, setEnteredComment] = useState(null)
     const [amountInAccountCurrency, setAmountInAccountCurrency] = useState(null)
+    const [amountInAccountCurrencyIsLoading, setAmountInAccountCurrencyIsLoading] = useState(false)
 
     const evalTotalAmountInAccountCurrency = async () => {
         let convertedCurrency
         if (enteredAmount && chosenAccount && chosenCurrency) {
+            setAmountInAccountCurrencyIsLoading(true)
             console.log(enteredAmount, chosenCurrency, chosenAccount)
             convertedCurrency = await convertCurrency(enteredAmount, chosenCurrency, chosenAccount["currency"])
             return prettifyFloat(Number(convertedCurrency).toFixed(2))
         }
     }
     useEffect(() => {
-        evalTotalAmountInAccountCurrency().then((value) => {setAmountInAccountCurrency(value)})
+        evalTotalAmountInAccountCurrency().then((value) => {
+            setAmountInAccountCurrency(value)
+        }).finally(() => setAmountInAccountCurrencyIsLoading(false))
     }, [chosenAccount, chosenCurrency, enteredAmount])
+
+
+    const handleAmountOnChange = (value) => {
+        if (Number.isNaN(+value)) {
+            return
+        }
+        if (value.toString().includes('.') && value.split('.')[1].length > 2) {
+            return
+        }
+        if (value && value <= 0) {
+            setEnteredAmountError("Amount must be greater than 0")
+            return
+        }
+        if (value >= 1000000000) {
+            setEnteredAmountError("Amount of operation is too long")
+            return
+        }
+        setEnteredAmount(value)
+        setEnteredAmountError(null)
+    }
+
+    const handleOnHide = () => {
+        setChosenCategory(null);
+        setChosenAccount(null);
+        setEnteredAmount(null);
+        setChosenCurrency(null);
+        setAmountInAccountCurrency(null)
+        setEnteredAmountError(null)
+        setShow(false)
+    }
 
     return (<>
         <Modal
             size="lg"
             show={show}
-            onHide={() => {
-                setChosenCategory(null);
-                setChosenAccount(null);
-                setEnteredAmount(null);
-                setChosenCurrency(null);
-                setAmountInAccountCurrency(null)
-                setShow(false)
-            }}
+            onHide={handleOnHide}
             backdrop="static"
             keyboard={false}
         >
@@ -109,30 +143,37 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                         <Form.Group as={Col}>
                             <Form.Label className="little-text mb-1">Amount</Form.Label>
                             <div className="d-flex">
-                                <Form.Control
-                                    value={enteredAmount ? enteredAmount : null}
-                                    onChange={(e) => {
-                                        setEnteredAmount(e.target.value)
-                                    }}
-                                    type="number"
-                                    style={{minWidth: "150px"}}
-                                />
+                                <div className="d-flex flex-column w-100">
+                                    <Form.Control
+                                        value={enteredAmount ? enteredAmount : ''}
+                                        onChange={(e) => {
+                                            handleAmountOnChange(e.target.value)
+                                        }}
+                                        style={{minWidth: "150px"}}
+                                        isInvalid={!!enteredAmountError}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {enteredAmountError}
+                                    </Form.Control.Feedback>
+                                </div>
                                 <Select
                                     placeholder=""
                                     styles={{
                                         control: (baseStyles, state) => ({
                                             ...baseStyles,
-                                            minWidth: "90px"
+                                            minWidth: "80px"
                                         }),
                                     }}
                                     options={currencies}
-                                    onChange={(v) => {setChosenCurrency(v["value"])}}
+                                    onChange={(v) => {
+                                        setChosenCurrency(v["value"])
+                                    }}
                                 />
                             </div>
                         </Form.Group>
                     </Row>
-                    <Row>
-                        <Form.Group as={Col}>
+                    <Row style={{rowGap: "20px"}}>
+                        <Form.Group as={Col} style={{minWidth: "300px"}}>
                             <Form.Label className="little-text mb-1">Account</Form.Label>
                             <Select
                                 placeholder="Select account..."
@@ -147,12 +188,37 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                             />
                         </Form.Group>
                         <Col className="d-flex align-items-end justify-content-between">
-                            <p className="m-0 mb-1 fs-4">Total: </p>
-                                <p className="m-0 mb-1 fs-4">{amountInAccountCurrency} {chosenAccount ? CURRENCIES_AND_SYMBOLS[chosenAccount["currency"]] : null}</p>
+                            <p className="m-0 fs-4">Total: </p>
+                            {amountInAccountCurrencyIsLoading ? <Spinner variant={"border"} size="sm" className={"p-2 m-1"}/> :
+                            <p className="m-0 fs-4 text-nowrap">{amountInAccountCurrency} {chosenAccount ? CURRENCIES_AND_SYMBOLS[chosenAccount["currency"]] : null}</p>
+                            }
                         </Col>
+                    </Row>
+                    <Row>
+                        <Form.Group as={Col}>
+                            <Form.Label className={"little-text mb-1"}>Comment (Optional)</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                maxLength={255}
+                                value={enteredComment ? enteredComment : ''}
+                                onChange={(e) => {setEnteredComment(e.target.value)}}
+                            />
+                        </Form.Group>
                     </Row>
                 </Form>
             </Modal.Body>
+            <Modal.Footer>
+                <Button
+                    variant="secondary"
+                >
+                    Cancel
+                </Button>
+                <Button
+                    variant={isRemove ? "danger" : "success"}
+                >
+                    {isRemove ? "Save spending" : "Save income"}
+                </Button>
+            </Modal.Footer>
         </Modal>
     </>);
 };

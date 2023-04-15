@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {Spinner} from "react-bootstrap";
-import {prettifyFloat} from "../utils/prettifyFloat";
+import {prettifyFloat} from "../../utils/prettifyFloat";
 import MainPageCard from "./MainPageCard";
-import {ACCOUNTS_ROUTE, INTERFACE_COLORS} from "../utils/consts";
+import {ACCOUNTS_ROUTE, INTERFACE_COLORS} from "../../utils/consts";
 
 const BudgetCard = (props) => {
     const [isLoading, setIsLoading] = useState(true)

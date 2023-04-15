@@ -2,8 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {useAuth} from "./context/Auth";
 import {check} from "./http/userAPI";
 import {Spinner} from "react-bootstrap";
-import NavBar from "./components/NavBar";
-import AppRouter from "./components/AppRouter";
+import NavBar from "./components/common/NavBar";
+import AppRouter from "./components/common/AppRouter";
 
 function App() {
     const {setUser} = useAuth()

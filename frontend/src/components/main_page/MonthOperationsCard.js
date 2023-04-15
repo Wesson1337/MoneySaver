@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
-import {INTERFACE_COLORS, OPERATIONS_ROUTE, SUPPORTED_CURRENCIES} from "../utils/consts";
+import {INTERFACE_COLORS, OPERATIONS_ROUTE, SUPPORTED_CURRENCIES} from "../../utils/consts";
 import {Cell, Pie, PieChart, Tooltip} from "recharts";
-import {convertCurrency} from "../utils/currency";
+import {convertCurrency} from "../../utils/currency";
 import {Spinner} from "react-bootstrap";
-import green_arrow from "../static/icons/green_arrow.svg"
-import red_arrow from "../static/icons/red-arrow.svg"
-import {prettifyFloat} from "../utils/prettifyFloat";
+import green_arrow from "../../static/icons/green_arrow.svg"
+import red_arrow from "../../static/icons/red-arrow.svg"
+import {prettifyFloat} from "../../utils/prettifyFloat";
 
 
 const MonthOperationsCard = (props) => {

@@ -6,12 +6,12 @@ import {
     INCOME_CATEGORIES,
     INTERFACE_COLORS,
     SPENDING_CATEGORIES
-} from "../utils/consts";
+} from "../../utils/consts";
 import Select from "react-select";
-import {prettifyFloat} from "../utils/prettifyFloat";
-import {convertCurrency} from "../utils/currency";
-import {getUserIdFromJWT} from "../http/userAPI";
-import {createOperation} from "../http/operationsAPI";
+import {prettifyFloat} from "../../utils/prettifyFloat";
+import {convertCurrency} from "../../utils/currency";
+import {getUserIdFromJWT} from "../../http/userAPI";
+import {createOperation} from "../../http/operationsAPI";
 
 const AddRemoveOperationModal = ({show, setShow, type, data}) => {
     const isRemove = type === "remove"

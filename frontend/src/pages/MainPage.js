@@ -1,15 +1,16 @@
 import React, {useEffect, useState} from 'react';
 import {getAllAccounts} from "../http/accountsAPI";
 import {Col, Container, Row, Spinner} from "react-bootstrap";
-import {ErrorComponent} from "../components/ErrorComponent";
-import BudgetCard from "../components/BudgetCard";
-import MonthOperationsCard from "../components/MonthOperationsCard";
+import {ErrorComponent} from "../components/common/ErrorComponent";
+import BudgetCard from "../components/main_page/BudgetCard";
+import MonthOperationsCard from "../components/main_page/MonthOperationsCard";
 import {getAllOperations} from "../http/operationsAPI";
 import {SUPPORTED_CURRENCIES} from "../utils/consts";
-import LastOperationsCard from "../components/LastOperationsCard";
-import CurrenciesBudgetCard from "../components/CurrenciesBudgetCard";
-import AddRemoveButtons from "../components/AddRemoveButtons";
+import LastOperationsCard from "../components/main_page/LastOperationsCard";
+import CurrenciesBudgetCard from "../components/main_page/CurrenciesBudgetCard";
+import AddRemoveButtons from "../components/common/AddRemoveButtons";
 import {convertCurrency} from "../utils/currency";
+import LastSevenDaysOperationsCard from "../components/main_page/LastSevenDaysOperationsCard";
 
 const MainPage = () => {
     const [isLoading, setIsLoading] = useState(true)
@@ -80,6 +81,7 @@ const MainPage = () => {
                         </Col>
                         <Col className="g-3">
                             <CurrenciesBudgetCard data={data} setErrorMsg={setErrorMsg}/>
+                            <LastSevenDaysOperationsCard data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                     </Row>
                     <AddRemoveButtons data={data} setErrorMsg={setErrorMsg}/>

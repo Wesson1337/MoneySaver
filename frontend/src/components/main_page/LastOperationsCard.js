@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
-import {INCOME_CATEGORIES, OPERATIONS_ROUTE, SPENDING_CATEGORIES} from "../utils/consts";
+import {INCOME_CATEGORIES, OPERATIONS_ROUTE, SPENDING_CATEGORIES} from "../../utils/consts";
 import {Button, Col, Form, Modal, Row, Spinner} from "react-bootstrap";
-import Operation from "./Operation";
-import ShowMoreModal from "./ShowMoreModal";
+import Operation from "../common/Operation";
+import ShowMoreModal from "../common/ShowMoreModal";
 
 const LastOperationsCard = (props) => {
     const [showModal, setShowModal] = useState(false)

@@ -1,12 +1,12 @@
 import React from 'react';
 import {Route, Routes} from "react-router-dom";
 import PrivateRoutes from "./PrivateRoutes";
-import {ACCOUNTS_ROUTE, LOGIN_ROUTE, MAIN_PAGE_ROUTE, OPERATIONS_ROUTE, REGISTRATION_ROUTE} from "../utils/consts";
-import MainPage from "../pages/MainPage";
-import Accounts from "../pages/Accounts";
-import Operations from "../pages/Operations";
-import Auth from "../pages/Auth";
-import NotFound from "../pages/NotFound";
+import {ACCOUNTS_ROUTE, LOGIN_ROUTE, MAIN_PAGE_ROUTE, OPERATIONS_ROUTE, REGISTRATION_ROUTE} from "../../utils/consts";
+import MainPage from "../../pages/MainPage";
+import Accounts from "../../pages/Accounts";
+import Operations from "../../pages/Operations";
+import Auth from "../../pages/Auth";
+import NotFound from "../../pages/NotFound";
 
 const AppRouter = () => {
     return (

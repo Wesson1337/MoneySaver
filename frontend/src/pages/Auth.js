@@ -4,7 +4,7 @@ import {NavLink, useLocation, useNavigate} from "react-router-dom";
 import {LOGIN_ROUTE, MAIN_PAGE_ROUTE, REGISTRATION_ROUTE} from "../utils/consts";
 import {login, registration} from "../http/userAPI";
 import {Button, Card, Container, Form, Row, Spinner} from "react-bootstrap";
-import {ErrorComponent} from "../components/ErrorComponent";
+import {ErrorComponent} from "../components/common/ErrorComponent";
 
 const Auth = () => {
     const navigate = useNavigate()
@@ -53,7 +53,7 @@ const Auth = () => {
                 setUser(email)
                 navigate(MAIN_PAGE_ROUTE)
             } catch (e) {
-                setErrorMsg(e.response.data.detail)
+                setErrorMsg(e.response.data.detail || `${e}`)
             }
         }
         setLoading(false)

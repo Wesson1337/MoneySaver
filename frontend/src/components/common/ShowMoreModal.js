@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import dots from "../static/icons/menu-dots-vertical.svg";
+import dots from "../../static/icons/menu-dots-vertical.svg";
 
 const ShowMoreModal = (props) => {
     const [isClicked, setIsClicked] = useState(false)

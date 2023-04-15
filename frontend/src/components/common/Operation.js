@@ -1,6 +1,6 @@
 import React from 'react';
-import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS} from "../utils/consts";
-import {prettifyFloat} from "../utils/prettifyFloat";
+import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS} from "../../utils/consts";
+import {prettifyFloat} from "../../utils/prettifyFloat";
 
 const Operation = ({icon, category, type, amount, amountInAccountCurrency, account, date}) => {
     return (

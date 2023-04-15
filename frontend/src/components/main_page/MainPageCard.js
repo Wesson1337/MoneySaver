@@ -2,14 +2,14 @@ import React, {useState} from 'react';
 import {Card} from "react-bootstrap";
 import {useNavigate} from "react-router-dom";
 
-const MainPageCard = (props) => {
+const MainPageCard = ({className, showModal, style, id, navigateto, children}) => {
     const [isActive, setIsActive] = useState(false)
     const [isClicked, setIsClicked] = useState(false)
     const navigate = useNavigate()
     return (
         <Card
-            className={"p-3 " + props.className}
-            onMouseDown={!props.showModal ? () => setIsClicked(true) : null}
+            className={"p-3 " + className}
+            onMouseDown={!showModal ? () => setIsClicked(true) : null}
             onMouseUp={() => {
                 setIsActive(false);
                 setIsClicked(false)
@@ -22,18 +22,18 @@ const MainPageCard = (props) => {
                 setIsClicked(false);
                 setIsActive(false)
             }}
-            onClick={!props.showModal ? () => {
-                navigate(props.navigateto)
+            onClick={!showModal ? () => {
+                navigate(navigateto)
             } : null}
             style={Object.assign({
-                filter: (isActive && props.navigateto ? "drop-shadow(2px 2px 2px rgba(2, 2, 2, 0.2))" : "")
-                    + (isClicked && props.navigateto ? "brightness(0.95)" : ""),
+                filter: (isActive && navigateto ? "drop-shadow(2px 2px 2px rgba(2, 2, 2, 0.2))" : "")
+                    + (isClicked && navigateto ? "brightness(0.95)" : ""),
                 transition: "0.25s ease-out",
                 cursor: "pointer"
-            }, props.style)}
-            id={props.id}
+            }, style)}
+            id={id}
         >
-            {props.children}
+            {children}
         </Card>
     );
 };

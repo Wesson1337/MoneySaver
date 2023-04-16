@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
 import {ACCOUNTS_ROUTE} from "../../utils/consts";
 import {Spinner} from "react-bootstrap";
-import Currency from "../Currency";
+import Currency from "./Currency";
 import Sort from "../common/Sort";
 
 const CurrenciesBudgetCard = (props) => {

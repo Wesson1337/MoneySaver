@@ -1,7 +1,7 @@
 import React from 'react';
-import {CURRENCIES_AND_SYMBOLS} from "../utils/consts";
+import {CURRENCIES_AND_SYMBOLS} from "../../utils/consts";
 import {ProgressBar} from "react-bootstrap";
-import {prettifyFloat} from "../utils/prettifyFloat";
+import {prettifyFloat} from "../../utils/prettifyFloat";
 
 const Currency = (props) => {
     return (

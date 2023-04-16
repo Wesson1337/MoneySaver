@@ -1,5 +1,4 @@
 from _decimal import Decimal
-from dataclasses import fields
 from typing import Literal
 
 import pytest

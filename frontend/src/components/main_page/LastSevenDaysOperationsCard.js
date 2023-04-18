@@ -64,7 +64,7 @@ const LastSevenDaysOperationsCard = ({data, setErrorMsg}) => {
             {isLoading ? <Spinner variant="border"/> :
                 <>
                     <b>Last 7 days</b>
-                    <div className="mt-3" style={{width: "100%", height: "262px"}}>
+                    <div className="mt-3" style={{width: "100%", height: "300px"}}>
                         <ResponsiveContainer>
                             <BarChart
                                 data={operationData.reverse()}

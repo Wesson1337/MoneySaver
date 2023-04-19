@@ -1,13 +1,12 @@
 import React, {useState} from 'react';
 import {useLocation} from "react-router-dom";
-import {INTERFACE_COLORS, MAIN_PAGE_ROUTE, OPERATIONS_ROUTE} from "../../utils/consts";
+import {INTERFACE_COLORS} from "../../utils/consts";
 import whitePlusIcon from "../../static/icons/plus-add-create-new-cross-svgrepo-com.svg"
 import whiteMinusIcon from "../../static/icons/minus-remove-subtract-delete-svgrepo-com.svg"
 import AddRemoveOperationModal from "./AddRemoveOperationModal";
 
 const AddRemoveButtons = ({data}) => {
     const location = useLocation()
-    const isOperations = location.pathname === OPERATIONS_ROUTE || location.pathname === MAIN_PAGE_ROUTE
     const [showAddModal, setShowAddModal] = useState(false)
     const [showRemoveModal, setShowRemoveModal] = useState(false)
     const [greenIsActive, setGreenIsActive] = useState(false)
@@ -36,18 +35,12 @@ const AddRemoveButtons = ({data}) => {
                     width="25px"
                 />
             </button>
-            {
-                isOperations
-                    ?
-                    <AddRemoveOperationModal
-                        show={showAddModal}
-                        setShow={setShowAddModal}
-                        type="add"
-                        data={data}
-                    />
-                    :
-                    null
-            }
+            <AddRemoveOperationModal
+                show={showAddModal}
+                setShow={setShowAddModal}
+                type="add"
+                data={data}
+            />
             <button
                 style={{
                     width: "56px",
@@ -68,18 +61,12 @@ const AddRemoveButtons = ({data}) => {
                     color="white"
                 />
             </button>
-            {
-                isOperations
-                    ?
-                    <AddRemoveOperationModal
-                        show={showRemoveModal}
-                        setShow={setShowRemoveModal}
-                        type="remove"
-                        data={data}
-                    />
-                    :
-                    null
-            }
+            <AddRemoveOperationModal
+                show={showRemoveModal}
+                setShow={setShowRemoveModal}
+                type="remove"
+                data={data}
+            />
         </div>
     );
 };

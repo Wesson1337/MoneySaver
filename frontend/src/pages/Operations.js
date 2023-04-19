@@ -1,10 +1,13 @@
 import React from 'react';
+import {Container} from "react-bootstrap";
 
 const Operations = () => {
     return (
-        <div>
-            OPERATIONS
-        </div>
+        <Container>
+            <div>
+                OPERATIONS
+            </div>
+        </Container>
     );
 };
 

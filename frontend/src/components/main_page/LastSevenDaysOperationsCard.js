@@ -61,9 +61,9 @@ const LastSevenDaysOperationsCard = ({data, setErrorMsg}) => {
 
     return (
         <MainPageCard navigateto={OPERATIONS_ROUTE} className="mt-3">
-            {isLoading ? <Spinner variant="border"/> :
+            <b>Last 7 days</b>
+            {isLoading ? <div className="mt-3 d-flex justify-content-center align-items-center"><Spinner variant="border"/></div> :
                 <>
-                    <b>Last 7 days</b>
                     <div className="mt-3" style={{width: "100%", height: "300px"}}>
                         <ResponsiveContainer>
                             <BarChart

@@ -4,7 +4,7 @@ import {prettifyFloat} from "../../utils/prettifyFloat";
 import MainPageCard from "./MainPageCard";
 import {ACCOUNTS_ROUTE, INTERFACE_COLORS} from "../../utils/consts";
 
-const BudgetCard = (props) => {
+const BudgetCard = ({data, setErrorMsg}) => {
     const [isLoading, setIsLoading] = useState(true)
     const [totalBalance, setTotalBalance] = useState(null)
 
@@ -12,8 +12,8 @@ const BudgetCard = (props) => {
         let totalBalance = 0;
         let a
         let accountBalance
-        for (let i = 0; i < props.data.accounts.length; i++) {
-            a = props.data.accounts[i]
+        for (let i = 0; i < data.accounts.length; i++) {
+            a = data.accounts[i]
             if (a["is_active"]) {
                 accountBalance = a["balanceInUSD"]
                 totalBalance += accountBalance

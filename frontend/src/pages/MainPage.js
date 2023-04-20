@@ -55,12 +55,10 @@ const MainPage = () => {
     }, [])
 
     return (<>
-            {isLoading
-                ?
-                <Spinner
-                    variant="border"
-                    style={{position: 'absolute', top: window.innerHeight / 2 - 56, left: '50%'}}
-                />
+            {isLoading ? <div
+                    className="w-100 d-flex align-items-center justify-content-center"
+                    style={{height: window.innerHeight - 56}}
+                ><Spinner variant="border"/></div>
                 :
                 <Container className="px-3">
                     <ErrorComponent message={errorMsg} onClose={() => setErrorMsg(null)}/>

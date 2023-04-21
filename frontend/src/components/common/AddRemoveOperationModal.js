@@ -140,7 +140,7 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
         try {
             return await createOperation(operationData)
         } catch (e) {
-            setError(`${e.response.data.detail || e.response.data["msg"] || e}`)
+            setError(`${e.response?.data.detail || e.response?.data["msg"] || e}`)
         }
     }
 
@@ -231,7 +231,7 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                             <p className="m-0 fs-4">Total: </p>
                             {amountInAccountCurrencyIsLoading ?
                                 <Spinner variant={"border"} size="sm" className={"p-2 m-1"}/> :
-                                <p className="m-0 fs-4 text-nowrap">{amountInAccountCurrency ? "~ " + prettifyFloat(amountInAccountCurrency) : null} {chosenAccount ? CURRENCIES_AND_SYMBOLS[chosenAccount["currency"]] : null}</p>
+                                <p className="m-0 fs-4 text-nowrap">{amountInAccountCurrency ? `${chosenAccount?.currency !== chosenCurrency ? "~ " : ""}` + prettifyFloat(amountInAccountCurrency) : null} {CURRENCIES_AND_SYMBOLS[chosenAccount?.currency]}</p>
                             }
                         </Col>
                     </Row>

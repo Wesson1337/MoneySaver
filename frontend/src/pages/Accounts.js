@@ -2,13 +2,16 @@ import React, {useEffect, useState} from 'react';
 import {Card, Container, Spinner} from "react-bootstrap";
 import {getAllAccounts} from "../http/accountsAPI";
 import {convertCurrency} from "../utils/currency";
-import {CURRENCIES_AND_SYMBOLS, SUPPORTED_CURRENCIES} from "../utils/consts";
+import {CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS, SUPPORTED_CURRENCIES} from "../utils/consts";
 import {prettifyFloat} from "../utils/prettifyFloat";
+import {ErrorComponent} from "../components/common/ErrorComponent";
+import Account from "../components/account_page/Account";
 
 const Accounts = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [totalBalance, setTotalBalance] = useState(null)
-    const [accounts, setAccounts] = useState(null)
+    const [accounts, setAccounts] = useState([])
+    const [errorMsg, setErrorMsg] = useState(null)
 
     const addUSDBalanceToAccounts = async (accounts) => {
         let balanceInUSD
@@ -26,14 +29,16 @@ const Accounts = () => {
     useEffect(() => {
         getAccounts().then((v) => {
             setAccounts(v)
-        }).finally(() => {setIsLoading(false)})
+        }).finally(() => {
+            setIsLoading(false)
+        })
     }, [])
 
     const getTotalBalance = () => {
         let totalBalance = 0;
         let a
         let accountBalance
-        if (accounts !== null) {
+        if (accounts) {
             for (let i = 0; i < accounts.length; i++) {
                 a = accounts[i]
                 if (a["is_active"]) {
@@ -52,11 +57,29 @@ const Accounts = () => {
                     style={{height: window.innerHeight - 56}}
                 ><Spinner variant="border"/></div> :
                 <>
-                    <Card className="d-flex p-3 justify-content-between align-items-center flex-row mt-3">
-                        <p className="m-0 h4">Total balance: </p>
-                        <p className="m-0">{prettifyFloat(getTotalBalance())} {CURRENCIES_AND_SYMBOLS.USD}</p>
-
+                    <ErrorComponent
+                        message={errorMsg}
+                        onClose={() => setErrorMsg(null)}
+                    />
+                    <Card
+                        className="d-flex p-3 justify-content-between align-items-center flex-row mt-3"
+                    >
+                        <h4
+                            className="m-0"
+                        >Total balance: </h4>
+                        <h4
+                            className="m-0"
+                            style={{color: INTERFACE_COLORS.GREEN}}
+                        >{prettifyFloat(getTotalBalance())} {CURRENCIES_AND_SYMBOLS.USD}</h4>
                     </Card>
+                    <div className="d-flex flex-column gap-3 mt-3">
+                        {Object.values(accounts).map((account) => (
+                            <Account
+                                key={`account-${account["id"]}`}
+                                account={account}
+                            />
+                        ))}
+                    </div>
                 </>
             }
         </Container>

@@ -3,7 +3,7 @@ import {Card, Form} from "react-bootstrap";
 import {CURRENCIES_AND_SYMBOLS} from "../../utils/consts";
 import {prettifyFloat} from "../../utils/prettifyFloat";
 
-const Account = ({account}) => {
+const Account = ({account, index}) => {
 
     const handleCheckOnChange = async () => {
 
@@ -20,6 +20,7 @@ const Account = ({account}) => {
             <div className="d-flex justify-content-between">
                 <Form>
                     <Form.Check
+                        id={`account-checkbox-${index !== undefined ? index : 1}`}
                         label={"Active"}
                         type={"switch"}
                         defaultChecked={account["is_active"]}

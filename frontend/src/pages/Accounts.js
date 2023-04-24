@@ -73,9 +73,10 @@ const Accounts = () => {
                         >{prettifyFloat(getTotalBalance())} {CURRENCIES_AND_SYMBOLS.USD}</h4>
                     </Card>
                     <div className="d-flex flex-column gap-3 mt-3">
-                        {Object.values(accounts).map((account) => (
+                        {Object.values(accounts).map((account, index) => (
                             <Account
                                 key={`account-${account["id"]}`}
+                                index={index}
                                 account={account}
                             />
                         ))}

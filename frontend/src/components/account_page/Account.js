@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {Card, Form} from "react-bootstrap";
 import {CURRENCIES_AND_SYMBOLS} from "../../utils/consts";
 import {prettifyFloat} from "../../utils/prettifyFloat";
@@ -15,7 +15,7 @@ const Account = ({account}) => {
         >
             <div className="d-flex justify-content-between">
                 <p className="m-0">{account.name}</p>
-                <p className="m-0">{prettifyFloat(account.balance)} {CURRENCIES_AND_SYMBOLS[account.currency]}</p>
+                <p className="m-0">{prettifyFloat(account.balance.toFixed(2))} {CURRENCIES_AND_SYMBOLS[account.currency]}</p>
             </div>
             <div className="d-flex justify-content-between">
                 <Form>

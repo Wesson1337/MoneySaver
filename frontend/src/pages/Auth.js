@@ -53,7 +53,7 @@ const Auth = () => {
                 setUser(email)
                 navigate(MAIN_PAGE_ROUTE)
             } catch (e) {
-                setErrorMsg( `${e}`)
+                setErrorMsg(`${e}`)
             }
         }
         setLoading(false)

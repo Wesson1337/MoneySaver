@@ -17,16 +17,15 @@ async def test_get_exchange_rate_with_supported_currencies(
         auth_headers_superuser: tuple[Literal["Authorization"], str],
         client: AsyncClient
 ):
-    supported_currencies = [field.value for field in Currencies]
-    for currency in supported_currencies:
-        query_params = [("base_currency", Currencies.RUB), ("desired_currency", currency)]
+    for currency in Currencies:
+        query_params = [("base_currency", Currencies.RUB), ("desired_currency", currency.value)]
         response = await client.get(
             f'{API_PREFIX_V1}/currency/',
             headers=[auth_headers_superuser],
             params=query_params
         )
         assert response.status_code == 200
-        assert Decimal(response.text) == await get_current_exchange_rate(Currencies.RUB, currency, redis)
+        assert Decimal(response.text) == await get_current_exchange_rate(Currencies.RUB, currency.value, redis)
 
 
 @pytest.mark.parametrize("query_params, status_code", [

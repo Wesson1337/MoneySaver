@@ -68,7 +68,7 @@ const Accounts = () => {
                             className="m-0"
                         >Total balance: </h4>
                         <h4
-                            className="m-0"
+                            className="m-0 text-nowrap"
                             style={{color: INTERFACE_COLORS.GREEN}}
                         >{prettifyFloat(getTotalBalance())} {CURRENCIES_AND_SYMBOLS.USD}</h4>
                     </Card>

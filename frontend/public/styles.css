@@ -28,3 +28,16 @@ input[type=number] {
 .form-check-input {
     cursor: pointer !important;
 }
+
+.account-action {
+    background: rgb(241,241,241);
+    border-radius: 3px;
+    padding: 3px;
+    transition: 0.25s ease-out;
+    cursor: pointer;
+}
+
+.account-action:hover {
+    filter: brightness(0.9);
+}
+

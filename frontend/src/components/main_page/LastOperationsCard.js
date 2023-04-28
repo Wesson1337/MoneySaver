@@ -3,7 +3,7 @@ import MainPageCard from "./MainPageCard";
 import {INCOME_CATEGORIES, OPERATIONS_ROUTE, SPENDING_CATEGORIES} from "../../utils/consts";
 import {Button, Col, Form, Modal, Row, Spinner} from "react-bootstrap";
 import Operation from "../common/Operation";
-import ShowMoreModal from "../common/ShowMoreModal";
+import ShowMoreButton from "../common/ShowMoreButton";
 
 const LastOperationsCard = (props) => {
     const [showModal, setShowModal] = useState(false)
@@ -69,7 +69,7 @@ const LastOperationsCard = (props) => {
                 <>
                     <div className="d-flex justify-content-between align-items-center">
                         <b>Last operations</b>
-                        <ShowMoreModal
+                        <ShowMoreButton
                             setShowModal={setShowModal}
                             showModal={showModal}
                         >
@@ -131,7 +131,7 @@ const LastOperationsCard = (props) => {
                                     </Button>
                                 </Modal.Footer>
                             </Modal>
-                        </ShowMoreModal>
+                        </ShowMoreButton>
                     </div>
                     <div className="w-100 d-flex flex-column gap-1">
                         {operations.map((o, index) =>

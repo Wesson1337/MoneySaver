@@ -12,6 +12,7 @@ const Accounts = () => {
     const [totalBalance, setTotalBalance] = useState(null)
     const [accounts, setAccounts] = useState([])
     const [errorMsg, setErrorMsg] = useState(null)
+    const [accountUpdated, setAccountUpdated] = useState(null)
 
     const addUSDBalanceToAccounts = async (accounts) => {
         let balanceInUSD
@@ -32,7 +33,7 @@ const Accounts = () => {
         }).finally(() => {
             setIsLoading(false)
         })
-    }, [])
+    }, [accountUpdated])
 
     const getTotalBalance = () => {
         let totalBalance = 0;
@@ -78,6 +79,9 @@ const Accounts = () => {
                                 key={`account-${account["id"]}`}
                                 index={index}
                                 account={account}
+                                setAccountUpdated={setAccountUpdated}
+                                accountUpdated={accountUpdated}
+                                setErrorMsg={setErrorMsg}
                             />
                         ))}
                     </div>

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import dots from "../../static/icons/menu-dots-vertical.svg";
 
-const ShowMoreModal = (props) => {
+const ShowMoreButton = (props) => {
     const [isClicked, setIsClicked] = useState(false)
     const [isActive, setIsActive] = useState(false)
 
@@ -40,4 +40,4 @@ const ShowMoreModal = (props) => {
     );
 };
 
-export default ShowMoreModal;
+export default ShowMoreButton;

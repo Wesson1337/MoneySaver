@@ -42,16 +42,19 @@ const MainPage = () => {
                 firstDayOfPreviousMonth,
                 currentDate
             )
+            return {operations: operations, accounts: accounts}
         } catch (e) {
-            setErrorMsg(`Error with connecting to server, app may work incorrect. Error message: ${e}`)
+            setErrorMsg(`Error with connecting to server, app may work incorrect. Error message: ${e.response.data.detail || e}`)
         }
-        return {operations: operations, accounts: accounts}
     }
 
     useEffect(() => {
         getData().then(data => {
-            setData(data)
-        }).finally(() => setIsLoading(false))
+            if (data) {
+                setData(data);
+                setIsLoading(false)
+            }
+        })
     }, [])
 
     return (<>

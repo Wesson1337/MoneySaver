@@ -22,14 +22,16 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
     useEffect(() => {
         let tempAccounts = []
         data.accounts.forEach((account) => {
-            let newAccount = {}
-            newAccount["label"] =
-                <div className="d-flex justify-content-between">
-                    <p className="m-0">{`${account["name"] ? account["name"] : 'Unnamed account'} (${ACCOUNT_TYPES[account["type"]].name})`}</p>
-                    <p className="m-0">{`${prettifyFloat(account["balance"])} ${CURRENCIES_AND_SYMBOLS[account["currency"]]}`}</p>
-                </div>
-            newAccount["value"] = account
-            tempAccounts.push(newAccount)
+            if (account.is_active) {
+                let newAccount = {}
+                newAccount["label"] =
+                    <div className="d-flex justify-content-between">
+                        <p className="m-0">{`${account["name"] ? account["name"] : 'Unnamed account'} (${ACCOUNT_TYPES[account["type"]].name})`}</p>
+                        <p className="m-0">{`${prettifyFloat(account["balance"])} ${CURRENCIES_AND_SYMBOLS[account["currency"]]}`}</p>
+                    </div>
+                newAccount["value"] = account
+                tempAccounts.push(newAccount)
+            }
         })
         setAccounts(tempAccounts)
     }, [])

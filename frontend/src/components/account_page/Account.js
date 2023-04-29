@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Card, Form, Spinner} from "react-bootstrap";
+import {Card, Form} from "react-bootstrap";
 import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS} from "../../utils/consts";
 import {prettifyFloat} from "../../utils/prettifyFloat";
 import transferIcon from "../../static/icons/transfer-svgrepo-com.svg"

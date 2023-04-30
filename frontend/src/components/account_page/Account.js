@@ -8,7 +8,7 @@ import eyeIcon from "../../static/icons/eye-open-svgrepo-com.svg"
 import TransferModal from "./TransferModal";
 import {patchAccount} from "../../http/accountsAPI";
 
-const Account = ({account, index, setAccountUpdated, accountUpdated, setErrorMsg}) => {
+const Account = ({account, index, setAccountUpdated, accountUpdated, setErrorMsg, accounts}) => {
     const [isExpanded, setIsExpanded] = useState(false)
     const [showTransferModal, setShowTransferModal] = useState(false)
     const [switchIsLoading, setSwitchIsLoading] = useState(false)
@@ -103,6 +103,8 @@ const Account = ({account, index, setAccountUpdated, accountUpdated, setErrorMsg
             <TransferModal
                 show={showTransferModal}
                 setShow={setShowTransferModal}
+                account={account}
+                accounts={accounts}
             />
         </>
     );

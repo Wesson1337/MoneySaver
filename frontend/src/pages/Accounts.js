@@ -82,6 +82,7 @@ const Accounts = () => {
                                 setAccountUpdated={setAccountUpdated}
                                 accountUpdated={accountUpdated}
                                 setErrorMsg={setErrorMsg}
+                                accounts={accounts}
                             />
                         ))}
                     </div>

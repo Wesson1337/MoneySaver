@@ -61,6 +61,16 @@ export const INCOME_CATEGORIES = {
         name: "From Investments",
         nameForRequest: "FROM_INVESTMENTS",
         icon: fromInvestmentIcon
+    },
+    TRANSFERS: {
+        name: "Transfers",
+        nameForRequest: "TRANSFERS",
+        icon: transferIcon
+    },
+    OTHER: {
+        name: "Other",
+        nameForRequest: "OTHER",
+        icon: otherIcon
     }
 }
 

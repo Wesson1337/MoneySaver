@@ -232,7 +232,7 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
                         <Col className="d-flex align-items-end justify-content-between">
                             <p className="m-0 fs-4">Total: </p>
                             {amountInAccountCurrencyIsLoading ?
-                                <Spinner variant={"border"} size="sm" className={"p-2 m-1"}/> :
+                                <Spinner animation={"border"} size="sm" className={"p-2 m-1"}/> :
                                 <p className="m-0 fs-4 text-nowrap">{amountInAccountCurrency ? `${chosenAccount?.currency !== chosenCurrency ? "~ " : ""}` + prettifyFloat(amountInAccountCurrency) : null} {CURRENCIES_AND_SYMBOLS[chosenAccount?.currency]}</p>
                             }
                         </Col>

@@ -64,7 +64,7 @@ const LastOperationsCard = (props) => {
         >
             {isLoading
                 ?
-                <div className="d-flex justify-content-center"><Spinner variant="border"/></div>
+                <div className="d-flex justify-content-center"><Spinner animation="border"/></div>
                 :
                 <>
                     <div className="d-flex justify-content-between align-items-center">

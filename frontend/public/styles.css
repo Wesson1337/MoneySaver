@@ -41,3 +41,6 @@ input[type=number] {
     filter: brightness(0.9);
 }
 
+#invalid-tooltip-transfer {
+    margin-top: -90px !important;
+}

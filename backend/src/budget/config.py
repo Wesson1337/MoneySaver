@@ -38,6 +38,7 @@ class IncomeCategories(str, Enum):
     SALARY = "SALARY"
     ODD_JOBS = "ODD_JOBS"
     FROM_INVESTMENTS = "FROM_INVESTMENTS"
+    TRANSFERS = "TRANSFERS"
     OTHER = "OTHER"
 
 

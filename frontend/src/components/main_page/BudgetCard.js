@@ -32,7 +32,7 @@ const BudgetCard = ({data, setErrorMsg}) => {
             <h4 className="m-0 text-nowrap">Total balance:</h4>
             {isLoading
                 ?
-                <Spinner variant="border" size="sm" className="m-auto"/>
+                <Spinner animation="border" size="sm" className="m-auto"/>
                 :
                 <h2 className="m-0 mt-1 text-nowrap" style={{color: INTERFACE_COLORS.GREEN}}>{`${totalBalance} $`}</h2>}
         </MainPageCard>

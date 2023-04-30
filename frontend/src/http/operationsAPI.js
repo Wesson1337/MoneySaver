@@ -1,5 +1,6 @@
 import {getUserIdFromJWT} from "./userAPI";
 import {$authHost} from "./index";
+import {SPENDING_CATEGORIES} from "../utils/consts";
 
 const userId = getUserIdFromJWT()
 
@@ -16,4 +17,19 @@ export const getAllOperations = async (currency, createdAtAfter, createdAtBefore
 export const createOperation = async (operationData) => {
     const {data} = await $authHost.post(`/api/v1/budget/${operationData.replenishment_account_id ? "incomes" : "spendings"}/`, operationData)
     return data
+}
+
+export const transferMoney = async (accountFrom, accountTo, amount) => {
+    const operationData = {
+        "user_id": userId,
+        "category": SPENDING_CATEGORIES.TRANSFERS.nameForRequest,
+        "amount": amount,
+        "currency": accountFrom.currency,
+        "comment": `Transfer from ${accountFrom.name} to ${accountTo.name}`
+    }
+
+    const spendingResponse = await createOperation(Object.assign(operationData, {"receipt_account_id": accountFrom.id}))
+    const incomeResponse = await createOperation(Object.assign(operationData, {"replenishment_account_id": accountTo.id}))
+
+    return {spendingResponse: spendingResponse, incomeResponse: incomeResponse}
 }

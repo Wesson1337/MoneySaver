@@ -36,8 +36,6 @@ const LastSevenDaysOperationsCard = ({data, setErrorMsg}) => {
             endDate.setDate(endDate.getDate() - i)
             startDate.setUTCHours(0, 0, 0, 0)
             endDate.setUTCHours(23, 59, 59, 999)
-            console.log(startDate, endDate)
-            console.log(data.operations.incomes)
             filteredIncomes = data.operations.incomes.filter(income => new Date(income["created_at"]) >= startDate && new Date(income["created_at"]) < endDate)
             filteredSpendings = data.operations.spendings.filter(spending => new Date(spending["created_at"]) >= startDate && new Date(spending["created_at"]) < endDate)
 
@@ -53,7 +51,6 @@ const LastSevenDaysOperationsCard = ({data, setErrorMsg}) => {
     useEffect(() => {
         getLastSevenOperationData().then((d) => {
             setOperationData(d);
-            console.log(operationData)
         }).finally(() => {
             setIsLoading(false)
         })
@@ -63,7 +60,7 @@ const LastSevenDaysOperationsCard = ({data, setErrorMsg}) => {
         <MainPageCard navigateto={OPERATIONS_ROUTE} className="mt-3">
             <b>Last 7 days</b>
             {isLoading ?
-                <div className="mt-3 d-flex justify-content-center align-items-center"><Spinner variant="border"/>
+                <div className="mt-3 d-flex justify-content-center align-items-center"><Spinner animation="border"/>
                 </div> :
                 <>
                     <div className="mt-3" style={{width: "100%", height: "300px"}}>

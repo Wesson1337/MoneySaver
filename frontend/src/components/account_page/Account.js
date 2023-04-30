@@ -105,6 +105,8 @@ const Account = ({account, index, setAccountUpdated, accountUpdated, setErrorMsg
                 setShow={setShowTransferModal}
                 account={account}
                 accounts={accounts}
+                setAccountUpdated={setAccountUpdated}
+                accountUpdated={accountUpdated}
             />
         </>
     );

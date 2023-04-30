@@ -130,7 +130,7 @@ const MonthOperationsCard = (props) => {
             {isLoading
                 ?
                 <div className="d-flex align-items-center justify-content-center w-100" style={{minHeight: "105px"}}>
-                    <Spinner variant="border"/>
+                    <Spinner animation="border"/>
                 </div>
                 :
                 <div className="d-flex flex-row align-items-center w-100 gap-3"

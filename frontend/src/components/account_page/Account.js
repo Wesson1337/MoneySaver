@@ -7,11 +7,13 @@ import editIcon from "../../static/icons/edit-svgrepo-com.svg"
 import eyeIcon from "../../static/icons/eye-open-svgrepo-com.svg"
 import TransferModal from "./TransferModal";
 import {patchAccount} from "../../http/accountsAPI";
+import EditModal from "./EditModal";
 
 const Account = ({account, index, setAccountUpdated, accountUpdated, setErrorMsg, accounts}) => {
     const [isExpanded, setIsExpanded] = useState(false)
     const [showTransferModal, setShowTransferModal] = useState(false)
     const [switchIsLoading, setSwitchIsLoading] = useState(false)
+    const [showEditModal, setShowEditModal] = useState(false)
 
     const handleCheckOnChange = async () => {
         try {
@@ -80,6 +82,9 @@ const Account = ({account, index, setAccountUpdated, accountUpdated, setErrorMsg
                         </div>
                         <div
                             className="account-action"
+                            onClick={() => {
+                                setShowEditModal(true)
+                            }}
                         >
                             <img
                                 src={editIcon}
@@ -107,6 +112,10 @@ const Account = ({account, index, setAccountUpdated, accountUpdated, setErrorMsg
                 accounts={accounts}
                 setAccountUpdated={setAccountUpdated}
                 accountUpdated={accountUpdated}
+            />
+            <EditModal
+                show={showEditModal}
+                setShow={setShowEditModal}
             />
         </>
     );

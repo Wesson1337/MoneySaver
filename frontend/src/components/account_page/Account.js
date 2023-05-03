@@ -116,6 +116,9 @@ const Account = ({account, index, setAccountUpdated, accountUpdated, setErrorMsg
             <EditModal
                 show={showEditModal}
                 setShow={setShowEditModal}
+                account={account}
+                setAccountUpdated={setAccountUpdated}
+                accountUpdated={accountUpdated}
             />
         </>
     );

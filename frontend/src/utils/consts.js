@@ -1,20 +1,22 @@
-import supermarketIcon from '../static/icons/categories_icons/shopping-svgrepo-com.svg'
-import transferIcon from '../static/icons/categories_icons/transfer-fee-svgrepo-com.svg'
-import fastFoodIcon from '../static/icons/categories_icons/fastfood-svgrepo-com.svg'
-import taxiIcon from '../static/icons/categories_icons/taxi-svgrepo-com.svg'
-import entertainmentIcon from '../static/icons/categories_icons/entertainment-svgrepo-com.svg'
-import miscellaneousIcon from '../static/icons/categories_icons/miscellaneous-collection-svgrepo-com.svg'
-import transportIcon from '../static/icons/categories_icons/transport-svgrepo-com.svg'
-import serviceIcon from '../static/icons/categories_icons/corp-purchase-svgrepo-com.svg'
-import pharmaciesIcon from '../static/icons/categories_icons/pharmacy-svgrepo-com.svg'
-import billsIcon from '../static/icons/categories_icons/business-expense-svgrepo-com.svg'
-import clothingIcon from '../static/icons/categories_icons/clothing-svgrepo-com.svg'
-import beautyIcon from '../static/icons/categories_icons/cosmetics-svgrepo-com.svg'
-import homeImprovementIcon from '../static/icons/categories_icons/home-svgrepo-com.svg'
-import otherIcon from '../static/icons/categories_icons/other-income-svgrepo-com.svg'
-import salaryIcon from '../static/icons/categories_icons/salary-svgrepo-com.svg'
-import oddJobsIcon from '../static/icons/categories_icons/scope-transactions-read-svgrepo-com.svg'
-import fromInvestmentIcon from '../static/icons/categories_icons/sales-amount-svgrepo-com.svg'
+import supermarketIcon from '../static/icons/categories/shopping-svgrepo-com.svg'
+import transferIcon from '../static/icons/categories/transfer-fee-svgrepo-com.svg'
+import fastFoodIcon from '../static/icons/categories/fastfood-svgrepo-com.svg'
+import taxiIcon from '../static/icons/categories/taxi-svgrepo-com.svg'
+import entertainmentIcon from '../static/icons/categories/entertainment-svgrepo-com.svg'
+import miscellaneousIcon from '../static/icons/categories/miscellaneous-collection-svgrepo-com.svg'
+import transportIcon from '../static/icons/categories/transport-svgrepo-com.svg'
+import serviceIcon from '../static/icons/categories/corp-purchase-svgrepo-com.svg'
+import pharmaciesIcon from '../static/icons/categories/pharmacy-svgrepo-com.svg'
+import billsIcon from '../static/icons/categories/business-expense-svgrepo-com.svg'
+import clothingIcon from '../static/icons/categories/clothing-svgrepo-com.svg'
+import beautyIcon from '../static/icons/categories/cosmetics-svgrepo-com.svg'
+import homeImprovementIcon from '../static/icons/categories/home-svgrepo-com.svg'
+import otherIcon from '../static/icons/categories/other-income-svgrepo-com.svg'
+import salaryIcon from '../static/icons/categories/salary-svgrepo-com.svg'
+import oddJobsIcon from '../static/icons/categories/scope-transactions-read-svgrepo-com.svg'
+import fromInvestmentIcon from '../static/icons/categories/sales-amount-svgrepo-com.svg'
+import bankIcon from '../static/icons/account_types/culture-svgrepo-com.svg'
+import walletIcon from '../static/icons/account_types/wallet-svgrepo-com.svg'
 
 export const LOGIN_ROUTE = '/login'
 export const REGISTRATION_ROUTE = '/registration'
@@ -151,11 +153,11 @@ export const ACCOUNT_TYPES = {
     "WALLET": {
         name: "Wallet",
         nameForRequest: "WALLET",
-        icon: null
+        icon: walletIcon
     },
     "BANK_ACCOUNT": {
         name: "Bank Account",
         nameForRequest: "BANK_ACCOUNT",
-        icon: null
+        icon: bankIcon
     }
 }

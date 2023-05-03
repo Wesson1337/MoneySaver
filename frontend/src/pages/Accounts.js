@@ -6,6 +6,7 @@ import {CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS, SUPPORTED_CURRENCIES} from "..
 import {prettifyFloat} from "../utils/prettifyFloat";
 import {ErrorComponent} from "../components/common/ErrorComponent";
 import Account from "../components/account_page/Account";
+import AddAccountButton from "../components/account_page/AddAccountButton";
 
 const Accounts = () => {
     const [isLoading, setIsLoading] = useState(true)
@@ -52,6 +53,7 @@ const Accounts = () => {
     }
 
     return (
+        <>
         <Container>
             {isLoading ? <div
                     className="w-100 d-flex align-items-center justify-content-center"
@@ -89,6 +91,8 @@ const Accounts = () => {
                 </>
             }
         </Container>
+        <AddAccountButton/>
+        </>
 
     );
 };

@@ -13,7 +13,7 @@ import {convertCurrency} from "../../utils/currency";
 import {getUserIdFromJWT} from "../../http/userAPI";
 import {createOperation} from "../../http/operationsAPI";
 
-const AddRemoveOperationModal = ({show, setShow, type, data}) => {
+const AddOperationModal = ({show, setShow, type, data}) => {
     const isRemove = type === "remove"
     const [categories, setCategories] = useState(null)
     const [currencies, setCurrencies] = useState(null)
@@ -281,4 +281,4 @@ const AddRemoveOperationModal = ({show, setShow, type, data}) => {
     </>);
 };
 
-export default AddRemoveOperationModal;
+export default AddOperationModal;

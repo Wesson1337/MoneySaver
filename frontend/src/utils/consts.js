@@ -45,7 +45,8 @@ export const CURRENCIES_AND_SYMBOLS = {
 
 export const INTERFACE_COLORS = {
     GREEN: "rgb(37,154,42)",
-    RED: "#d93838"
+    RED: "#d93838",
+    BLUE: "#0d6efd"
 }
 
 export const INCOME_CATEGORIES = {

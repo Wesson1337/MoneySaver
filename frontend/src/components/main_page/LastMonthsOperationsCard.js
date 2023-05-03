@@ -5,7 +5,7 @@ import {Button, Col, Form, Modal, Row, Spinner} from "react-bootstrap";
 import Operation from "../common/Operation";
 import ShowMoreButton from "../common/ShowMoreButton";
 
-const LastOperationsCard = (props) => {
+const LastMonthsOperationsCard = (props) => {
     const [showModal, setShowModal] = useState(false)
     const [operations, setOperations] = useState(null)
     const [amountOfOperations, setAmountOfOperations] = useState(Number(localStorage.getItem("amountOfOperations")))
@@ -151,4 +151,4 @@ const LastOperationsCard = (props) => {
     );
 };
 
-export default LastOperationsCard;
+export default LastMonthsOperationsCard;

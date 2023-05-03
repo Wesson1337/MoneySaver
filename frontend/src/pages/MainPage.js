@@ -6,9 +6,9 @@ import BudgetCard from "../components/main_page/BudgetCard";
 import MonthOperationsCard from "../components/main_page/MonthOperationsCard";
 import {getAllOperations} from "../http/operationsAPI";
 import {SUPPORTED_CURRENCIES} from "../utils/consts";
-import LastOperationsCard from "../components/main_page/LastOperationsCard";
+import LastMonthsOperationsCard from "../components/main_page/LastMonthsOperationsCard";
 import CurrenciesBudgetCard from "../components/main_page/CurrenciesBudgetCard";
-import AddRemoveButtons from "../components/common/AddRemoveButtons";
+import AddOperationButtons from "../components/common/AddOperationButtons";
 import {convertCurrency} from "../utils/currency";
 import LastSevenDaysOperationsCard from "../components/main_page/LastSevenDaysOperationsCard";
 
@@ -78,14 +78,14 @@ const MainPage = () => {
                     </Row>
                     <Row>
                         <Col className="g-3">
-                            <LastOperationsCard data={data} setErrorMsg={setErrorMsg}/>
+                            <LastMonthsOperationsCard data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                         <Col className="g-3">
                             <CurrenciesBudgetCard data={data} setErrorMsg={setErrorMsg}/>
                             <LastSevenDaysOperationsCard data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                     </Row>
-                    <AddRemoveButtons data={data} setErrorMsg={setErrorMsg}/>
+                    <AddOperationButtons data={data} setErrorMsg={setErrorMsg}/>
                 </Container>
             }
         </>

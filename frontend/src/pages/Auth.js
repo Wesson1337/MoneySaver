@@ -53,7 +53,7 @@ const Auth = () => {
                 setUser(email)
                 navigate(MAIN_PAGE_ROUTE)
             } catch (e) {
-                setErrorMsg(`${e.response.data.detail || e}`)
+                setErrorMsg(`${e?.response?.data?.detail || e}`)
             }
         }
         setLoading(false)
@@ -67,7 +67,7 @@ const Auth = () => {
                 setUser(email)
                 navigate(MAIN_PAGE_ROUTE)
             } catch (e) {
-                setErrorMsg(`${e.response.data.detail || e}`)
+                setErrorMsg(`${e?.response?.data?.detail || e}`)
             }
         }
         setLoading(false)

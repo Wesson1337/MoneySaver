@@ -3,25 +3,25 @@ import {CURRENCIES_AND_SYMBOLS} from "../../utils/consts";
 import {ProgressBar} from "react-bootstrap";
 import {prettifyFloat} from "../../utils/prettifyFloat";
 
-const Currency = (props) => {
+const Currency = ({currency, percent, balance}) => {
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center w-100 gap-4">
-                <p className="m-0">{props.currency}</p>
-                <p className="m-0 little-text">{prettifyFloat(props.balance.toFixed(2))} {CURRENCIES_AND_SYMBOLS[props.currency]}</p>
+                <p className="m-0">{currency}</p>
+                <p className="m-0 little-text">{prettifyFloat(balance.toFixed(2))} {CURRENCIES_AND_SYMBOLS[currency]}</p>
             </div>
             <div
                 className="d-flex justify-content-between align-items-center gap-4 w-100"
             >
                 <ProgressBar
-                    now={props.percent}
+                    now={percent}
                     style={{height: "3px"}}
                     className="w-100"
                 />
                 <p
                     className="m-0 text-nowrap little-text"
                     style={{minWidth: "60px", textAlign: "right"}}
-                >{props.percent} %</p>
+                >{percent} %</p>
             </div>
         </div>
     );

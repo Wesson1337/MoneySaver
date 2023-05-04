@@ -5,24 +5,26 @@ import {Spinner} from "react-bootstrap";
 import Currency from "./Currency";
 import Sort from "../common/Sort";
 
-const CurrenciesBudgetCard = (props) => {
-    const [currenciesAndBalance, setCurrenciesAndBalance] = useState(null)
+const CurrenciesBudgetCard = ({data}) => {
+    const [currenciesAndBalance, setCurrenciesAndBalance] = useState({})
     const [isLoading, setIsLoading] = useState(true)
     const [totalBalanceInUSD, setTotalBalanceInUSD] = useState(null)
 
     const getCurrenciesAndBalance = () => {
         let currAndBalance = {}
         let totalInUSD = 0
-        for (const account of props.data.accounts) {
-            if (account["currency"] in currAndBalance) {
-                currAndBalance[account["currency"]]["USD"] += account["balance"]
-                currAndBalance[account["currency"]]["USD"] += account["balanceInUSD"]
-            } else {
-                currAndBalance[account["currency"]] = {}
-                currAndBalance[account["currency"]]["balance"] = account["balance"]
-                currAndBalance[account["currency"]]["USD"] = account["balanceInUSD"]
+        for (const account of data.accounts) {
+            if (account.is_active) {
+                if (account.currency in currAndBalance) {
+                    currAndBalance[account["currency"]].balance += account.balance
+                    currAndBalance[account["currency"]].USD += account.balanceInUSD
+                } else {
+                    currAndBalance[account["currency"]] = {}
+                    currAndBalance[account["currency"]].balance = account.balance
+                    currAndBalance[account["currency"]].USD = account.balanceInUSD
+                }
+                totalInUSD += account.balanceInUSD
             }
-            totalInUSD += account["balanceInUSD"]
         }
         setTotalBalanceInUSD(totalInUSD)
         setCurrenciesAndBalance(currAndBalance)

@@ -91,7 +91,10 @@ const Accounts = () => {
                 </>
             }
         </Container>
-        <AddAccountButton/>
+        <AddAccountButton
+            accountUpdated={accountUpdated}
+            setAccountUpdated={setAccountUpdated}
+        />
         </>
 
     );

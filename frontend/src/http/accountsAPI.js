@@ -18,7 +18,7 @@ export const patchAccount = async (accountId, dataToUpdate) => {
     return data
 }
 
-export const createAccounts = async (accountId, accountData) => {
-    const {data} = await $authHost.post(`/api/v1/budget/accounts/${accountId}/`, accountData)
+export const createAccount = async (accountData) => {
+    const {data} = await $authHost.post(`/api/v1/budget/accounts/`, accountData)
     return data
 }

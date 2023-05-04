@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Button, Col, Form, Modal, Row, Spinner} from "react-bootstrap";
 import Select from "react-select";
-import {ACCOUNT_TYPES, INTERFACE_COLORS} from "../../utils/consts";
+import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS} from "../../utils/consts";
 import {patchAccount} from "../../http/accountsAPI";
 
 const EditModal = ({show, setShow, account, accountUpdated, setAccountUpdated}) => {
@@ -10,6 +10,7 @@ const EditModal = ({show, setShow, account, accountUpdated, setAccountUpdated}) 
     const [typeOptions, setTypeOptions] = useState([])
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
+
     const handleOnHide = () => {
         setShow(false)
         setEnteredName("")
@@ -101,7 +102,7 @@ const EditModal = ({show, setShow, account, accountUpdated, setAccountUpdated}) 
                                             setAccountUpdated(!accountUpdated)
                                             handleOnHide()
                                         }
-                                    })
+                                    }).finally(() => setIsLoading(false))
                                 }}
                             >Save</Button>
                         </div>

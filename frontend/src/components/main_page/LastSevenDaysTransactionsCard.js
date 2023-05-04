@@ -5,7 +5,7 @@ import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxi
 import {convertCurrency} from "../../utils/currency";
 import {Spinner} from "react-bootstrap";
 
-const LastSevenDaysOperationsCard = ({data, setErrorMsg}) => {
+const LastSevenDaysTransactionsCard = ({data, setErrorMsg}) => {
     const [operationData, setOperationData] = useState([])
     const [isLoading, setIsLoading] = useState(true)
 
@@ -90,4 +90,4 @@ const LastSevenDaysOperationsCard = ({data, setErrorMsg}) => {
     );
 };
 
-export default LastSevenDaysOperationsCard;
+export default LastSevenDaysTransactionsCard;

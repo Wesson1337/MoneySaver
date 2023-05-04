@@ -9,7 +9,7 @@ import red_arrow from "../../static/icons/red-arrow.svg"
 import {prettifyFloat} from "../../utils/prettifyFloat";
 
 
-const MonthOperationsCard = (props) => {
+const MonthTransactionsCard = (props) => {
     const [isLoading, setIsLoading] = useState(true)
     const [totalIncomeAmount, setTotalIncomeAmount] = useState(0)
     const [totalSpendingAmount, setTotalSpendingAmount] = useState(0)
@@ -207,4 +207,4 @@ const MonthOperationsCard = (props) => {
     );
 };
 
-export default MonthOperationsCard;
+export default MonthTransactionsCard;

@@ -3,9 +3,9 @@ import {useLocation} from "react-router-dom";
 import {INTERFACE_COLORS} from "../../utils/consts";
 import whitePlusIcon from "../../static/icons/plus-add-create-new-cross-svgrepo-com.svg"
 import whiteMinusIcon from "../../static/icons/minus-remove-subtract-delete-svgrepo-com.svg"
-import AddOperationModal from "./AddOperationModal";
+import AddTransactionModal from "./AddTransactionModal";
 
-const AddOperationButtons = ({data}) => {
+const AddTransactionButtons = ({data}) => {
     const location = useLocation()
     const [showAddModal, setShowAddModal] = useState(false)
     const [showRemoveModal, setShowRemoveModal] = useState(false)
@@ -35,7 +35,7 @@ const AddOperationButtons = ({data}) => {
                     width="25px"
                 />
             </button>
-            <AddOperationModal
+            <AddTransactionModal
                 show={showAddModal}
                 setShow={setShowAddModal}
                 type="add"
@@ -61,7 +61,7 @@ const AddOperationButtons = ({data}) => {
                     color="white"
                 />
             </button>
-            <AddOperationModal
+            <AddTransactionModal
                 show={showRemoveModal}
                 setShow={setShowRemoveModal}
                 type="remove"
@@ -71,4 +71,4 @@ const AddOperationButtons = ({data}) => {
     );
 };
 
-export default AddOperationButtons;
+export default AddTransactionButtons;

@@ -11,9 +11,9 @@ import Select from "react-select";
 import {prettifyFloat} from "../../utils/prettifyFloat";
 import {convertCurrency} from "../../utils/currency";
 import {getUserIdFromJWT} from "../../http/userAPI";
-import {createOperation} from "../../http/operationsAPI";
+import {createTransaction} from "../../http/transactionsAPI";
 
-const AddOperationModal = ({show, setShow, type, data}) => {
+const AddTransactionModal = ({show, setShow, type, data}) => {
     const isRemove = type === "remove"
     const [categories, setCategories] = useState(null)
     const [currencies, setCurrencies] = useState(null)
@@ -140,7 +140,7 @@ const AddOperationModal = ({show, setShow, type, data}) => {
             operationData["replenishment_account_id"] = chosenAccount.id
         }
         try {
-            return await createOperation(operationData)
+            return await createTransaction(operationData)
         } catch (e) {
             setError(`${e.response?.data.detail || e.response?.data["msg"] || e}`)
         }
@@ -281,4 +281,4 @@ const AddOperationModal = ({show, setShow, type, data}) => {
     </>);
 };
 
-export default AddOperationModal;
+export default AddTransactionModal;

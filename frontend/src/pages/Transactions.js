@@ -1,14 +1,12 @@
 import React from 'react';
 import {Container} from "react-bootstrap";
 
-const Operations = () => {
+const Transactions = () => {
     return (
         <Container>
-            <div>
-                OPERATIONS
-            </div>
+
         </Container>
     );
 };
 
-export default Operations;
+export default Transactions;

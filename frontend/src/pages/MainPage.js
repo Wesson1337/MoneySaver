@@ -3,14 +3,14 @@ import {getAllAccounts} from "../http/accountsAPI";
 import {Col, Container, Row, Spinner} from "react-bootstrap";
 import {ErrorComponent} from "../components/common/ErrorComponent";
 import BudgetCard from "../components/main_page/BudgetCard";
-import MonthOperationsCard from "../components/main_page/MonthOperationsCard";
-import {getAllOperations} from "../http/operationsAPI";
+import MonthTransactionsCard from "../components/main_page/MonthTransactionsCard";
+import {getAllTransactions} from "../http/transactionsAPI";
 import {SUPPORTED_CURRENCIES} from "../utils/consts";
 import LastMonthsOperationsCard from "../components/main_page/LastMonthsOperationsCard";
 import CurrenciesBudgetCard from "../components/main_page/CurrenciesBudgetCard";
-import AddOperationButtons from "../components/common/AddOperationButtons";
+import AddTransactionButtons from "../components/common/AddTransactionButtons";
 import {convertCurrency} from "../utils/currency";
-import LastSevenDaysOperationsCard from "../components/main_page/LastSevenDaysOperationsCard";
+import LastSevenDaysTransactionsCard from "../components/main_page/LastSevenDaysTransactionsCard";
 
 const MainPage = () => {
     const [isLoading, setIsLoading] = useState(true)
@@ -37,7 +37,7 @@ const MainPage = () => {
                 currentDate.getMonth() - 1,
                 1).toISOString()
             currentDate = currentDate.toISOString()
-            operations = await getAllOperations(
+            operations = await getAllTransactions(
                 null,
                 firstDayOfPreviousMonth,
                 currentDate
@@ -70,10 +70,10 @@ const MainPage = () => {
                             <BudgetCard data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                         <Col className="g-3">
-                            <MonthOperationsCard month="this-month" data={data} setErrorMsg={setErrorMsg}/>
+                            <MonthTransactionsCard month="this-month" data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                         <Col className="g-3">
-                            <MonthOperationsCard month="previous-month" data={data} setErrorMsg={setErrorMsg}/>
+                            <MonthTransactionsCard month="previous-month" data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                     </Row>
                     <Row>
@@ -82,10 +82,10 @@ const MainPage = () => {
                         </Col>
                         <Col className="g-3">
                             <CurrenciesBudgetCard data={data} setErrorMsg={setErrorMsg}/>
-                            <LastSevenDaysOperationsCard data={data} setErrorMsg={setErrorMsg}/>
+                            <LastSevenDaysTransactionsCard data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                     </Row>
-                    <AddOperationButtons data={data} setErrorMsg={setErrorMsg}/>
+                    <AddTransactionButtons data={data} setErrorMsg={setErrorMsg}/>
                 </Container>
             }
         </>

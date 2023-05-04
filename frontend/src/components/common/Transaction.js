@@ -2,7 +2,7 @@ import React from 'react';
 import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS} from "../../utils/consts";
 import {prettifyFloat} from "../../utils/prettifyFloat";
 
-const Operation = ({icon, category, type, amount, amountInAccountCurrency, account, date}) => {
+const Transaction = ({icon, category, type, amount, amountInAccountCurrency, account, date}) => {
     return (
         <div className="d-flex gap-2 align-items-center">
             <img
@@ -38,4 +38,4 @@ const Operation = ({icon, category, type, amount, amountInAccountCurrency, accou
     );
 };
 
-export default Operation;
+export default Transaction;

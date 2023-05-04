@@ -36,7 +36,7 @@ const NavBar = () => {
                             <Nav.Link eventKey={ACCOUNTS_ROUTE}
                                       onClick={() => navigate(ACCOUNTS_ROUTE)}>Accounts</Nav.Link>
                             <Nav.Link eventKey={OPERATIONS_ROUTE}
-                                      onClick={() => navigate(OPERATIONS_ROUTE)}>Operations</Nav.Link>
+                                      onClick={() => navigate(OPERATIONS_ROUTE)}>Transactions</Nav.Link>
                         </Nav>
                         {user
                             ?

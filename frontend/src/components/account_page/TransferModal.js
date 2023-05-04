@@ -3,7 +3,7 @@ import {Button, Col, Form, Modal, Row, Spinner} from "react-bootstrap";
 import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS} from "../../utils/consts";
 import Select from "react-select";
 import {prettifyFloat} from "../../utils/prettifyFloat";
-import {transferMoney} from "../../http/operationsAPI";
+import {transferMoney} from "../../http/transactionsAPI";
 
 const TransferModal = ({show, setShow, account, accounts, setAccountUpdated, accountUpdated}) => {
     const [accountOptions, setAccountOptions] = useState([])

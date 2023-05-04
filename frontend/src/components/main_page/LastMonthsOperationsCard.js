@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
 import {INCOME_CATEGORIES, OPERATIONS_ROUTE, SPENDING_CATEGORIES} from "../../utils/consts";
 import {Button, Col, Form, Modal, Row, Spinner} from "react-bootstrap";
-import Operation from "../common/Operation";
+import Transaction from "../common/Transaction";
 import ShowMoreButton from "../common/ShowMoreButton";
 
 const LastMonthsOperationsCard = (props) => {
@@ -135,7 +135,7 @@ const LastMonthsOperationsCard = (props) => {
                     </div>
                     <div className="w-100 d-flex flex-column gap-1">
                         {operations.map((o, index) =>
-                            <Operation
+                            <Transaction
                                 key={`operation-${index}`}
                                 amount={o.amount}
                                 amountInAccountCurrency={o["amount_in_account_currency_at_creation"]}

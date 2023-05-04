@@ -4,7 +4,7 @@ import {SPENDING_CATEGORIES} from "../utils/consts";
 
 const userId = getUserIdFromJWT()
 
-export const getAllOperations = async (currency, createdAtAfter, createdAtBefore) => {
+export const getAllTransactions = async (currency, createdAtAfter, createdAtBefore) => {
     let response = await $authHost.get(`/api/v1/budget/users/${userId}/incomes/`,
         {params: {currency: currency, created_at_ge: createdAtAfter, created_at_le: createdAtBefore}})
     const incomes_data = response["data"]
@@ -14,7 +14,7 @@ export const getAllOperations = async (currency, createdAtAfter, createdAtBefore
     return {incomes: incomes_data, spendings: spendings_data}
 }
 
-export const createOperation = async (operationData) => {
+export const createTransaction = async (operationData) => {
     const {data} = await $authHost.post(`/api/v1/budget/${operationData.replenishment_account_id ? "incomes" : "spendings"}/`, operationData)
     return data
 }
@@ -28,8 +28,8 @@ export const transferMoney = async (accountFrom, accountTo, amount) => {
         "comment": `Transfer from ${accountFrom.name} to ${accountTo.name}`
     }
 
-    const spendingResponse = await createOperation(Object.assign(operationData, {"receipt_account_id": accountFrom.id}))
-    const incomeResponse = await createOperation(Object.assign(operationData, {"replenishment_account_id": accountTo.id}))
+    const spendingResponse = await createTransaction(Object.assign(operationData, {"receipt_account_id": accountFrom.id}))
+    const incomeResponse = await createTransaction(Object.assign(operationData, {"replenishment_account_id": accountTo.id}))
 
     return {spendingResponse: spendingResponse, incomeResponse: incomeResponse}
 }

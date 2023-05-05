@@ -13,11 +13,12 @@ import {convertCurrency} from "../../utils/currency";
 import {getUserIdFromJWT} from "../../http/userAPI";
 import {createTransaction} from "../../http/transactionsAPI";
 
-const AddTransactionModal = ({show, setShow, type, data}) => {
+const AddTransactionModal = ({show, setShow, type, data, hasChanged, setHasChanged}) => {
     const isRemove = type === "remove"
     const [categories, setCategories] = useState(null)
     const [currencies, setCurrencies] = useState(null)
     const [accounts, setAccounts] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
         let tempAccounts = []
@@ -124,6 +125,8 @@ const AddTransactionModal = ({show, setShow, type, data}) => {
     }
 
     const handleSave = async () => {
+        setIsLoading(true)
+
         if (!chosenAccount || !chosenCategory || !enteredAmount || !chosenCurrency) {
             setError("At least one field is not filled")
             return
@@ -262,6 +265,7 @@ const AddTransactionModal = ({show, setShow, type, data}) => {
             <Modal.Footer>
                 <div className="d-flex justify-content-between align-items-center w-100">
                     <p className="m-0" style={{color: INTERFACE_COLORS.RED}}>{error}</p>
+                    {isLoading ? <div className="mx-4"><Spinner animation="border"/></div> :
                     <div className="d-flex gap-2">
                         <Button
                             variant="secondary"
@@ -273,15 +277,17 @@ const AddTransactionModal = ({show, setShow, type, data}) => {
                             onClick={() => {
                                 handleSave().then((value) => {
                                     if (value) {
-                                        window.location.reload()
+                                        setHasChanged(!hasChanged)
+                                        handleOnHide()
                                     }
-                                })
+                                }).finally(() => setIsLoading(false))
                             }}
                             variant={isRemove ? "danger" : "success"}
                         >
                             {isRemove ? "Save spending" : "Save income"}
                         </Button>
                     </div>
+                    }
                 </div>
             </Modal.Footer>
         </Modal>

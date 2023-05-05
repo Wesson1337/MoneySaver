@@ -5,12 +5,9 @@ import whitePlusIcon from "../../static/icons/plus-add-create-new-cross-svgrepo-
 import whiteMinusIcon from "../../static/icons/minus-remove-subtract-delete-svgrepo-com.svg"
 import AddTransactionModal from "./AddTransactionModal";
 
-const AddTransactionButtons = ({data}) => {
-    const location = useLocation()
+const AddTransactionButtons = ({data, hasChanged, setHasChanged}) => {
     const [showAddModal, setShowAddModal] = useState(false)
     const [showRemoveModal, setShowRemoveModal] = useState(false)
-    const [greenIsActive, setGreenIsActive] = useState(false)
-    const [greenIsClick, setGreenIsClicked] = useState(false)
     return (
         <div
             className="d-flex flex-column gap-4"
@@ -40,6 +37,8 @@ const AddTransactionButtons = ({data}) => {
                 setShow={setShowAddModal}
                 type="add"
                 data={data}
+                hasChanged={hasChanged}
+                setHasChanged={setHasChanged}
             />
             <button
                 style={{
@@ -66,6 +65,8 @@ const AddTransactionButtons = ({data}) => {
                 setShow={setShowRemoveModal}
                 type="remove"
                 data={data}
+                hasChanged={hasChanged}
+                setHasChanged={setHasChanged}
             />
         </div>
     );

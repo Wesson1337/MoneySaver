@@ -16,6 +16,7 @@ const MainPage = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [data, setData] = useState(null)
     const [errorMsg, setErrorMsg] = useState(null)
+    const [dataHasChanged, setDataHasChanged] = useState(false)
 
     const addUSDBalanceToAccounts = async (accounts) => {
         let balanceInUSD
@@ -27,6 +28,7 @@ const MainPage = () => {
     }
 
     const getData = async () => {
+        setIsLoading(true)
         let accounts
         let operations
         try {
@@ -55,7 +57,7 @@ const MainPage = () => {
                 setIsLoading(false)
             }
         })
-    }, [])
+    }, [dataHasChanged])
 
     return (<>
             {isLoading ? <div
@@ -85,7 +87,7 @@ const MainPage = () => {
                             <LastSevenDaysTransactionsCard data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                     </Row>
-                    <AddTransactionButtons data={data} setErrorMsg={setErrorMsg}/>
+                    <AddTransactionButtons data={data} setErrorMsg={setErrorMsg} hasChanged={dataHasChanged} setHasChanged={setDataHasChanged}/>
                 </Container>
             }
         </>

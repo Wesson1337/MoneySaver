@@ -13,10 +13,11 @@ const Transactions = () => {
     const [transactions, setTransactions] = useState({})
     const [isLoading, setIsLoading] = useState(true)
     const [data, setData] = useState({})
-    const [buttonsIsLoading, setButtonsIsLoading] = useState(true)
+    const [buttonsAreLoading, setButtonsAreLoading] = useState(true)
+    const [transactionHasChanged, setTransactionHasChanged] = useState(false)
 
     const getData = async () => {
-        setButtonsIsLoading(true)
+        setButtonsAreLoading(true)
         try {
             return {accounts: await getAllAccounts()}
         } catch (e) {
@@ -27,7 +28,7 @@ const Transactions = () => {
     useEffect(() => {
         getData().then(data => {
                 if (data) {
-                    setButtonsIsLoading(false)
+                    setButtonsAreLoading(false)
                     setData(data)
                 }
             }
@@ -61,7 +62,7 @@ const Transactions = () => {
                 setIsLoading(false)
             }
         })
-    }, [month])
+    }, [month, transactionHasChanged])
 
     return (
         <>
@@ -91,8 +92,10 @@ const Transactions = () => {
                     }
                 </Card>
             </Container>
-            {buttonsIsLoading ? null :
+            {buttonsAreLoading ? null :
             <AddTransactionButtons
+                hasChanged={transactionHasChanged}
+                setHasChanged={setTransactionHasChanged}
                 data={data}
             />
             }

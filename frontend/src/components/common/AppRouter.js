@@ -1,7 +1,7 @@
 import React from 'react';
 import {Route, Routes} from "react-router-dom";
 import PrivateRoutes from "./PrivateRoutes";
-import {ACCOUNTS_ROUTE, LOGIN_ROUTE, MAIN_PAGE_ROUTE, OPERATIONS_ROUTE, REGISTRATION_ROUTE} from "../../utils/consts";
+import {ACCOUNTS_ROUTE, LOGIN_ROUTE, MAIN_PAGE_ROUTE, TRANSACTIONS_ROUTE, REGISTRATION_ROUTE} from "../../utils/consts";
 import MainPage from "../../pages/MainPage";
 import Accounts from "../../pages/Accounts";
 import Transactions from "../../pages/Transactions";
@@ -14,7 +14,7 @@ const AppRouter = () => {
             <Route element={<PrivateRoutes/>}>
                 <Route path={MAIN_PAGE_ROUTE} element={<MainPage/>}/>
                 <Route path={ACCOUNTS_ROUTE} element={<Accounts/>}/>
-                <Route path={OPERATIONS_ROUTE} element={<Transactions/>}/>
+                <Route path={TRANSACTIONS_ROUTE} element={<Transactions/>}/>
             </Route>
             <Route path={LOGIN_ROUTE} element={<Auth/>}/>
             <Route path={REGISTRATION_ROUTE} element={<Auth/>}/>

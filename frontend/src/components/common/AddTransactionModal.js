@@ -26,7 +26,14 @@ const AddTransactionModal = ({show, setShow, type, data}) => {
                 let newAccount = {}
                 newAccount["label"] =
                     <div className="d-flex justify-content-between">
-                        <p className="m-0">{`${account["name"] ? account["name"] : 'Unnamed account'} (${ACCOUNT_TYPES[account["type"]].name})`}</p>
+                        <div className="d-flex gap-2 align-items-center">
+                            <img
+                                src={ACCOUNT_TYPES[account.type].icon}
+                                width={25}
+                                alt=""
+                            />
+                            <p className="m-0">{`${account["name"] ? `${account["name"].substring(0, 12)}${account.name.length > 12 ? "..." : ""}` : 'Unnamed account'}`}</p>
+                        </div>
                         <p className="m-0">{`${prettifyFloat(account["balance"])} ${CURRENCIES_AND_SYMBOLS[account["currency"]]}`}</p>
                     </div>
                 newAccount["value"] = account

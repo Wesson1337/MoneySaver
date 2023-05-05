@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
-import {INTERFACE_COLORS, OPERATIONS_ROUTE, SUPPORTED_CURRENCIES} from "../../utils/consts";
+import {INTERFACE_COLORS, TRANSACTIONS_ROUTE, SUPPORTED_CURRENCIES} from "../../utils/consts";
 import {Cell, Pie, PieChart, Tooltip} from "recharts";
 import {convertCurrency} from "../../utils/currency";
 import {Spinner} from "react-bootstrap";
@@ -124,7 +124,7 @@ const MonthTransactionsCard = (props) => {
     };
     return (
         <MainPageCard
-            navigateto={OPERATIONS_ROUTE}
+            navigateto={TRANSACTIONS_ROUTE}
             style={{minWidth: "340px"}}
         >
             {isLoading

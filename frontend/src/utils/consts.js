@@ -22,7 +22,7 @@ export const LOGIN_ROUTE = '/login'
 export const REGISTRATION_ROUTE = '/registration'
 export const MAIN_PAGE_ROUTE = '/'
 export const ACCOUNTS_ROUTE = '/account_page'
-export const OPERATIONS_ROUTE = '/operations'
+export const TRANSACTIONS_ROUTE = '/operations'
 
 export const SUPPORTED_CURRENCIES = {
     USD: 'USD',

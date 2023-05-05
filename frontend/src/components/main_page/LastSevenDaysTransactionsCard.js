@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
-import {CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS, OPERATIONS_ROUTE, SUPPORTED_CURRENCIES} from "../../utils/consts";
+import {CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS, TRANSACTIONS_ROUTE, SUPPORTED_CURRENCIES} from "../../utils/consts";
 import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {convertCurrency} from "../../utils/currency";
 import {Spinner} from "react-bootstrap";
@@ -57,7 +57,7 @@ const LastSevenDaysTransactionsCard = ({data, setErrorMsg}) => {
     }, [])
 
     return (
-        <MainPageCard navigateto={OPERATIONS_ROUTE} className="mt-3">
+        <MainPageCard navigateto={TRANSACTIONS_ROUTE} className="mt-3">
             <b>Last 7 days</b>
             {isLoading ?
                 <div className="mt-3 d-flex justify-content-center align-items-center"><Spinner animation="border"/>

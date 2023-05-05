@@ -2,7 +2,7 @@ import React from 'react';
 import {Button, Container, Nav, Navbar} from "react-bootstrap";
 import dollar from "../../static/icons/dollar-white.svg"
 import {useNavigate} from "react-router-dom";
-import {ACCOUNTS_ROUTE, LOGIN_ROUTE, MAIN_PAGE_ROUTE, OPERATIONS_ROUTE} from "../../utils/consts";
+import {ACCOUNTS_ROUTE, LOGIN_ROUTE, MAIN_PAGE_ROUTE, TRANSACTIONS_ROUTE} from "../../utils/consts";
 import {useAuth} from "../../context/Auth";
 import {logout} from "../../http/userAPI";
 
@@ -35,8 +35,8 @@ const NavBar = () => {
                         >
                             <Nav.Link eventKey={ACCOUNTS_ROUTE}
                                       onClick={() => navigate(ACCOUNTS_ROUTE)}>Accounts</Nav.Link>
-                            <Nav.Link eventKey={OPERATIONS_ROUTE}
-                                      onClick={() => navigate(OPERATIONS_ROUTE)}>Transactions</Nav.Link>
+                            <Nav.Link eventKey={TRANSACTIONS_ROUTE}
+                                      onClick={() => navigate(TRANSACTIONS_ROUTE)}>Transactions</Nav.Link>
                         </Nav>
                         {user
                             ?

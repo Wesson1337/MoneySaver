@@ -54,3 +54,23 @@ input[type=number] {
 .transaction-find-arrow:hover {
     background: rgba(0, 0, 0, 0.1);
 }
+
+.transaction-three-dots {
+    transition: 0.25s ease-out;
+    background: white !important;
+    border: white !important;
+    border-radius: 4px;
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+}
+
+.transaction-three-dots:after {
+    content: none !important;
+    margin-left: 0 !important;
+}
+
+
+.transaction-three-dots:hover {
+    background: rgba(0, 0, 0, 0.1) !important;
+}

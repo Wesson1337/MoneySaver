@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import MainPageCard from "./MainPageCard";
-import {INCOME_CATEGORIES, OPERATIONS_ROUTE, SPENDING_CATEGORIES} from "../../utils/consts";
+import {INCOME_CATEGORIES, TRANSACTIONS_ROUTE, SPENDING_CATEGORIES} from "../../utils/consts";
 import {Button, Col, Form, Modal, Row, Spinner} from "react-bootstrap";
 import Transaction from "../common/Transaction";
 import ShowMoreButton from "../common/ShowMoreButton";
@@ -58,7 +58,7 @@ const LastTransactionsCard = (props) => {
     }
 
     return (
-        <MainPageCard navigateto={OPERATIONS_ROUTE} showModal={showModal} className="d-flex flex-column gap-3"
+        <MainPageCard navigateto={TRANSACTIONS_ROUTE} showModal={showModal} className="d-flex flex-column gap-3"
                       style={{height: `calc(75px + ${45.633333 * amountOfTransactions}px)`}}
         >
             {isLoading

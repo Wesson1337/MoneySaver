@@ -6,7 +6,7 @@ import BudgetCard from "../components/main_page/BudgetCard";
 import MonthTransactionsCard from "../components/main_page/MonthTransactionsCard";
 import {getAllTransactions} from "../http/transactionsAPI";
 import {SUPPORTED_CURRENCIES} from "../utils/consts";
-import LastMonthsOperationsCard from "../components/main_page/LastMonthsOperationsCard";
+import LastTransactionsCard from "../components/main_page/LastTransactionsCard";
 import CurrenciesBudgetCard from "../components/main_page/CurrenciesBudgetCard";
 import AddTransactionButtons from "../components/common/AddTransactionButtons";
 import {convertCurrency} from "../utils/currency";
@@ -78,7 +78,7 @@ const MainPage = () => {
                     </Row>
                     <Row>
                         <Col className="g-3">
-                            <LastMonthsOperationsCard data={data} setErrorMsg={setErrorMsg}/>
+                            <LastTransactionsCard data={data} setErrorMsg={setErrorMsg}/>
                         </Col>
                         <Col className="g-3">
                             <CurrenciesBudgetCard data={data} setErrorMsg={setErrorMsg}/>

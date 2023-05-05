@@ -5,54 +5,53 @@ import {Button, Col, Form, Modal, Row, Spinner} from "react-bootstrap";
 import Transaction from "../common/Transaction";
 import ShowMoreButton from "../common/ShowMoreButton";
 
-const LastMonthsOperationsCard = (props) => {
+const LastTransactionsCard = (props) => {
     const [showModal, setShowModal] = useState(false)
-    const [operations, setOperations] = useState(null)
-    const [amountOfOperations, setAmountOfOperations] = useState(Number(localStorage.getItem("amountOfOperations")))
+    const [transactions, setTransactions] = useState(null)
+    const [amountOfTransactions, setAmountOfTransactions] = useState(Number(localStorage.getItem("amountOfOperations")))
     const [isLoading, setIsLoading] = useState(true)
     const [tempAmount, setTempAmount] = useState(Number(localStorage.getItem("amountOfOperations")))
     const [errorTempAmount, setErrorTempAmount] = useState("")
 
-    const setAmountOfOperationsLocal = (amount) => {
-        setAmountOfOperations(amount)
+    const setAmountOfTransactionsLocal = (amount) => {
+        setAmountOfTransactions(amount)
         localStorage.setItem("amountOfOperations", amount)
     }
 
-    const checkAmountOfOperations = () => {
+    const checkAmountOfTransactions = () => {
         setIsLoading(true)
         const amount = Number(localStorage.getItem("amountOfOperations"))
         if ((!Number.isInteger(amount)) || (amount < 1) || (amount > 15)) {
-            setAmountOfOperationsLocal(5)
+            setAmountOfTransactionsLocal(5)
         }
     }
 
-
-    const uniteOperationsForCard = () => {
-        let operationsArray = []
-        for (let i = 0; i < amountOfOperations; i++) {
+    const uniteTransactionsForCard = () => {
+        let transactionsArray = []
+        for (let i = 0; i < amountOfTransactions; i++) {
             if (props.data.operations.spendings[i]) {
-                operationsArray.push(props.data.operations.spendings[i])
+                transactionsArray.push(props.data.operations.spendings[i])
             }
             if (props.data.operations.incomes[i]) {
-                operationsArray.push(props.data.operations.incomes[i])
+                transactionsArray.push(props.data.operations.incomes[i])
             }
         }
-        operationsArray.sort((a, b) => new Date(b["created_at"]) - new Date(a["created_at"]))
-        setOperations(operationsArray.slice(0, amountOfOperations))
+        transactionsArray.sort((a, b) => new Date(b["created_at"]) - new Date(a["created_at"]))
+        setTransactions(transactionsArray.slice(0, amountOfTransactions))
         setIsLoading(false)
     }
 
     useEffect(() => {
-        checkAmountOfOperations();
-        uniteOperationsForCard()
-    }, [amountOfOperations])
+        checkAmountOfTransactions();
+        uniteTransactionsForCard()
+    }, [amountOfTransactions])
 
     const handleCloseModal = () => {
         const amount = Number(tempAmount)
         if ((!Number.isInteger(amount)) || (amount < 1) || (amount > 15)) {
-            setErrorTempAmount("Amount of operations must be greater than 1 and less than 15")
+            setErrorTempAmount("Amount of transactions must be greater than 1 and less than 15")
         } else {
-            setAmountOfOperationsLocal(amount)
+            setAmountOfTransactionsLocal(amount)
             setShowModal(false)
             setErrorTempAmount(null)
         }
@@ -60,7 +59,7 @@ const LastMonthsOperationsCard = (props) => {
 
     return (
         <MainPageCard navigateto={OPERATIONS_ROUTE} showModal={showModal} className="d-flex flex-column gap-3"
-                      style={{height: `calc(75px + ${45.633333 * amountOfOperations}px)`}}
+                      style={{height: `calc(75px + ${45.633333 * amountOfTransactions}px)`}}
         >
             {isLoading
                 ?
@@ -68,7 +67,7 @@ const LastMonthsOperationsCard = (props) => {
                 :
                 <>
                     <div className="d-flex justify-content-between align-items-center">
-                        <b>Last operations</b>
+                        <b>Last transactions</b>
                         <ShowMoreButton
                             setShowModal={setShowModal}
                             showModal={showModal}
@@ -80,11 +79,11 @@ const LastMonthsOperationsCard = (props) => {
                                     setShowModal(false);
                                 }}
                                 onShow={() => {
-                                    setTempAmount(amountOfOperations)
+                                    setTempAmount(amountOfTransactions)
                                 }}
                             >
                                 <Modal.Header closeButton>
-                                    <Modal.Title>Last operations</Modal.Title>
+                                    <Modal.Title>Last transactions</Modal.Title>
                                 </Modal.Header>
                                 <Modal.Body>
                                     <Form>
@@ -134,16 +133,16 @@ const LastMonthsOperationsCard = (props) => {
                         </ShowMoreButton>
                     </div>
                     <div className="w-100 d-flex flex-column gap-1">
-                        {operations.map((o, index) =>
+                        {transactions.map((t, index) =>
                             <Transaction
                                 key={`operation-${index}`}
-                                amount={o.amount}
-                                amountInAccountCurrency={o["amount_in_account_currency_at_creation"]}
-                                type={o["receipt_account"] ? "spending" : "income"}
-                                category={o["receipt_account"] ? SPENDING_CATEGORIES[o["category"]].name : INCOME_CATEGORIES[o["category"]].name}
-                                date={o["created_at"]}
-                                icon={o["receipt_account"] ? SPENDING_CATEGORIES[o["category"]].icon : INCOME_CATEGORIES[o["category"]].icon}
-                                account={o["receipt_account"] ? o["receipt_account"] : o["replenishment_account"]}
+                                amount={t.amount}
+                                amountInAccountCurrency={t["amount_in_account_currency_at_creation"]}
+                                type={t["receipt_account"] ? "spending" : "income"}
+                                category={t["receipt_account"] ? SPENDING_CATEGORIES[t["category"]].name : INCOME_CATEGORIES[t["category"]].name}
+                                date={t["created_at"]}
+                                icon={t["receipt_account"] ? SPENDING_CATEGORIES[t["category"]].icon : INCOME_CATEGORIES[t["category"]].icon}
+                                account={t["receipt_account"] ? t["receipt_account"] : t["replenishment_account"]}
                             />)}
                     </div>
                 </>}
@@ -151,4 +150,4 @@ const LastMonthsOperationsCard = (props) => {
     );
 };
 
-export default LastMonthsOperationsCard;
+export default LastTransactionsCard;

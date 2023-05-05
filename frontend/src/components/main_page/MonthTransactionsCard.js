@@ -4,8 +4,8 @@ import {INTERFACE_COLORS, OPERATIONS_ROUTE, SUPPORTED_CURRENCIES} from "../../ut
 import {Cell, Pie, PieChart, Tooltip} from "recharts";
 import {convertCurrency} from "../../utils/currency";
 import {Spinner} from "react-bootstrap";
-import green_arrow from "../../static/icons/green_arrow.svg"
-import red_arrow from "../../static/icons/red-arrow.svg"
+import greenArrow from "../../static/icons/green_arrow.svg"
+import redArrow from "../../static/icons/red-arrow.svg"
 import {prettifyFloat} from "../../utils/prettifyFloat";
 
 
@@ -163,7 +163,7 @@ const MonthTransactionsCard = (props) => {
                         <b className="text-nowrap">{props.month === "this-month" ? "This month" : "Previous month"}</b>
                         <div className="d-flex w-100 justify-content-between align-items-center">
                             <img
-                                src={green_arrow}
+                                src={greenArrow}
                                 alt=""
                                 width={18}
                                 height={18}
@@ -174,7 +174,7 @@ const MonthTransactionsCard = (props) => {
                         </div>
                         <div className="d-flex w-100 justify-content-between align-items-center">
                             <img
-                                src={red_arrow}
+                                src={redArrow}
                                 alt=""
                                 width={18}
                                 height={18}

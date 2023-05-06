@@ -5,9 +5,9 @@ import {prettifyFloat} from "../../utils/prettifyFloat";
 import transferIcon from "../../static/icons/transfer-svgrepo-com.svg"
 import editIcon from "../../static/icons/edit-svgrepo-com.svg"
 import eyeIcon from "../../static/icons/eye-open-svgrepo-com.svg"
-import TransferModal from "./TransferModal";
+import TransferAccountModal from "./TransferAccountModal";
 import {patchAccount} from "../../http/accountsAPI";
-import EditModal from "./EditModal";
+import EditAccountModal from "./EditAccountModal";
 
 const Account = ({account, index, setAccountUpdated, accountUpdated, setErrorMsg, accounts}) => {
     const [isExpanded, setIsExpanded] = useState(false)
@@ -105,7 +105,7 @@ const Account = ({account, index, setAccountUpdated, accountUpdated, setErrorMsg
                     >Balance in USD: {prettifyFloat(account["balanceInUSD"].toFixed(2))} $</p>
                 </div>
             </Card>
-            <TransferModal
+            <TransferAccountModal
                 show={showTransferModal}
                 setShow={setShowTransferModal}
                 account={account}
@@ -113,7 +113,7 @@ const Account = ({account, index, setAccountUpdated, accountUpdated, setErrorMsg
                 setAccountUpdated={setAccountUpdated}
                 accountUpdated={accountUpdated}
             />
-            <EditModal
+            <EditAccountModal
                 show={showEditModal}
                 setShow={setShowEditModal}
                 account={account}

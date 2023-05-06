@@ -5,7 +5,7 @@ import Select from "react-select";
 import {prettifyFloat} from "../../utils/prettifyFloat";
 import {transferMoney} from "../../http/transactionsAPI";
 
-const TransferModal = ({show, setShow, account, accounts, setAccountUpdated, accountUpdated}) => {
+const TransferAccountModal = ({show, setShow, account, accounts, setAccountUpdated, accountUpdated}) => {
     const [accountOptions, setAccountOptions] = useState([])
     const [enteredAmount, setEnteredAmount] = useState("")
     const [enteredAmountError, setEnteredAmountError] = useState("")
@@ -167,4 +167,4 @@ const TransferModal = ({show, setShow, account, accounts, setAccountUpdated, acc
     );
 };
 
-export default TransferModal;
+export default TransferAccountModal;

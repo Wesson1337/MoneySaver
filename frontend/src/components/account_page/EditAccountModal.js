@@ -4,7 +4,7 @@ import Select from "react-select";
 import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS} from "../../utils/consts";
 import {patchAccount} from "../../http/accountsAPI";
 
-const EditModal = ({show, setShow, account, accountUpdated, setAccountUpdated}) => {
+const EditAccountModal = ({show, setShow, account, accountUpdated, setAccountUpdated}) => {
     const [enteredName, setEnteredName] = useState("")
     const [chosenType, setChosenType] = useState(null)
     const [typeOptions, setTypeOptions] = useState([])
@@ -36,8 +36,8 @@ const EditModal = ({show, setShow, account, accountUpdated, setAccountUpdated}) 
     const handleOnSave = async () => {
         setIsLoading(true)
 
-        if (!enteredName || !chosenType) {
-            setError("At least one field is not filled")
+        if (!enteredName && !chosenType) {
+            setError("No fields is filled")
             return
         }
 
@@ -79,7 +79,6 @@ const EditModal = ({show, setShow, account, accountUpdated, setAccountUpdated}) 
                                 }}
                                 options={typeOptions}
                                 onChange={(v) => setChosenType(v["value"])}
-                                placeholder="Select type..."
                             />
                         </Form.Group>
                     </Row>
@@ -113,4 +112,4 @@ const EditModal = ({show, setShow, account, accountUpdated, setAccountUpdated}) 
     );
 };
 
-export default EditModal;
+export default EditAccountModal;

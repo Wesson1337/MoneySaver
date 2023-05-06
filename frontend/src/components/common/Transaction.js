@@ -1,11 +1,15 @@
-import React from 'react';
-import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS, TRANSACTIONS_ROUTE} from "../../utils/consts";
+import React, {useState} from 'react';
+import {CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS, TRANSACTIONS_ROUTE} from "../../utils/consts";
 import {prettifyFloat} from "../../utils/prettifyFloat";
 import dots from "../../static/icons/menu-dots-vertical.svg"
 import {useLocation} from "react-router-dom";
 import {Dropdown} from "react-bootstrap";
+import EditTransactionModal from "../transactions/EditTransactionModal";
+import DeleteTransactionModal from "../transactions/DeleteTransactionModal";
 
 const Transaction = ({icon, category, type, amount, amountInAccountCurrency, account, date}) => {
+    const [showEditModal, setShowEditModal] = useState(false)
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
     const location = useLocation()
     const isTransactionPage = location.pathname === TRANSACTIONS_ROUTE
     return (
@@ -34,26 +38,30 @@ const Transaction = ({icon, category, type, amount, amountInAccountCurrency, acc
                 </div>
             </div>
             {isTransactionPage ?
-                <Dropdown>
-                    <Dropdown.Toggle
-                        className="d-flex justify-content-center align-items-center transaction-three-dots"
-                    >
-                        <img
-                            src={dots}
-                            alt=""
-                            width={20}
-                        />
-                        <Dropdown.Menu>
-                            <Dropdown.Item>
-                                Edit transaction
-                            </Dropdown.Item>
-                            <Dropdown.Item>
-                                Delete transaction
-                            </Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown.Toggle>
-                </Dropdown>
-                    : null
+                <>
+                    <Dropdown>
+                        <Dropdown.Toggle
+                            className="d-flex justify-content-center align-items-center transaction-three-dots"
+                        >
+                            <img
+                                src={dots}
+                                alt=""
+                                width={20}
+                            />
+                            <Dropdown.Menu>
+                                <Dropdown.Item onClick={() => setShowEditModal(true)}>
+                                    Edit transaction
+                                </Dropdown.Item>
+                                <Dropdown.Item onClick={() => setShowDeleteModal(true)}>
+                                    Delete transaction
+                                </Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown.Toggle>
+                    </Dropdown>
+                    <EditTransactionModal show={showEditModal} setShow={setShowEditModal}/>
+                    <DeleteTransactionModal show={showDeleteModal} setShow={setShowDeleteModal}/>
+                </>
+                : null
             }
             <div style={{
                 width: "5px",

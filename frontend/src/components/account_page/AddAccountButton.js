@@ -149,7 +149,6 @@ const AddAccountButton = ({accountUpdated, setAccountUpdated}) => {
                                     }}
                                     options={typeOptions}
                                     onChange={(v) => setChosenType(v["value"])}
-                                    placeholder="Select type..."
                                 />
                             </Form.Group>
                         </Row>

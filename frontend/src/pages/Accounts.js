@@ -5,8 +5,8 @@ import {convertCurrency} from "../utils/currency";
 import {CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS, SUPPORTED_CURRENCIES} from "../utils/consts";
 import {prettifyFloat} from "../utils/prettifyFloat";
 import {ErrorComponent} from "../components/common/ErrorComponent";
-import Account from "../components/account_page/Account";
-import AddAccountButton from "../components/account_page/AddAccountButton";
+import Account from "../components/accounts_page/Account";
+import AddAccountButton from "../components/accounts_page/AddAccountButton";
 
 const Accounts = () => {
     const [isLoading, setIsLoading] = useState(true)

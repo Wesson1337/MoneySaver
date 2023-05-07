@@ -14,6 +14,7 @@ const EditAccountModal = ({show, setShow, account, accountUpdated, setAccountUpd
     const handleOnHide = () => {
         setShow(false)
         setEnteredName("")
+        setChosenType(null)
         setError("")
     }
 
@@ -37,14 +38,14 @@ const EditAccountModal = ({show, setShow, account, accountUpdated, setAccountUpd
         setIsLoading(true)
 
         if (!enteredName && !chosenType) {
-            setError("No fields is filled")
+            setError("At least one field must be filled")
             return
         }
 
         try {
-            return await patchAccount(account.id, {type: chosenType.nameForRequest, name: enteredName})
+            return await patchAccount(account.id, {type: chosenType?.nameForRequest, name: enteredName ? enteredName : null})
         } catch (e) {
-            setError(`${e.response.data.detail || e}`)
+            setError(`${e?.response?.data?.detail || e}`)
         }
     }
 

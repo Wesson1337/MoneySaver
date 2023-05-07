@@ -14,13 +14,13 @@ export const getAllTransactions = async (currency, createdAtAfter, createdAtBefo
     return {incomes: incomes_data, spendings: spendings_data}
 }
 
-export const createTransaction = async (operationData) => {
-    const {data} = await $authHost.post(`/api/v1/budget/${operationData.replenishment_account_id ? "incomes" : "spendings"}/`, operationData)
+export const createTransaction = async (transactionData) => {
+    const {data} = await $authHost.post(`/api/v1/budget/${transactionData.replenishment_account_id ? "incomes" : "spendings"}/`, transactionData)
     return data
 }
 
 export const transferMoney = async (accountFrom, accountTo, amount) => {
-    const operationData = {
+    const transactionData = {
         "user_id": userId,
         "category": SPENDING_CATEGORIES.TRANSFERS.nameForRequest,
         "amount": amount,
@@ -28,8 +28,13 @@ export const transferMoney = async (accountFrom, accountTo, amount) => {
         "comment": `Transfer from ${accountFrom.name} to ${accountTo.name}`
     }
 
-    const spendingResponse = await createTransaction(Object.assign(operationData, {"receipt_account_id": accountFrom.id}))
-    const incomeResponse = await createTransaction(Object.assign(operationData, {"replenishment_account_id": accountTo.id}))
+    const spendingResponse = await createTransaction(Object.assign(transactionData, {"receipt_account_id": accountFrom.id}))
+    const incomeResponse = await createTransaction(Object.assign(transactionData, {"replenishment_account_id": accountTo.id}))
 
     return {spendingResponse: spendingResponse, incomeResponse: incomeResponse}
+}
+
+export const patchTransaction = async (transactionId, type, transactionData) => {
+    const {data} = await $authHost.patch(`/api/v1/budget/${type === "income" ? "incomes" : "spendings"}/${transactionId}/`, transactionData)
+    return data
 }

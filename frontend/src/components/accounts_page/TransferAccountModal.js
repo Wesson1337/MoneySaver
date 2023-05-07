@@ -4,6 +4,7 @@ import {ACCOUNT_TYPES, CURRENCIES_AND_SYMBOLS, INTERFACE_COLORS} from "../../uti
 import Select from "react-select";
 import {prettifyFloat} from "../../utils/prettifyFloat";
 import {transferMoney} from "../../http/transactionsAPI";
+import {handleAmountOnChange} from "../../utils/forms";
 
 const TransferAccountModal = ({show, setShow, account, accounts, setAccountUpdated, accountUpdated}) => {
     const [accountOptions, setAccountOptions] = useState([])
@@ -30,25 +31,6 @@ const TransferAccountModal = ({show, setShow, account, accounts, setAccountUpdat
         setAccountOptions(tempAccounts)
     }, [accounts])
 
-
-    const handleAmountOnChange = (value) => {
-        if (Number.isNaN(+value)) {
-            return
-        }
-        if (value.toString().includes('.') && value.split('.')[1].length > 2) {
-            return
-        }
-        if (value && value <= 0) {
-            setEnteredAmountError("Amount must be greater than 0")
-            return
-        }
-        if (value >= 1000000000) {
-            setEnteredAmountError("Amount of operation is too long")
-            return
-        }
-        setEnteredAmount(value)
-        setEnteredAmountError("")
-    }
 
     const handleClose = () => {
         setShow(false)
@@ -98,7 +80,7 @@ const TransferAccountModal = ({show, setShow, account, accounts, setAccountUpdat
                                     value={enteredAmount ? enteredAmount : ''}
                                     onChange={(e) => {
                                         setCommonError("")
-                                        handleAmountOnChange(e.target.value)
+                                        handleAmountOnChange(e.target.value, setEnteredAmount, setEnteredAmountError)
                                     }}
                                     style={{minWidth: "150px"}}
                                     isInvalid={!!enteredAmountError}
@@ -140,26 +122,26 @@ const TransferAccountModal = ({show, setShow, account, accounts, setAccountUpdat
                     <div className="d-flex gap-2">
                         {isLoading ? <Spinner animation="border" className="mx-4"/> :
                             <>
-                        <Button
-                            variant="secondary"
-                            onClick={handleClose}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                handleSave().then((result) => {
-                                    if (result.incomeResponse && result.spendingResponse) {
-                                        setAccountUpdated(!accountUpdated)
-                                        handleClose()
-                                    }
-                                }).finally(() => setIsLoading(false))
-                            }}
-                        >
-                            Transfer
-                        </Button>
-                        </>
-                    }
+                                <Button
+                                    variant="secondary"
+                                    onClick={handleClose}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        handleSave().then((result) => {
+                                            if (result.incomeResponse && result.spendingResponse) {
+                                                setAccountUpdated(!accountUpdated)
+                                                handleClose()
+                                            }
+                                        }).finally(() => setIsLoading(false))
+                                    }}
+                                >
+                                    Transfer
+                                </Button>
+                            </>
+                        }
                     </div>
                 </div>
             </Modal.Footer>

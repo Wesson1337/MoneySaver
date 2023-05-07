@@ -4,10 +4,12 @@ import {prettifyFloat} from "../../utils/prettifyFloat";
 import dots from "../../static/icons/menu-dots-vertical.svg"
 import {useLocation} from "react-router-dom";
 import {Dropdown} from "react-bootstrap";
-import EditTransactionModal from "../transactions/EditTransactionModal";
-import DeleteTransactionModal from "../transactions/DeleteTransactionModal";
+import EditTransactionModal from "../transactions_page/EditTransactionModal";
+import DeleteTransactionModal from "../transactions_page/DeleteTransactionModal";
 
-const Transaction = ({icon, category, type, amount, amountInAccountCurrency, account, date}) => {
+const Transaction = ({
+                         icon, transaction, hasChanged, setHasChanged, type, account, category
+                     }) => {
     const [showEditModal, setShowEditModal] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const location = useLocation()
@@ -25,7 +27,7 @@ const Transaction = ({icon, category, type, amount, amountInAccountCurrency, acc
                         {category}
                     </p>
                     <p className="m-0 little-text text-nowrap">
-                        {type === "spending" ? "-" : "+"}{amount !== amountInAccountCurrency ? prettifyFloat(amountInAccountCurrency.toFixed(2)) : prettifyFloat(amount.toFixed(2))} {CURRENCIES_AND_SYMBOLS[account["currency"]]}
+                        {type === "spending" ? "-" : "+"}{transaction.amount !== transaction["amount_in_account_currency_at_creation"] ? prettifyFloat(transaction["amount_in_account_currency_at_creation"].toFixed(2)) : prettifyFloat(transaction.amount.toFixed(2))} {CURRENCIES_AND_SYMBOLS[account.currency]}
                     </p>
                 </div>
                 <div className="d-flex justify-content-between align-items-center gap-3">
@@ -33,7 +35,10 @@ const Transaction = ({icon, category, type, amount, amountInAccountCurrency, acc
                         {`${account["name"] ? `${account["name"].substring(0, 12)}${account.name.length > 12 ? "..." : ""}` : "Unnamed account"}`}
                     </p>
                     <p className="m-0 little-text text-nowrap">
-                        {new Date(date).toLocaleDateString("ru-RU", {hour: "2-digit", minute: "2-digit"})}
+                        {new Date(transaction["created_at"]).toLocaleDateString("ru-RU", {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        })}
                     </p>
                 </div>
             </div>
@@ -58,7 +63,15 @@ const Transaction = ({icon, category, type, amount, amountInAccountCurrency, acc
                             </Dropdown.Menu>
                         </Dropdown.Toggle>
                     </Dropdown>
-                    <EditTransactionModal show={showEditModal} setShow={setShowEditModal}/>
+                    <EditTransactionModal
+                        show={showEditModal}
+                        setShow={setShowEditModal}
+                        hasChanged={hasChanged}
+                        setHasChanged={setHasChanged}
+                        transaction={transaction}
+                        type={type}
+                        account={account}
+                    />
                     <DeleteTransactionModal show={showDeleteModal} setShow={setShowDeleteModal}/>
                 </>
                 : null

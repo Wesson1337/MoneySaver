@@ -5,6 +5,7 @@ import {Button, Col, Form, Modal, Row, Spinner} from "react-bootstrap";
 import Select from "react-select";
 import {createAccount} from "../../http/accountsAPI";
 import {getUserIdFromJWT} from "../../http/userAPI";
+import {handleAmountOnChange} from "../../utils/forms";
 
 const AddAccountButton = ({accountUpdated, setAccountUpdated}) => {
     const [typeOptions, setTypeOptions] = useState([])
@@ -17,25 +18,6 @@ const AddAccountButton = ({accountUpdated, setAccountUpdated}) => {
     const [currencies, setCurrencies] = useState([])
     const [chosenCurrency, setChosenCurrency] = useState("")
     const [isLoading, setIsLoading] = useState(false)
-
-    const handleAmountOnChange = (value) => {
-        if (Number.isNaN(+value)) {
-            return
-        }
-        if (value.toString().includes('.') && value.split('.')[1].length > 2) {
-            return
-        }
-        if (value && value <= 0) {
-            setEnteredAmountError("Amount must be greater than 0")
-            return
-        }
-        if (value >= 1000000000) {
-            setEnteredAmountError("Amount of operation is too long")
-            return
-        }
-        setEnteredAmount(value)
-        setEnteredAmountError("")
-    }
 
     const handleOnHide = () => {
         setShowAddModal(false)
@@ -158,7 +140,7 @@ const AddAccountButton = ({accountUpdated, setAccountUpdated}) => {
                                 <Form.Control
                                     value={enteredAmount ? enteredAmount : ''}
                                     onChange={(e) => {
-                                        handleAmountOnChange(e.target.value)
+                                        handleAmountOnChange(e.target.value, setEnteredAmount, setEnteredAmountError)
                                         setError("")
                                     }}
                                     style={{minWidth: "150px"}}

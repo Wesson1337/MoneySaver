@@ -12,6 +12,7 @@ import {prettifyFloat} from "../../utils/prettifyFloat";
 import {convertCurrency} from "../../utils/currency";
 import {getUserIdFromJWT} from "../../http/userAPI";
 import {createTransaction} from "../../http/transactionsAPI";
+import {handleAmountOnChange} from "../../utils/forms"
 
 const AddTransactionModal = ({show, setShow, type, data, hasChanged, setHasChanged}) => {
     const isRemove = type === "remove"
@@ -94,25 +95,6 @@ const AddTransactionModal = ({show, setShow, type, data, hasChanged, setHasChang
     }, [chosenAccount, chosenCurrency, enteredAmount])
 
 
-    const handleAmountOnChange = (value) => {
-        if (Number.isNaN(+value)) {
-            return
-        }
-        if (value.toString().includes('.') && value.split('.')[1].length > 2) {
-            return
-        }
-        if (value && value <= 0) {
-            setEnteredAmountError("Amount must be greater than 0")
-            return
-        }
-        if (value >= 1000000000) {
-            setEnteredAmountError("Amount of operation is too long")
-            return
-        }
-        setEnteredAmount(value)
-        setEnteredAmountError("")
-    }
-
     const handleOnHide = () => {
         setChosenCategory(null);
         setChosenAccount(null);
@@ -194,7 +176,7 @@ const AddTransactionModal = ({show, setShow, type, data, hasChanged, setHasChang
                                     <Form.Control
                                         value={enteredAmount ? enteredAmount : ''}
                                         onChange={(e) => {
-                                            handleAmountOnChange(e.target.value)
+                                            handleAmountOnChange(e.target.value, setEnteredAmount, setEnteredAmountError)
                                             setError("")
                                         }}
                                         style={{minWidth: "150px"}}

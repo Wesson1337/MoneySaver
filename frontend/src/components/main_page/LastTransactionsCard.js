@@ -136,11 +136,9 @@ const LastTransactionsCard = (props) => {
                         {transactions.map((t, index) =>
                             <Transaction
                                 key={`operation-${index}`}
-                                amount={t.amount}
-                                amountInAccountCurrency={t["amount_in_account_currency_at_creation"]}
+                                transaction={t}
                                 type={t["receipt_account"] ? "spending" : "income"}
                                 category={t["receipt_account"] ? SPENDING_CATEGORIES[t["category"]].name : INCOME_CATEGORIES[t["category"]].name}
-                                date={t["created_at"]}
                                 icon={t["receipt_account"] ? SPENDING_CATEGORIES[t["category"]].icon : INCOME_CATEGORIES[t["category"]].icon}
                                 account={t["receipt_account"] ? t["receipt_account"] : t["replenishment_account"]}
                             />)}

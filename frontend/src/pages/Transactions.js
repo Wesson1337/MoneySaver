@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import {Card, Container, Spinner} from "react-bootstrap";
-import MonthSelection from "../components/transactions/MonthSelection";
+import MonthSelection from "../components/transactions_page/MonthSelection";
 import {getAllTransactions} from "../http/transactionsAPI";
 import Transaction from "../components/common/Transaction";
 import {INCOME_CATEGORIES, SPENDING_CATEGORIES} from "../utils/consts";
 import AddTransactionButtons from "../components/common/AddTransactionButtons";
 import {getAllAccounts} from "../http/accountsAPI";
+import {ErrorComponent} from "../components/common/ErrorComponent";
 
 const Transactions = () => {
     const [month, setMonth] = useState(new Date().getMonth())
@@ -80,13 +81,14 @@ const Transactions = () => {
                                 {transactions.map((t, index) =>
                                     <Transaction
                                         key={`operation-${index}`}
-                                        amount={t.amount}
+                                        transaction={t}
                                         amountInAccountCurrency={t["amount_in_account_currency_at_creation"]}
                                         type={t["receipt_account"] ? "spending" : "income"}
                                         category={t["receipt_account"] ? SPENDING_CATEGORIES[t["category"]].name : INCOME_CATEGORIES[t["category"]].name}
-                                        date={t["created_at"]}
                                         icon={t["receipt_account"] ? SPENDING_CATEGORIES[t["category"]].icon : INCOME_CATEGORIES[t["category"]].icon}
                                         account={t["receipt_account"] ? t["receipt_account"] : t["replenishment_account"]}
+                                        hasChanged={transactionHasChanged}
+                                        setHasChanged={setTransactionHasChanged}
                                     />)}
                             </div>
                     }
@@ -99,6 +101,7 @@ const Transactions = () => {
                 data={data}
             />
             }
+            <ErrorComponent message={errorMsg} onClose={() => {setErrorMsg("")}}/>
         </>
     );
 };

@@ -72,7 +72,14 @@ const Transaction = ({
                         type={type}
                         account={account}
                     />
-                    <DeleteTransactionModal show={showDeleteModal} setShow={setShowDeleteModal}/>
+                    <DeleteTransactionModal
+                        show={showDeleteModal}
+                        setShow={setShowDeleteModal}
+                        hasChanged={hasChanged}
+                        setHasChanged={setHasChanged}
+                        transaction={transaction}
+                        type={type}
+                    />
                 </>
                 : null
             }

@@ -38,3 +38,8 @@ export const patchTransaction = async (transactionId, type, transactionData) => 
     const {data} = await $authHost.patch(`/api/v1/budget/${type === "income" ? "incomes" : "spendings"}/${transactionId}/`, transactionData)
     return data
 }
+
+export const deleteTransaction = async (transactionId, type) => {
+    const {data} = await $authHost.delete(`/api/v1/budget/${type === "income" ? "incomes" : "spendings"}/${transactionId}/`)
+    return data
+}

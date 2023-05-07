@@ -7,7 +7,7 @@ import ShowMoreButton from "../common/ShowMoreButton";
 
 const LastTransactionsCard = (props) => {
     const [showModal, setShowModal] = useState(false)
-    const [transactions, setTransactions] = useState(null)
+    const [transactions, setTransactions] = useState([])
     const [amountOfTransactions, setAmountOfTransactions] = useState(Number(localStorage.getItem("amountOfOperations")))
     const [isLoading, setIsLoading] = useState(true)
     const [tempAmount, setTempAmount] = useState(Number(localStorage.getItem("amountOfOperations")))
@@ -59,7 +59,7 @@ const LastTransactionsCard = (props) => {
 
     return (
         <MainPageCard navigateto={TRANSACTIONS_ROUTE} showModal={showModal} className="d-flex flex-column gap-3"
-                      style={{height: `calc(75px + ${45.633333 * amountOfTransactions}px)`}}
+                      style={{height: `calc(75px + ${45.633333 * transactions.length}px)`}}
         >
             {isLoading
                 ?

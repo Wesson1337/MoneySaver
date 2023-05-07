@@ -1,0 +1,12 @@
+FROM node:current-alpine3.16
+
+WORKDIR /home/app/MoneySaver/frontend
+
+COPY package.json .
+RUN npm install
+COPY src /home/app/MoneySaver/frontend/src
+COPY public /home/app/MoneySaver/frontend/public
+COPY .env.prod .
+EXPOSE 3000
+
+CMD ["npm", "run", "build"]

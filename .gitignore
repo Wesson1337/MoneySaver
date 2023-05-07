@@ -220,7 +220,6 @@ cython_debug/
 
 ### react ###
 .DS_*
-*.log
 logs
 **/*.backup.*
 **/*.back.*
@@ -237,3 +236,4 @@ sketch
 # End of https://www.toptal.com/developers/gitignore/api/react
 
 .env.development
+.env.prod

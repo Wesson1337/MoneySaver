@@ -15,7 +15,7 @@ from backend.src.auth.dependencies import get_current_active_user
 from backend.src.auth.models import User
 from backend.src.budget.config import Currencies
 from backend.src.budget.routers import account, income, spending
-from backend.src.config import API_PREFIX_V1, logger
+from backend.src import config
 from backend.src.database import async_session
 from backend.src.redis import seed_redis_from_db
 from backend.src.dependencies import init_redis_pool
@@ -32,10 +32,10 @@ sentry_sdk.init(
 app = FastAPI()
 
 # routers
-app.include_router(auth.router, prefix=f'{API_PREFIX_V1}', tags=['Users'])
-app.include_router(income.router, prefix=f'{API_PREFIX_V1}/budget', tags=['Incomes'])
-app.include_router(account.router, prefix=f'{API_PREFIX_V1}/budget', tags=['Accounts'])
-app.include_router(spending.router, prefix=f'{API_PREFIX_V1}/budget', tags=['Spendings'])
+app.include_router(auth.router, prefix=f'{config.API_PREFIX_V1}', tags=['Users'])
+app.include_router(income.router, prefix=f'{config.API_PREFIX_V1}/budget', tags=['Incomes'])
+app.include_router(account.router, prefix=f'{config.API_PREFIX_V1}/budget', tags=['Accounts'])
+app.include_router(spending.router, prefix=f'{config.API_PREFIX_V1}/budget', tags=['Spendings'])
 
 # middleware
 app.add_middleware(
@@ -45,7 +45,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
-add_timing_middleware(app, record=logger.info, prefix="app", exclude="metrics")
+
+if config.DEBUG:
+    add_timing_middleware(app, record=config.logger.info, prefix="app", exclude="metrics")
 
 
 # tasks and events
@@ -65,7 +67,7 @@ async def refresh_redis():
     await redis.close()
 
 
-@app.get(f'{API_PREFIX_V1}/currency/')
+@app.get(f'{config.API_PREFIX_V1}/currency/')
 async def get_exchange_rate(
         base_currency: Currencies,
         desired_currency: Currencies,

@@ -2,9 +2,9 @@ import {getUserIdFromJWT} from "./userAPI";
 import {$authHost} from "./index";
 import {SPENDING_CATEGORIES} from "../utils/consts";
 
-const userId = getUserIdFromJWT()
 
 export const getAllTransactions = async (currency, createdAtAfter, createdAtBefore) => {
+    const userId = getUserIdFromJWT()
     let response = await $authHost.get(`/api/v1/budget/users/${userId}/incomes/`,
         {params: {currency: currency, created_at_ge: createdAtAfter, created_at_le: createdAtBefore}})
     const incomes_data = response["data"]
@@ -20,6 +20,7 @@ export const createTransaction = async (transactionData) => {
 }
 
 export const transferMoney = async (accountFrom, accountTo, amount) => {
+    const userId = getUserIdFromJWT()
     const transactionData = {
         "user_id": userId,
         "category": SPENDING_CATEGORIES.TRANSFERS.nameForRequest,

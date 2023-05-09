@@ -16,7 +16,7 @@ const Auth = () => {
             navigate(MAIN_PAGE_ROUTE)
         }
         setLoading(false)
-    }, [user, navigate])
+    }, [user])
 
     const location = useLocation()
     const isLogin = location.pathname === LOGIN_ROUTE
@@ -49,33 +49,21 @@ const Auth = () => {
         setLoading(true)
         if (checkEmailAndPassword()) {
             try {
-                await login(email, password1)
-                setUser(email)
-                navigate(MAIN_PAGE_ROUTE)
+                return isLogin ? await login(email, password1) : await registration(email, password1, password2)
             } catch (e) {
                 setErrorMsg(`${e?.response?.data?.detail || e}`)
             }
         }
-        setLoading(false)
-    }
-
-    const registrationClick = async () => {
-        setLoading(true)
-        if (checkEmailAndPassword()) {
-            try {
-                await registration(email, password1, password2)
-                setUser(email)
-                navigate(MAIN_PAGE_ROUTE)
-            } catch (e) {
-                setErrorMsg(`${e?.response?.data?.detail || e}`)
-            }
-        }
-        setLoading(false)
     }
 
     const handleKeyDown = async (e) => {
         if (e.key === 'Enter') {
-            isLogin ? await loginClick() : await registrationClick()
+            loginClick().then((r) => {
+                if (r) {
+                    setUser(email)
+                    navigate(MAIN_PAGE_ROUTE)
+                }
+            }).finally(() => setLoading(false))
         }
     }
 
@@ -137,7 +125,12 @@ const Auth = () => {
                                 className="w-auto"
                                 style={{marginRight: 11}}
                                 variant={"outline-success"}
-                                onClick={isLogin ? loginClick : registrationClick}
+                                onClick={() => {loginClick().then((r) => {
+                                    if (r) {
+                                        setUser(email)
+                                        navigate(MAIN_PAGE_ROUTE)
+                                    }
+                                }).finally(() => setLoading(false))}}
                             >
                                 {isLogin ? 'Sign in' : 'Sign up'}
                             </Button>

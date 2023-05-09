@@ -3,7 +3,7 @@ import os
 
 API_PREFIX_V1 = "/api/v1"
 
-DEBUG = bool(os.getenv("DEBUG"))
+DEBUG = bool(int(os.getenv("DEBUG")))
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -1,9 +1,7 @@
 # MoneySaver
 Handy budgeting application
 
----
 ![img.png](preview.png)
-
 ---
 ## Review 
 
@@ -13,7 +11,6 @@ In the application you can add accounts, transactions, as well as edit and delet
 On the main page, the application shows widgets that help you correctly analyze the budget.
 
 
----
 ## Installation
 
 1. Install docker - https://docs.docker.com/engine/install/
@@ -29,7 +26,6 @@ On the main page, the application shows widgets that help you correctly analyze 
 
 4. Go to localhost in your browser.
 
----
 # Environment variables
 
 To use application you should create .env and .env.prod files in root directory of the project.

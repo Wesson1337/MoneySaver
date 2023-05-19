@@ -13,9 +13,13 @@ On the main page, the application shows widgets that help you correctly analyze 
 
 ## Installation
 
-1. Install docker - https://docs.docker.com/engine/install/
-2. Set up env variables (check environment variables paragraph).
-3. Build up containers. Dev version -
+1. Copy project - 
+    ```commandline
+    git clone https://github.com/Wesson1337/MoneySaver.git
+    ```
+3. Install docker - https://docs.docker.com/engine/install/
+4. Set up env variables (check environment variables paragraph).
+5. Build up containers. Dev version -
     ```commandline
     docker compose up --build
     ``` 
@@ -24,7 +28,7 @@ On the main page, the application shows widgets that help you correctly analyze 
     docker compose -f docker-compose.prod.yml up --build
     ```
 
-4. Go to localhost in your browser.
+5. Go to localhost in your browser.
 
 # Environment variables
 

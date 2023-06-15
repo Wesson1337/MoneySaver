@@ -17,9 +17,9 @@ On the main page, the application shows widgets that help you correctly analyze 
     ```commandline
     git clone https://github.com/Wesson1337/MoneySaver.git
     ```
-3. Install docker - https://docs.docker.com/engine/install/
-4. Set up env variables (check environment variables paragraph).
-5. Build up containers. Dev version -
+2. Install docker - https://docs.docker.com/engine/install/
+3. Set up env variables (check environment variables paragraph).
+4. Build up containers. Dev version -
     ```commandline
     docker compose up --build
     ``` 
@@ -30,7 +30,7 @@ On the main page, the application shows widgets that help you correctly analyze 
 
 5. Go to localhost in your browser.
 
-# Environment variables
+## Environment variables
 
 To use application you should create .env and .env.prod files in root directory of the project.
 You should write down into it next variables:
